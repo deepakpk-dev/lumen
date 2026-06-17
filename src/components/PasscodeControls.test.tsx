@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PasscodeControls } from './PasscodeControls';
-import { hasPasscode, clearPasscode } from '@/src/security/passcode';
+import { hasPasscode } from '@/src/security/passcode';
 
 beforeEach(() => {
   localStorage.clear();

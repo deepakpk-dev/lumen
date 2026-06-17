@@ -60,8 +60,9 @@ export function PasscodeControls() {
         aria-label="new passcode"
         type="password"
         inputMode="numeric"
+        pattern="[0-9]*"
         value={code}
-        onChange={(e) => setCode(e.target.value)}
+        onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
         placeholder="Enter numeric passcode"
         className="w-full rounded-md border border-neutral-300 px-3 py-2"
       />
