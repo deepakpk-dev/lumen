@@ -3,7 +3,10 @@
 
 import { useMemo, useState } from 'react';
 import type { ContentArticle, ScoredArticle } from '@/src/domain/content/types';
+import type { CyclePhase } from '@/src/domain/types';
 import { ContentCard } from './ContentCard';
+
+const CYCLE_PHASES: CyclePhase[] = ['menstrual', 'follicular', 'ovulation', 'luteal'];
 
 const FOR_YOU_COUNT = 3;
 
@@ -16,6 +19,7 @@ export function ContentLibrary({
 }) {
   const [query, setQuery] = useState('');
   const [topic, setTopic] = useState('all');
+  const [phase, setPhase] = useState('all');
 
   const topics = useMemo(() => {
     const set = new Set<string>();
@@ -29,13 +33,14 @@ export function ContentLibrary({
     const q = query.trim().toLowerCase();
     return all.filter((a) => {
       const matchesTopic = topic === 'all' || a.topics.includes(topic as ContentArticle['topics'][number]);
+      const matchesPhase = phase === 'all' || a.phases.includes(phase as CyclePhase);
       const matchesQuery =
         q === '' ||
         a.title.toLowerCase().includes(q) ||
         a.summary.toLowerCase().includes(q);
-      return matchesTopic && matchesQuery;
+      return matchesTopic && matchesPhase && matchesQuery;
     });
-  }, [all, query, topic]);
+  }, [all, query, topic, phase]);
 
   return (
     <div className="space-y-6">
@@ -76,6 +81,23 @@ export function ContentLibrary({
             {topics.map((t) => (
               <option key={t} value={t}>
                 {t}
+              </option>
+            ))}
+          </select>
+          <label className="sr-only" htmlFor="phase-filter">
+            Phase
+          </label>
+          <select
+            id="phase-filter"
+            aria-label="Phase"
+            value={phase}
+            onChange={(e) => setPhase(e.target.value)}
+            className="rounded-md border px-3 py-2 text-sm"
+          >
+            <option value="all">All phases</option>
+            {CYCLE_PHASES.map((p) => (
+              <option key={p} value={p}>
+                {p}
               </option>
             ))}
           </select>

@@ -89,20 +89,22 @@ export function useHealthData() {
     [cycles, dailyLogs, stats, prediction],
   );
 
+  const today = todayISO();
+
   const contentFeed: ScoredArticle[] = useMemo(() => {
     const context = deriveContentContext({
       cycles,
       dailyLogs,
       stats,
       prediction,
-      today: todayISO(),
+      today,
     });
     return buildContentFeed(ARTICLES, context);
-  }, [cycles, dailyLogs, stats, prediction]);
+  }, [cycles, dailyLogs, stats, prediction, today]);
 
   const dailyContent: ContentArticle | null = useMemo(
-    () => selectDailyContent(contentFeed, todayISO()),
-    [contentFeed],
+    () => selectDailyContent(contentFeed, today),
+    [contentFeed, today],
   );
 
   return {

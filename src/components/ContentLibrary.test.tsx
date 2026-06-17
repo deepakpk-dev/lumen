@@ -3,15 +3,16 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ContentLibrary } from './ContentLibrary';
 import type { ContentArticle } from '@/src/domain/content/types';
+import type { CyclePhase } from '@/src/domain/types';
 
-function make(slug: string, title: string, topic: ContentArticle['topics'][number]): ContentArticle {
+function make(slug: string, title: string, topic: ContentArticle['topics'][number], phases: CyclePhase[] = []): ContentArticle {
   return {
     slug,
     title,
     summary: `${title} summary`,
     body: 'x',
     topics: [topic],
-    phases: [],
+    phases,
     symptoms: [],
     lifeStages: ['cycle'],
     readingMinutes: 2,
@@ -51,5 +52,16 @@ describe('ContentLibrary', () => {
     });
     expect(screen.getByText('Ovulation and your fertile window')).toBeInTheDocument();
     expect(screen.queryByText('Managing period cramps')).not.toBeInTheDocument();
+  });
+
+  it('filters the browse list by phase', () => {
+    const lutealArticle = make('luteal-pms', 'PMS and the luteal phase', 'symptoms', ['luteal']);
+    const follicularArticle = make('follicular-energy', 'Energy in follicular phase', 'wellbeing', ['follicular']);
+    render(<ContentLibrary feed={[]} all={[lutealArticle, follicularArticle]} />);
+    fireEvent.change(screen.getByLabelText(/phase/i), {
+      target: { value: 'luteal' },
+    });
+    expect(screen.getByText('PMS and the luteal phase')).toBeInTheDocument();
+    expect(screen.queryByText('Energy in follicular phase')).not.toBeInTheDocument();
   });
 });
