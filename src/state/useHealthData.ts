@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   Cycle,
   CycleStats,
@@ -18,6 +18,8 @@ import {
 import { computeCycleStats } from '@/src/domain/cycle-stats';
 import { generatePrediction } from '@/src/domain/prediction';
 import { todayISO } from '@/src/domain/dates';
+import { generateInsights } from '@/src/domain/insights/insights';
+import type { Insight } from '@/src/domain/insights/types';
 
 function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `c_${Date.now()}_${Math.random()}`;
@@ -65,14 +67,29 @@ export function useHealthData() {
     [refresh],
   );
 
-  const stats: CycleStats = computeCycleStats(cycles);
-  const prediction: Prediction | null = generatePrediction(cycles, todayISO());
+  const stats: CycleStats = useMemo(() => computeCycleStats(cycles), [cycles]);
+  const prediction: Prediction | null = useMemo(
+    () => generatePrediction(cycles, todayISO()),
+    [cycles],
+  );
+  const insights: Insight[] = useMemo(
+    () =>
+      generateInsights({
+        cycles,
+        dailyLogs,
+        stats,
+        prediction,
+        today: todayISO(),
+      }),
+    [cycles, dailyLogs, stats, prediction],
+  );
 
   return {
     cycles,
     dailyLogs,
     stats,
     prediction,
+    insights,
     loading,
     startPeriod,
     endPeriod,
