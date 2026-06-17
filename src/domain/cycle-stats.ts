@@ -56,5 +56,6 @@ export function computeCycleStats(cycles: Cycle[]): CycleStats {
     averagePeriodLength,
     isRegular:
       lengths.length >= 2 && cycleLengthStdDev <= REGULARITY_STDDEV_THRESHOLD,
+    inputCycleCount: cycles.length,
   };
 }
