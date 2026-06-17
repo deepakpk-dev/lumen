@@ -24,7 +24,7 @@ export interface CycleStats {
   cycleLengthStdDev: number;
   averagePeriodLength: number;
   isRegular: boolean;
-  inputCycleCount?: number;
+  inputCycleCount: number;
 }
 
 export type Confidence = 'high' | 'medium' | 'low';

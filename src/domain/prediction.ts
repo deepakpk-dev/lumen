@@ -11,7 +11,7 @@ import { addDays } from './dates';
 import { computeCycleStats } from './cycle-stats';
 
 export function predictionConfidence(stats: CycleStats): Confidence {
-  const inputCount = stats.inputCycleCount ?? 0;
+  const inputCount = stats.inputCycleCount;
   if (stats.cycleCount >= 3 && stats.isRegular) return 'high';
   if (inputCount >= 3 && !stats.isRegular) return 'low';
   if (inputCount >= 1) return 'medium';
