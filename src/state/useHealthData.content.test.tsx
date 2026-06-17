@@ -1,6 +1,6 @@
 // src/state/useHealthData.content.test.tsx
 import { describe, it, expect, beforeEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import 'fake-indexeddb/auto';
 import { useHealthData } from './useHealthData';
 import { db } from '@/src/data/db';
