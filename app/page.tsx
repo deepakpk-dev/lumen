@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
 import { CycleSummary } from '@/src/components/CycleSummary';
 import { InsightCard } from '@/src/components/InsightCard';
+import { DailyContentCard } from '@/src/components/DailyContentCard';
 import { topInsight } from '@/src/domain/insights/insights';
 import { todayISO } from '@/src/domain/dates';
 
 export default function HomePage() {
   const router = useRouter();
-  const { cycles, stats, prediction, insights, loading } = useHealthData();
+  const { cycles, stats, prediction, insights, dailyContent, loading } =
+    useHealthData();
 
   useEffect(() => {
     if (!loading && cycles.length === 0) router.replace('/onboarding');
@@ -31,6 +33,7 @@ export default function HomePage() {
         today={todayISO()}
       />
       {highlight && <InsightCard insight={highlight} />}
+      <DailyContentCard article={dailyContent} />
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
         <Link href="/log" className="rounded-md bg-rose-600 px-4 py-3 text-white">
           Log today
@@ -46,6 +49,9 @@ export default function HomePage() {
         </Link>
         <Link href="/insights" className="rounded-md border px-4 py-3">
           Insights
+        </Link>
+        <Link href="/library" className="rounded-md border px-4 py-3">
+          Library
         </Link>
       </nav>
     </main>

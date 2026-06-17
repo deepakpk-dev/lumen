@@ -16,7 +16,7 @@ and insights engines.
 ### Scope (locked)
 
 **In scope:**
-- Article library (browse + topic/phase/life-stage filters + simple client-side search).
+- Article library (browse + topic/phase filters + simple client-side search; life-stage filter deferred).
 - Deterministic personalized feed ("For you").
 - Daily content card on home.
 - Medical-review / citation metadata on every article.
@@ -113,8 +113,10 @@ Both derived from the already-available `cycles`, `dailyLogs`, `stats`, `predict
 
 - **`app/library/page.tsx`** — Library
   - "For you" personalized feed section at the top (from `contentFeed`).
-  - Full browse list with filters: topic, phase, life-stage; plus a simple client-side
-    text search over title/summary.
+  - Full browse list with filters: **topic** and **phase**; plus a simple client-side
+    text search over title/summary. A life-stage filter is deferred: only the `'cycle'`
+    life stage is currently active, so the filter would be a no-op; it will be added when
+    additional life stages (ttc, pregnancy, menopause) ship.
 - **`app/library/[slug]/page.tsx`** — Article reader
   - Renders Markdown body with `react-markdown` (+ `remark-gfm`).
   - Shows Sources list (label + link), "Aligned with ACOG/NHS guidance · last reviewed

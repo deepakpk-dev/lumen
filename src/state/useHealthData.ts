@@ -20,6 +20,11 @@ import { generatePrediction } from '@/src/domain/prediction';
 import { todayISO } from '@/src/domain/dates';
 import { generateInsights } from '@/src/domain/insights/insights';
 import type { Insight } from '@/src/domain/insights/types';
+import { ARTICLES } from '@/src/content';
+import { deriveContentContext } from '@/src/domain/content/context';
+import { buildContentFeed } from '@/src/domain/content/feed';
+import { selectDailyContent } from '@/src/domain/content/daily';
+import type { ScoredArticle, ContentArticle } from '@/src/domain/content/types';
 
 function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `c_${Date.now()}_${Math.random()}`;
@@ -84,12 +89,32 @@ export function useHealthData() {
     [cycles, dailyLogs, stats, prediction],
   );
 
+  const today = todayISO();
+
+  const contentFeed: ScoredArticle[] = useMemo(() => {
+    const context = deriveContentContext({
+      cycles,
+      dailyLogs,
+      stats,
+      prediction,
+      today,
+    });
+    return buildContentFeed(ARTICLES, context);
+  }, [cycles, dailyLogs, stats, prediction, today]);
+
+  const dailyContent: ContentArticle | null = useMemo(
+    () => selectDailyContent(contentFeed, today),
+    [contentFeed, today],
+  );
+
   return {
     cycles,
     dailyLogs,
     stats,
     prediction,
     insights,
+    contentFeed,
+    dailyContent,
     loading,
     startPeriod,
     endPeriod,
