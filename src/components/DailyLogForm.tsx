@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { FlowIntensity, ISODate } from '@/src/domain/types';
+import type { FlowIntensity, ISODate, LHResult, MucusType } from '@/src/domain/types';
 import { useHealthData } from '@/src/state/useHealthData';
 import {
   FLOW_OPTIONS,
   MOOD_OPTIONS,
   SYMPTOM_OPTIONS,
+  MUCUS_OPTIONS,
+  LH_OPTIONS,
 } from '@/src/domain/log-options';
+import { cToF, fToC } from '@/src/domain/fertility/units';
 
 function Chip({
   label,
@@ -33,7 +36,7 @@ function Chip({
 }
 
 export function DailyLogForm({ date }: { date: ISODate }) {
-  const { dailyLogs, saveLog, startPeriod, cycles } = useHealthData();
+  const { dailyLogs, saveLog, startPeriod, cycles, lifeStage, bbtUnit } = useHealthData();
   const existing = dailyLogs.find((l) => l.date === date);
 
   const [flow, setFlow] = useState<FlowIntensity>('none');
@@ -42,14 +45,30 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   const [notes, setNotes] = useState('');
   const [saved, setSaved] = useState(false);
 
+  // TTC fields
+  const [bbt, setBbt] = useState('');
+  const [lh, setLh] = useState<LHResult | undefined>(undefined);
+  const [mucus, setMucus] = useState<MucusType | undefined>(undefined);
+  const [intercourse, setIntercourse] = useState(false);
+  const [protectedSex, setProtectedSex] = useState(false);
+
   useEffect(() => {
     if (existing) {
       setFlow(existing.flow ?? 'none');
       setSymptoms(existing.symptoms);
       setMoods(existing.moods);
       setNotes(existing.notes ?? '');
+      setBbt(
+        existing.bbt === undefined
+          ? ''
+          : String(bbtUnit === 'F' ? cToF(existing.bbt) : existing.bbt),
+      );
+      setLh(existing.lh);
+      setMucus(existing.mucus);
+      setIntercourse(existing.intercourse ?? false);
+      setProtectedSex(existing.intercourseProtected ?? false);
     }
-  }, [existing]);
+  }, [existing, bbtUnit]);
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value)
@@ -58,7 +77,29 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   }
 
   async function handleSave() {
-    await saveLog({ date, flow, symptoms, moods, notes: notes || undefined });
+    const parsedBbt = bbt.trim() === '' ? undefined : Number(bbt);
+    const bbtC =
+      parsedBbt === undefined
+        ? undefined
+        : bbtUnit === 'F'
+          ? fToC(parsedBbt)
+          : parsedBbt;
+    await saveLog({
+      date,
+      flow,
+      symptoms,
+      moods,
+      notes: notes || undefined,
+      ...(lifeStage === 'ttc'
+        ? {
+            bbt: bbtC,
+            lh,
+            mucus,
+            intercourse: intercourse || undefined,
+            intercourseProtected: intercourse ? protectedSex : undefined,
+          }
+        : {}),
+    });
     const hasFlow = flow !== 'none';
     const cycleExists = cycles.some((c) => c.startDate === date);
     if (hasFlow && !cycleExists) await startPeriod(date);
@@ -116,6 +157,71 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           rows={3}
         />
       </section>
+
+      {lifeStage === 'ttc' && (
+        <section className="space-y-4 rounded-md border border-neutral-200 p-3">
+          <div>
+            <label htmlFor="bbt" className="mb-2 block text-sm font-medium">
+              Basal body temperature (°{bbtUnit})
+            </label>
+            <input
+              id="bbt"
+              type="number"
+              step="0.01"
+              inputMode="decimal"
+              value={bbt}
+              onChange={(e) => setBbt(e.target.value)}
+              className="w-full rounded-md border border-neutral-300 p-2"
+            />
+          </div>
+          <div>
+            <h2 className="mb-2 text-sm font-medium">Ovulation test (LH)</h2>
+            <div className="flex flex-wrap gap-2">
+              {LH_OPTIONS.map((o) => (
+                <Chip
+                  key={o}
+                  label={o}
+                  active={lh === o}
+                  onClick={() => setLh(lh === o ? undefined : o)}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="mb-2 text-sm font-medium">Cervical mucus</h2>
+            <div className="flex flex-wrap gap-2">
+              {MUCUS_OPTIONS.map((o) => (
+                <Chip
+                  key={o}
+                  label={o}
+                  active={mucus === o}
+                  onClick={() => setMucus(mucus === o ? undefined : o)}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={intercourse}
+                onChange={(e) => setIntercourse(e.target.checked)}
+              />
+              Intercourse
+            </label>
+            {intercourse && (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={protectedSex}
+                  onChange={(e) => setProtectedSex(e.target.checked)}
+                />
+                Protected
+              </label>
+            )}
+          </div>
+        </section>
+      )}
 
       <button
         type="button"

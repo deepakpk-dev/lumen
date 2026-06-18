@@ -1,4 +1,4 @@
-import type { FlowIntensity } from './types';
+import type { FlowIntensity, MucusType, LHResult } from './types';
 
 export const FLOW_OPTIONS: FlowIntensity[] = [
   'none',
@@ -28,3 +28,13 @@ export const MOOD_OPTIONS: string[] = [
   'Energetic',
   'Mood swings',
 ];
+
+export const MUCUS_OPTIONS: MucusType[] = [
+  'dry',
+  'sticky',
+  'creamy',
+  'watery',
+  'egg-white',
+];
+
+export const LH_OPTIONS: LHResult[] = ['negative', 'positive'];
