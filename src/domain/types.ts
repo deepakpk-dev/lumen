@@ -2,6 +2,9 @@ export type ISODate = string; // 'YYYY-MM-DD'
 
 export type FlowIntensity = 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
 
+export type LHResult = 'negative' | 'positive';
+export type MucusType = 'dry' | 'sticky' | 'creamy' | 'watery' | 'egg-white';
+
 export type LifeStage = 'cycle' | 'ttc' | 'pregnancy' | 'menopause';
 
 export interface DailyLog {
@@ -10,6 +13,12 @@ export interface DailyLog {
   symptoms: string[];
   moods: string[];
   notes?: string;
+  // TTC signals (Phase 3) — optional, only set in TTC mode
+  bbt?: number; // canonical °C
+  lh?: LHResult;
+  mucus?: MucusType;
+  intercourse?: boolean;
+  intercourseProtected?: boolean;
 }
 
 export interface Cycle {
