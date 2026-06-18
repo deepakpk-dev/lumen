@@ -11,6 +11,7 @@ import {
   LH_OPTIONS,
 } from '@/src/domain/log-options';
 import { cToF, fToC } from '@/src/domain/fertility/units';
+import { daysBetween } from '@/src/domain/dates';
 
 function Chip({
   label,
@@ -35,8 +36,21 @@ function Chip({
   );
 }
 
+function isPeriodFlow(flow: FlowIntensity): boolean {
+  return flow === 'light' || flow === 'medium' || flow === 'heavy';
+}
+
 export function DailyLogForm({ date }: { date: ISODate }) {
-  const { dailyLogs, saveLog, startPeriod, cycles, lifeStage, bbtUnit } = useHealthData();
+  const {
+    dailyLogs,
+    saveLog,
+    startPeriod,
+    endPeriod,
+    cycles,
+    stats,
+    lifeStage,
+    bbtUnit,
+  } = useHealthData();
   const existing = dailyLogs.find((l) => l.date === date);
 
   const [flow, setFlow] = useState<FlowIntensity>('none');
@@ -101,9 +115,23 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           }
         : {}),
     });
-    const hasFlow = flow !== 'none';
-    const cycleExists = cycles.some((c) => c.startDate === date);
-    if (hasFlow && !cycleExists) await startPeriod(date);
+    if (isPeriodFlow(flow) && !cycles.some((c) => c.startDate === date)) {
+      const previousCycle = [...cycles]
+        .sort((a, b) => a.startDate.localeCompare(b.startDate))
+        .filter((c) => c.startDate < date)
+        .at(-1);
+      const end = previousCycle?.endDate ?? previousCycle?.startDate;
+      const extendsCurrentPeriod =
+        previousCycle !== undefined &&
+        end !== undefined &&
+        daysBetween(previousCycle.startDate, date) < stats.averagePeriodLength;
+
+      if (extendsCurrentPeriod) {
+        if (date > end) await endPeriod(previousCycle.id, date);
+      } else {
+        await startPeriod(date);
+      }
+    }
     setSaved(true);
   }
 
