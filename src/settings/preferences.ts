@@ -36,3 +36,11 @@ export function getBbtUnit(): BbtUnit {
 export function setBbtUnit(unit: BbtUnit): void {
   ls()?.setItem(BBTUNIT_KEY, unit);
 }
+
+export function clearPreferences(): void {
+  const store = ls();
+  if (!store) return;
+  store.removeItem(LIFESTAGE_KEY);
+  store.removeItem(BBTUNIT_KEY);
+  store.removeItem(TTCSTART_KEY);
+}
