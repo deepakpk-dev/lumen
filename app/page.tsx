@@ -7,12 +7,13 @@ import { useHealthData } from '@/src/state/useHealthData';
 import { CycleSummary } from '@/src/components/CycleSummary';
 import { InsightCard } from '@/src/components/InsightCard';
 import { DailyContentCard } from '@/src/components/DailyContentCard';
+import { ConceptionCard } from '@/src/components/ConceptionCard';
 import { topInsight } from '@/src/domain/insights/insights';
 import { todayISO } from '@/src/domain/dates';
 
 export default function HomePage() {
   const router = useRouter();
-  const { cycles, stats, prediction, insights, dailyContent, loading } =
+  const { cycles, stats, prediction, insights, dailyContent, lifeStage, conceptionToday, ovulationConfirmation, loading } =
     useHealthData();
 
   useEffect(() => {
@@ -33,6 +34,9 @@ export default function HomePage() {
         today={todayISO()}
       />
       {highlight && <InsightCard insight={highlight} />}
+      {lifeStage === 'ttc' && (
+        <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
+      )}
       <DailyContentCard article={dailyContent} />
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
         <Link href="/log" className="rounded-md bg-rose-600 px-4 py-3 text-white">
@@ -53,6 +57,11 @@ export default function HomePage() {
         <Link href="/library" className="rounded-md border px-4 py-3">
           Library
         </Link>
+        {lifeStage === 'ttc' && (
+          <Link href="/fertility" className="rounded-md border px-4 py-3">
+            Fertility
+          </Link>
+        )}
       </nav>
     </main>
   );
