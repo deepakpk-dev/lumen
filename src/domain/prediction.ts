@@ -86,7 +86,7 @@ export function generatePrediction(
     ovulationDate,
     confidence,
     explanation: refined
-      ? `${buildExplanation(stats, confidence)} Refined using logged signals.`
+      ? `${buildExplanation(stats, confidence)} Refined using your logged ovulation signals.`
       : buildExplanation(stats, confidence),
   };
 }

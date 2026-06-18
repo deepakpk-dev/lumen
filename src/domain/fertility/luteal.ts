@@ -2,6 +2,9 @@ import type { Cycle } from '@/src/domain/types';
 import type { OvulationConfirmation } from './types';
 import { daysBetween } from '@/src/domain/dates';
 
+const MIN_LUTEAL = 9;
+const MAX_LUTEAL = 17;
+
 function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
@@ -24,7 +27,7 @@ export function estimateLutealLength(
     const next = idx >= 0 ? sorted[idx + 1] : undefined;
     if (!next) continue;
     const days = daysBetween(conf.ovulationDate, next.startDate);
-    if (days > 0) intervals.push(days);
+    if (days >= MIN_LUTEAL && days <= MAX_LUTEAL) intervals.push(days);
   }
   if (intervals.length < 2) return null;
   return median(intervals);

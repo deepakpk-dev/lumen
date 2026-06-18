@@ -32,6 +32,7 @@ describe('generatePrediction with observed fertility', () => {
     const out = generatePrediction(cycles, '2026-06-01', { currentCycleOvulation: conf });
     expect(out?.ovulationDate).toBe('2026-06-10');
     expect(out?.fertileWindow).toEqual({ start: '2026-06-05', end: '2026-06-11' });
-    expect(out?.explanation).toMatch(/logged signals|confirmed/i);
+    expect(out?.explanation).toContain('Refined using your logged ovulation signals.');
+    expect(out?.nextPeriodStart).toBe('2026-06-26');
   });
 });
