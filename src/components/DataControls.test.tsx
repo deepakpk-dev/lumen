@@ -10,6 +10,7 @@ import {
   setLifeStage,
 } from '@/src/settings/preferences';
 import { addCycle, deleteAll, getCycles } from '@/src/data/repository';
+import { hasPasscode, setPasscode } from '@/src/security/passcode';
 
 beforeEach(async () => {
   localStorage.clear();
@@ -32,6 +33,20 @@ describe('DataControls', () => {
       expect(getLifeStage()).toBe('cycle');
       expect(getTtcStartDate()).toBeNull();
       expect(getBbtUnit()).toBe('C');
+    });
+  });
+
+  it('clears the passcode so the app is not left locked over empty data', async () => {
+    await setPasscode('1234');
+    expect(hasPasscode()).toBe(true);
+
+    render(<DataControls />);
+
+    await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+
+    await waitFor(() => {
+      expect(hasPasscode()).toBe(false);
     });
   });
 });

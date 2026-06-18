@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { deleteAll, exportAll } from '@/src/data/repository';
 import { buildExportBlob } from '@/src/data/export';
 import { clearPreferences } from '@/src/settings/preferences';
+import { clearPasscode } from '@/src/security/passcode';
 
 export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
   const [confirming, setConfirming] = useState(false);
@@ -23,6 +24,7 @@ export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
   async function handleDelete() {
     await deleteAll();
     clearPreferences();
+    clearPasscode();
     setConfirming(false);
     onDeleted?.();
   }

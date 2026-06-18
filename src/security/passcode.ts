@@ -30,6 +30,7 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 async function derivePasscodeHash(
   code: string,
   salt: Uint8Array,
+  iterations: number = PBKDF2_ITERATIONS,
 ): Promise<string> {
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
@@ -43,7 +44,7 @@ async function derivePasscodeHash(
       name: 'PBKDF2',
       hash: 'SHA-256',
       salt: toArrayBuffer(salt),
-      iterations: PBKDF2_ITERATIONS,
+      iterations,
     },
     keyMaterial,
     256,
@@ -78,12 +79,20 @@ export async function verifyPasscode(code: string): Promise<boolean> {
   if (!stored) return false;
   const [prefix, iterations, salt, hash] = stored.split('$');
   if (prefix !== PBKDF2_PREFIX || !iterations || !salt || !hash) {
-    return stored === (await hashPasscode(code));
+    // Legacy unsalted SHA-256 record: verify, then upgrade to PBKDF2 on success.
+    const ok = constantTimeEqual(stored, await hashPasscode(code));
+    if (ok) await setPasscode(code);
+    return ok;
   }
-  if (Number(iterations) !== PBKDF2_ITERATIONS) return false;
+  const iterCount = Number(iterations);
+  if (!Number.isInteger(iterCount) || iterCount < 1) return false;
   try {
-    const candidate = await derivePasscodeHash(code, base64ToBytes(salt));
-    return constantTimeEqual(hash, candidate);
+    const candidate = await derivePasscodeHash(code, base64ToBytes(salt), iterCount);
+    const ok = constantTimeEqual(hash, candidate);
+    // Re-hash with the current parameters if the stored record used an older
+    // iteration count, so a future PBKDF2_ITERATIONS bump never locks users out.
+    if (ok && iterCount !== PBKDF2_ITERATIONS) await setPasscode(code);
+    return ok;
   } catch {
     return false;
   }

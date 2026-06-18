@@ -40,6 +40,13 @@ function isPeriodFlow(flow: FlowIntensity): boolean {
   return flow === 'light' || flow === 'medium' || flow === 'heavy';
 }
 
+// A flow day continues the current period if it lands within this many days of
+// the last recorded bleeding day (forgiving a single missed log). A larger gap
+// means a new period has started. Anchoring to the last bleeding day — rather
+// than the period's start — keeps periods longer than the user's average from
+// being split into a phantom new cycle.
+const MAX_PERIOD_GAP_DAYS = 2;
+
 export function DailyLogForm({ date }: { date: ISODate }) {
   const {
     dailyLogs,
@@ -47,7 +54,6 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     startPeriod,
     endPeriod,
     cycles,
-    stats,
     lifeStage,
     bbtUnit,
   } = useHealthData();
@@ -120,14 +126,16 @@ export function DailyLogForm({ date }: { date: ISODate }) {
         .sort((a, b) => a.startDate.localeCompare(b.startDate))
         .filter((c) => c.startDate < date)
         .at(-1);
-      const end = previousCycle?.endDate ?? previousCycle?.startDate;
-      const extendsCurrentPeriod =
-        previousCycle !== undefined &&
-        end !== undefined &&
-        daysBetween(previousCycle.startDate, date) < stats.averagePeriodLength;
+      const lastBleedDay = previousCycle
+        ? previousCycle.endDate ?? previousCycle.startDate
+        : undefined;
 
-      if (extendsCurrentPeriod) {
-        if (date > end) await endPeriod(previousCycle.id, date);
+      if (
+        previousCycle &&
+        lastBleedDay &&
+        daysBetween(lastBleedDay, date) <= MAX_PERIOD_GAP_DAYS
+      ) {
+        if (date > lastBleedDay) await endPeriod(previousCycle.id, date);
       } else {
         await startPeriod(date);
       }
