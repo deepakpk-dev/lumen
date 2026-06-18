@@ -8,6 +8,7 @@ import type {
   ISODate,
   Prediction,
 } from '@/src/domain/types';
+import type { LifeStage } from '@/src/domain/types';
 import {
   addCycle,
   getAllDailyLogs,
@@ -25,6 +26,17 @@ import { deriveContentContext } from '@/src/domain/content/context';
 import { buildContentFeed } from '@/src/domain/content/feed';
 import { selectDailyContent } from '@/src/domain/content/daily';
 import type { ScoredArticle, ContentArticle } from '@/src/domain/content/types';
+import { confirmOvulation } from '@/src/domain/fertility/confirmation';
+import { estimateLutealLength } from '@/src/domain/fertility/luteal';
+import { conceptionGuidance } from '@/src/domain/fertility/guidance';
+import type { OvulationConfirmation, ConceptionGuidance } from '@/src/domain/fertility/types';
+import type { ObservedFertility } from '@/src/domain/prediction';
+import {
+  getLifeStage,
+  getBbtUnit,
+  getTtcStartDate,
+  type BbtUnit,
+} from '@/src/settings/preferences';
 
 function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `c_${Date.now()}_${Math.random()}`;
@@ -34,6 +46,19 @@ export function useHealthData() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
+  const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
+  const [ttcStartDate, setTtcStartDate] = useState<string | null>(null);
+
+  const refreshSettings = useCallback(() => {
+    setLifeStageState(getLifeStage());
+    setBbtUnit(getBbtUnit());
+    setTtcStartDate(getTtcStartDate());
+  }, []);
+
+  useEffect(() => {
+    refreshSettings();
+  }, [refreshSettings]);
 
   const refresh = useCallback(async () => {
     const [c, l] = await Promise.all([getCycles(), getAllDailyLogs()]);
@@ -73,10 +98,51 @@ export function useHealthData() {
   );
 
   const stats: CycleStats = useMemo(() => computeCycleStats(cycles), [cycles]);
-  const prediction: Prediction | null = useMemo(
-    () => generatePrediction(cycles, todayISO()),
+
+  const isTtc = lifeStage === 'ttc';
+
+  const sortedCycles = useMemo(
+    () => [...cycles].sort((a, b) => a.startDate.localeCompare(b.startDate)),
     [cycles],
   );
+
+  const confirmations: OvulationConfirmation[] = useMemo(() => {
+    if (!isTtc) return [];
+    return sortedCycles
+      .map((c, i) =>
+        confirmOvulation(dailyLogs, c, sortedCycles[i + 1]?.startDate),
+      )
+      .filter((x): x is OvulationConfirmation => x !== null);
+  }, [isTtc, sortedCycles, dailyLogs]);
+
+  const currentCycle = sortedCycles.at(-1) ?? null;
+  const ovulationConfirmation: OvulationConfirmation | null = useMemo(() => {
+    if (!isTtc || !currentCycle) return null;
+    return confirmOvulation(dailyLogs, currentCycle);
+  }, [isTtc, currentCycle, dailyLogs]);
+
+  const observed: ObservedFertility | undefined = useMemo(() => {
+    if (!isTtc) return undefined;
+    return {
+      lutealLength: estimateLutealLength(confirmations, cycles) ?? undefined,
+      currentCycleOvulation: ovulationConfirmation ?? undefined,
+    };
+  }, [isTtc, confirmations, cycles, ovulationConfirmation]);
+
+  const prediction: Prediction | null = useMemo(
+    () => generatePrediction(cycles, todayISO(), observed),
+    [cycles, observed],
+  );
+
+  const conceptionToday: ConceptionGuidance | null = useMemo(() => {
+    if (!isTtc) return null;
+    return conceptionGuidance(
+      todayISO(),
+      prediction,
+      ovulationConfirmation,
+      dailyLogs.find((l) => l.date === todayISO()),
+    );
+  }, [isTtc, prediction, ovulationConfirmation, dailyLogs]);
   const insights: Insight[] = useMemo(
     () =>
       generateInsights({
@@ -120,5 +186,11 @@ export function useHealthData() {
     endPeriod,
     saveLog,
     refresh,
+    lifeStage,
+    bbtUnit,
+    ttcStartDate,
+    ovulationConfirmation,
+    conceptionToday,
+    refreshSettings,
   };
 }
