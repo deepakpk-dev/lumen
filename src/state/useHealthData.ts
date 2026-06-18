@@ -57,6 +57,7 @@ export function useHealthData() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration of preferences from localStorage
     refreshSettings();
   }, [refreshSettings]);
 
@@ -68,6 +69,7 @@ export function useHealthData() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial async load from IndexedDB; state set after the await
     void refresh();
   }, [refresh]);
 

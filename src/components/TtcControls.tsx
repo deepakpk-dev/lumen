@@ -16,6 +16,7 @@ export function TtcControls() {
   const [unit, setUnit] = useState<BbtUnit>('C');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the `ready` gate
     setTtc(getLifeStage() === 'ttc');
     setUnit(getBbtUnit());
     setReady(true);

@@ -1,6 +1,6 @@
 import type { Cycle, ISODate, Prediction } from '@/src/domain/types';
 import { getDayMarker, type DayMarker } from '@/src/domain/calendar';
-import { addDays, parseISODate, toISODate } from '@/src/domain/dates';
+import { parseISODate, toISODate } from '@/src/domain/dates';
 
 const MARKER_STYLE: Record<DayMarker, string> = {
   period: 'bg-rose-600 text-white',

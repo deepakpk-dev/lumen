@@ -23,7 +23,7 @@ describe('PasscodeControls', () => {
 
   it('removing the passcode results in hasPasscode() false', async () => {
     // Pre-set a passcode so the "enabled" branch renders
-    const { clearPasscode: cp, setPasscode: sp } = await import('@/src/security/passcode');
+    const { setPasscode: sp } = await import('@/src/security/passcode');
     await sp('5678');
 
     render(<PasscodeControls />);

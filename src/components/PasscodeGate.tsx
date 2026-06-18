@@ -10,6 +10,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the `ready` gate
     setLocked(hasPasscode());
     setReady(true);
   }, []);

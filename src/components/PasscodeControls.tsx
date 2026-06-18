@@ -10,6 +10,7 @@ export function PasscodeControls() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the `ready` gate
     setEnabled(hasPasscode());
     setReady(true);
   }, []);

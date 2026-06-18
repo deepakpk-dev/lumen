@@ -54,6 +54,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
 
   useEffect(() => {
     if (existing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate form fields from the selected date's saved log
       setFlow(existing.flow ?? 'none');
       setSymptoms(existing.symptoms);
       setMoods(existing.moods);
