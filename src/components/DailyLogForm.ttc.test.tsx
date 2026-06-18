@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import 'fake-indexeddb/auto';
 import { DailyLogForm } from '@/src/components/DailyLogForm';
 import { db } from '@/src/data/db';
-import { setLifeStage } from '@/src/settings/preferences';
+import { setLifeStage, setBbtUnit } from '@/src/settings/preferences';
+import { getDailyLog } from '@/src/data/repository';
+import { fToC } from '@/src/domain/fertility/units';
 
 describe('DailyLogForm TTC section', () => {
   beforeEach(async () => {
@@ -26,5 +29,31 @@ describe('DailyLogForm TTC section', () => {
     );
     expect(screen.getByText(/Cervical mucus/i)).toBeTruthy();
     expect(screen.getByText(/Ovulation test/i)).toBeTruthy();
+  });
+
+  it('persists BBT in Fahrenheit as canonical Celsius', async () => {
+    setLifeStage('ttc', '2026-06-01');
+    setBbtUnit('F');
+    const user = userEvent.setup();
+
+    render(<DailyLogForm date="2026-06-15" />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Basal body temperature/i)).toBeTruthy(),
+    );
+
+    const bbtInput = screen.getByLabelText(/Basal body temperature.*°F/i);
+    await user.clear(bbtInput);
+    await user.type(bbtInput, '98.6');
+
+    const saveButton = screen.getByRole('button', { name: /Save/i });
+    await user.click(saveButton);
+
+    await waitFor(() =>
+      expect(screen.getByText(/Saved/i)).toBeTruthy(),
+    );
+
+    const savedLog = await getDailyLog('2026-06-15');
+    expect(savedLog?.bbt).toBe(fToC(98.6));
   });
 });
