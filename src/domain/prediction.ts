@@ -9,6 +9,12 @@ import type {
 import { LUTEAL_PHASE_LENGTH } from './types';
 import { addDays } from './dates';
 import { computeCycleStats } from './cycle-stats';
+import type { OvulationConfirmation } from './fertility/types';
+
+export interface ObservedFertility {
+  lutealLength?: number;
+  currentCycleOvulation?: OvulationConfirmation;
+}
 
 export function predictionConfidence(stats: CycleStats): Confidence {
   const inputCount = stats.inputCycleCount;
@@ -50,6 +56,7 @@ function buildExplanation(stats: CycleStats, confidence: Confidence): string {
 export function generatePrediction(
   cycles: Cycle[],
   _today: ISODate,
+  observed?: ObservedFertility,
 ): Prediction | null {
   if (cycles.length === 0) return null;
 
@@ -57,9 +64,13 @@ export function generatePrediction(
   const confidence = predictionConfidence(stats);
   const start = lastStart(cycles);
 
+  const luteal = observed?.lutealLength ?? LUTEAL_PHASE_LENGTH;
   const nextPeriodStart = addDays(start, stats.averageCycleLength);
   const margin = Math.max(1, Math.round(stats.cycleLengthStdDev));
-  const ovulationDate = addDays(nextPeriodStart, -LUTEAL_PHASE_LENGTH);
+
+  const refinedOvulation = observed?.currentCycleOvulation?.ovulationDate;
+  const ovulationDate = refinedOvulation ?? addDays(nextPeriodStart, -luteal);
+  const refined = Boolean(refinedOvulation || observed?.lutealLength);
 
   return {
     nextPeriodStart,
@@ -74,6 +85,8 @@ export function generatePrediction(
     },
     ovulationDate,
     confidence,
-    explanation: buildExplanation(stats, confidence),
+    explanation: refined
+      ? `${buildExplanation(stats, confidence)} Refined using logged signals.`
+      : buildExplanation(stats, confidence),
   };
 }
