@@ -86,7 +86,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
 
       <button
         type="submit"
-        disabled={saving}
+        disabled={saving || (goal === 'pregnant' && !dueDate)}
         className="w-full rounded-md bg-rose-600 px-4 py-2 font-medium text-white disabled:opacity-50"
       >
         Get started

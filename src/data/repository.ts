@@ -58,10 +58,6 @@ export async function addContractionSession(s: ContractionSession): Promise<void
   await db.contractionSessions.put(s);
 }
 
-export async function updateContractionSession(s: ContractionSession): Promise<void> {
-  await db.contractionSessions.put(s);
-}
-
 export async function getContractionSessions(): Promise<ContractionSession[]> {
   const all = await db.contractionSessions.toArray();
   return all.sort((a, b) => b.date.localeCompare(a.date));

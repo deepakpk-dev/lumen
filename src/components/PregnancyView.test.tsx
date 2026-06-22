@@ -33,6 +33,7 @@ describe('PregnancyView', () => {
     expect(screen.getByText(/Halfway there/i)).toBeTruthy();
     expect(screen.getByText(/Kick counter/i)).toBeTruthy();
     expect(screen.getByText(/Contraction timer/i)).toBeTruthy();
+    expect(screen.getByText(/NHS/i)).toBeTruthy();
   });
 
   it('redirects home when not pregnant', () => {

@@ -9,6 +9,7 @@ import { InsightCard } from '@/src/components/InsightCard';
 import { DailyContentCard } from '@/src/components/DailyContentCard';
 import { ConceptionCard } from '@/src/components/ConceptionCard';
 import { PregnancyCard } from '@/src/components/PregnancyCard';
+import { PostLossCard } from '@/src/components/PostLossCard';
 import { topInsight } from '@/src/domain/insights/insights';
 import { todayISO } from '@/src/domain/dates';
 
@@ -30,6 +31,12 @@ export default function HomePage() {
   const lastPeriodStart = cycles.at(-1)?.startDate ?? null;
   const highlight = topInsight(insights);
 
+  const endedByLoss =
+    !isPregnant &&
+    pregnancyProfile?.status === 'ended' &&
+    pregnancyProfile?.endReason === 'loss' &&
+    cycles.length === 0;
+
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
       {isPregnant && gestation && currentTrimester && daysToDue !== null && weekContentToday ? (
@@ -39,6 +46,8 @@ export default function HomePage() {
           daysToDue={daysToDue}
           week={weekContentToday}
         />
+      ) : endedByLoss ? (
+        <PostLossCard />
       ) : (
         <CycleSummary
           prediction={prediction}

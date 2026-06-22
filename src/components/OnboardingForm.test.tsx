@@ -29,4 +29,11 @@ describe('OnboardingForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /get started/i }));
     expect(startPregnancyMode).toHaveBeenCalledWith(expect.objectContaining({ dueDate: '2026-10-08' }));
   });
+
+  it('disables submit on the pregnant goal until a due date is entered', () => {
+    const onComplete = vi.fn();
+    render(<OnboardingForm onComplete={onComplete} />);
+    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    expect(screen.getByRole('button', { name: /get started/i })).toHaveProperty('disabled', true);
+  });
 });
