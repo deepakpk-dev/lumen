@@ -56,11 +56,14 @@ export default function HomePage() {
           today={todayISO()}
         />
       )}
-      {highlight && <InsightCard insight={highlight} />}
+      {/* Cycle insight + daily reads are cycle-stage content; hide them while
+          pregnancy mode is the active context to avoid surfacing period/PMS
+          material to a pregnant user. */}
+      {!isPregnant && highlight && <InsightCard insight={highlight} />}
       {lifeStage === 'ttc' && (
         <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
       )}
-      <DailyContentCard article={dailyContent} />
+      {!isPregnant && <DailyContentCard article={dailyContent} />}
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
         <Link href="/log" className="rounded-md bg-rose-600 px-4 py-3 text-white">
           Log today
