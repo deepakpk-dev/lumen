@@ -66,6 +66,9 @@ describe('generateAnomalyInsights', () => {
     const cl = out.find((i) => i.id === 'anomaly:cycle-length');
     expect(cl).toBeDefined();
     expect(cl!.title.toLowerCase()).toContain('longer');
+    // Body compares against the prior norm (28), and says so explicitly so it
+    // doesn't read as contradicting the overall average shown elsewhere.
+    expect(cl!.body).toContain('earlier average of 28 days');
   });
 
   it('flags a recent symptom cluster', () => {

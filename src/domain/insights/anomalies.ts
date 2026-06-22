@@ -53,7 +53,7 @@ export function generateAnomalyInsights(input: InsightInput): Insight[] {
           : 'Your last cycle was shorter than usual',
         body: `Your most recent cycle was ${Math.abs(delta)} days ${
           longer ? 'longer' : 'shorter'
-        } than your usual ${Math.round(mean)} days. If this is unexpected, consider checking with a clinician.`,
+        } than your earlier average of ${Math.round(mean)} days. If this is unexpected, consider checking with a clinician.`,
       });
     }
   }
