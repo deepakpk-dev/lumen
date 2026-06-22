@@ -54,3 +54,39 @@ export const DEFAULT_CYCLE_LENGTH = 28;
 export const DEFAULT_PERIOD_LENGTH = 5;
 export const LUTEAL_PHASE_LENGTH = 14;
 export const REGULARITY_STDDEV_THRESHOLD = 3;
+
+export type ISOTimestamp = string; // ISO 8601 datetime, e.g. '2026-06-21T14:03:00.000Z'
+
+export type PregnancyEndReason = 'birth' | 'loss';
+export type DueDateSource = 'lmp' | 'manual' | 'cycle';
+export type PregnancyStatus = 'active' | 'ended';
+
+export interface PregnancyProfile {
+  id: 'current'; // singleton key
+  dueDate: ISODate;
+  lmp?: ISODate; // present when known or derived
+  dueDateSource: DueDateSource;
+  startedAt: ISODate; // when pregnancy mode was switched on
+  status: PregnancyStatus;
+  endReason?: PregnancyEndReason;
+  endDate?: ISODate;
+}
+
+export interface KickSession {
+  id: string;
+  date: ISODate; // local date of the session
+  startedAt: ISOTimestamp;
+  kickTimestamps: ISOTimestamp[];
+  endedAt?: ISOTimestamp;
+}
+
+export interface Contraction {
+  start: ISOTimestamp;
+  end?: ISOTimestamp;
+}
+
+export interface ContractionSession {
+  id: string;
+  date: ISODate;
+  contractions: Contraction[];
+}

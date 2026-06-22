@@ -38,3 +38,16 @@ export const MUCUS_OPTIONS: MucusType[] = [
 ];
 
 export const LH_OPTIONS: LHResult[] = ['negative', 'positive'];
+
+export const PREGNANCY_SYMPTOM_OPTIONS: string[] = [
+  'Nausea',
+  'Vomiting',
+  'Heartburn',
+  'Constipation',
+  'Swelling',
+  'Round ligament pain',
+  'Braxton Hicks',
+  'Shortness of breath',
+  'Trouble sleeping',
+  'Pelvic pressure',
+];
