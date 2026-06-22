@@ -22,10 +22,12 @@ export function CycleCalendar({
   cycles,
   prediction,
   month,
+  today,
 }: {
   cycles: Cycle[];
   prediction: Prediction | null;
   month: ISODate; // any date within the month to render
+  today?: ISODate; // highlighted as the current day, if within this month
 }) {
   const first = parseISODate(month);
   const year = first.getFullYear();
@@ -53,15 +55,20 @@ export function CycleCalendar({
           if (!date) return <div key={i} />;
           const marker = getDayMarker(date, cycles, prediction);
           const day = Number(date.slice(-2));
-          const label = MARKER_LABEL[marker]
-            ? `${date}, ${MARKER_LABEL[marker]}`
-            : date;
+          const isToday = date === today;
+          const parts = [date];
+          if (MARKER_LABEL[marker]) parts.push(MARKER_LABEL[marker]);
+          if (isToday) parts.push('today');
+          const label = parts.join(', ');
           return (
             <div
               key={i}
               aria-label={label}
+              aria-current={isToday ? 'date' : undefined}
               title={MARKER_LABEL[marker] || undefined}
-              className={`flex aspect-square items-center justify-center rounded-md text-sm ${MARKER_STYLE[marker]}`}
+              className={`flex aspect-square items-center justify-center rounded-md text-sm ${MARKER_STYLE[marker]} ${
+                isToday ? 'ring-2 ring-rose-500 ring-offset-1 font-semibold' : ''
+              }`}
             >
               {day}
             </div>
