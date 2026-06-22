@@ -38,9 +38,12 @@ export function CycleHistory({
 
       <ul className="divide-y divide-neutral-200">
         {sorted.map((c, i) => {
-          // lengths are in chronological order; map newest-first index back.
-          const lengthIndex = lengths.length - 1 - i;
-          const length = lengthIndex >= 0 ? lengths[lengthIndex] : null;
+          // lengths[k] is the gap from chronological cycle k to k+1, so it
+          // belongs to that earlier cycle. Map this newest-first row back to
+          // its chronological position; the newest cycle has no length yet.
+          const chronoIndex = sorted.length - 1 - i;
+          const length =
+            chronoIndex < lengths.length ? lengths[chronoIndex] : null;
           return (
             <li key={c.id} className="flex justify-between py-3 text-sm">
               <span>{c.startDate}</span>
