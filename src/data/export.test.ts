@@ -9,8 +9,29 @@ describe('buildExportBlob', () => {
     });
     expect(filename).toMatch(/lumen-export-.*\.json/);
     const parsed = JSON.parse(json);
-    expect(parsed.version).toBe(1);
+    expect(parsed.version).toBe(2);
     expect(parsed.cycles).toHaveLength(1);
     expect(parsed.dailyLogs).toHaveLength(1);
+  });
+
+  it('includes pregnancy data and bumps the version', () => {
+    const { json } = buildExportBlob({
+      cycles: [],
+      dailyLogs: [],
+      pregnancyProfile: {
+        id: 'current',
+        dueDate: '2026-10-08',
+        dueDateSource: 'lmp',
+        startedAt: '2026-01-10',
+        status: 'active',
+      },
+      kickSessions: [],
+      contractionSessions: [],
+    });
+    const parsed = JSON.parse(json);
+    expect(parsed.version).toBe(2);
+    expect(parsed.pregnancyProfile.dueDate).toBe('2026-10-08');
+    expect(parsed.kickSessions).toEqual([]);
+    expect(parsed.contractionSessions).toEqual([]);
   });
 });
