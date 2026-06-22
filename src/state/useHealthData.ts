@@ -9,6 +9,8 @@ import type {
   Prediction,
   PregnancyProfile,
   DueDateSource,
+  KickSession,
+  ContractionSession,
 } from '@/src/domain/types';
 import type { LifeStage } from '@/src/domain/types';
 import {
@@ -19,6 +21,10 @@ import {
   upsertDailyLog,
   getPregnancyProfile,
   savePregnancyProfile,
+  addKickSession,
+  getKickSessions,
+  addContractionSession,
+  getContractionSessions,
 } from '@/src/data/repository';
 import {
   gestationalAge,
@@ -65,6 +71,8 @@ export function useHealthData() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [pregnancyProfile, setPregnancyProfile] = useState<PregnancyProfile | null>(null);
+  const [kickSessions, setKickSessions] = useState<KickSession[]>([]);
+  const [contractionSessions, setContractionSessions] = useState<ContractionSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
   const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
@@ -82,14 +90,18 @@ export function useHealthData() {
   }, [refreshSettings]);
 
   const refresh = useCallback(async () => {
-    const [c, l, p] = await Promise.all([
+    const [c, l, p, ks, cs] = await Promise.all([
       getCycles(),
       getAllDailyLogs(),
       getPregnancyProfile(),
+      getKickSessions(),
+      getContractionSessions(),
     ]);
     setCycles(c);
     setDailyLogs(l);
     setPregnancyProfile(p ?? null);
+    setKickSessions(ks);
+    setContractionSessions(cs);
     setLoading(false);
   }, []);
 
@@ -172,6 +184,22 @@ export function useHealthData() {
       await refresh();
     },
     [pregnancyProfile, refresh, refreshSettings],
+  );
+
+  const saveKickSession = useCallback(
+    async (s: KickSession) => {
+      await addKickSession(s);
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const saveContractionSession = useCallback(
+    async (s: ContractionSession) => {
+      await addContractionSession(s);
+      await refresh();
+    },
+    [refresh],
   );
 
   const isPregnant = lifeStage === 'pregnancy' && pregnancyProfile?.status === 'active';
@@ -299,5 +327,9 @@ export function useHealthData() {
     updateDueDate,
     endPregnancyBirth,
     endPregnancyLoss,
+    kickSessions,
+    contractionSessions,
+    saveKickSession,
+    saveContractionSession,
   };
 }

@@ -42,4 +42,27 @@ describe('useHealthData pregnancy', () => {
     expect(result.current.pregnancyProfile?.status).toBe('ended');
     expect(result.current.pregnancyProfile?.endReason).toBe('loss');
   });
+
+  it('saves kick and contraction sessions', async () => {
+    const { result } = renderHook(() => useHealthData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.saveKickSession({
+        id: 'k1',
+        date: '2026-06-21',
+        startedAt: '2026-06-21T10:00:00.000Z',
+        kickTimestamps: ['2026-06-21T10:01:00.000Z'],
+        endedAt: '2026-06-21T10:02:00.000Z',
+      });
+      await result.current.saveContractionSession({
+        id: 'c1',
+        date: '2026-06-21',
+        contractions: [{ start: '2026-06-21T09:00:00.000Z', end: '2026-06-21T09:01:00.000Z' }],
+      });
+    });
+
+    await waitFor(() => expect(result.current.kickSessions).toHaveLength(1));
+    expect(result.current.contractionSessions).toHaveLength(1);
+  });
 });
