@@ -6,11 +6,11 @@
     </linearGradient>
     <mask id="crescent">
       <rect width="512" height="512" fill="black"/>
-      <circle cx="244" cy="256" r="140" fill="white"/>
-      <circle cx="300" cy="222" r="128" fill="black"/>
+      <circle cx="240" cy="256" r="112" fill="white"/>
+      <circle cx="285" cy="229" r="102" fill="black"/>
     </mask>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#bg)"/>
   <rect width="512" height="512" fill="#ffffff" mask="url(#crescent)"/>
-  <circle cx="338" cy="176" r="22" fill="#ffffff"/>
+  <circle cx="316" cy="192" r="18" fill="#ffffff"/>
 </svg>

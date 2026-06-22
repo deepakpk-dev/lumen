@@ -17,6 +17,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Lumen — Cycle & Health",
   description: "Private, offline-first cycle and health tracking.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Lumen",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({
