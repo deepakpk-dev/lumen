@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { DataControls } from '@/src/components/DataControls';
 import { PasscodeControls } from '@/src/components/PasscodeControls';
+import { PregnancyControls } from '@/src/components/PregnancyControls';
 import { TtcControls } from '@/src/components/TtcControls';
 
 export default function SettingsPage() {
@@ -26,6 +27,14 @@ export default function SettingsPage() {
           fertility treatment or medical advice.
         </p>
         <TtcControls />
+      </section>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium text-neutral-600">Pregnancy</h2>
+        <p className="text-xs text-neutral-500">
+          Switch on pregnancy mode for week-by-week tracking, a kick counter, and a
+          contraction timer. Educational only — not a substitute for medical care.
+        </p>
+        <PregnancyControls />
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600">Your data</h2>
