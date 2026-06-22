@@ -7,6 +7,10 @@ import type {
   DailyLog,
   ISODate,
   Prediction,
+  PregnancyProfile,
+  DueDateSource,
+  KickSession,
+  ContractionSession,
 } from '@/src/domain/types';
 import type { LifeStage } from '@/src/domain/types';
 import {
@@ -15,7 +19,27 @@ import {
   getCycles,
   updateCycle,
   upsertDailyLog,
+  getPregnancyProfile,
+  savePregnancyProfile,
+  addKickSession,
+  getKickSessions,
+  addContractionSession,
+  getContractionSessions,
 } from '@/src/data/repository';
+import {
+  gestationalAge,
+  trimester,
+  daysUntilDue,
+  type GestationalAge,
+  type Trimester,
+} from '@/src/domain/pregnancy/gestation';
+import { weekContent, type WeekContent } from '@/src/domain/pregnancy/weeks';
+import {
+  startPregnancy,
+  editDueDate,
+  endByBirth,
+  endByLoss,
+} from '@/src/domain/pregnancy/lifecycle';
 import { computeCycleStats } from '@/src/domain/cycle-stats';
 import { generatePrediction } from '@/src/domain/prediction';
 import { todayISO } from '@/src/domain/dates';
@@ -35,6 +59,7 @@ import {
   getLifeStage,
   getBbtUnit,
   getTtcStartDate,
+  setLifeStage,
   type BbtUnit,
 } from '@/src/settings/preferences';
 
@@ -45,6 +70,9 @@ function newId(): string {
 export function useHealthData() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
+  const [pregnancyProfile, setPregnancyProfile] = useState<PregnancyProfile | null>(null);
+  const [kickSessions, setKickSessions] = useState<KickSession[]>([]);
+  const [contractionSessions, setContractionSessions] = useState<ContractionSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
   const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
@@ -62,9 +90,18 @@ export function useHealthData() {
   }, [refreshSettings]);
 
   const refresh = useCallback(async () => {
-    const [c, l] = await Promise.all([getCycles(), getAllDailyLogs()]);
+    const [c, l, p, ks, cs] = await Promise.all([
+      getCycles(),
+      getAllDailyLogs(),
+      getPregnancyProfile(),
+      getKickSessions(),
+      getContractionSessions(),
+    ]);
     setCycles(c);
     setDailyLogs(l);
+    setPregnancyProfile(p ?? null);
+    setKickSessions(ks);
+    setContractionSessions(cs);
     setLoading(false);
   }, []);
 
@@ -100,6 +137,92 @@ export function useHealthData() {
   );
 
   const stats: CycleStats = useMemo(() => computeCycleStats(cycles), [cycles]);
+
+  const startPregnancyMode = useCallback(
+    async (input: { dueDate?: ISODate; lmp?: ISODate; source?: DueDateSource; useCycleLength?: boolean }) => {
+      const profile = startPregnancy({
+        today: todayISO(),
+        dueDate: input.dueDate,
+        lmp: input.lmp,
+        source: input.source,
+        averageCycleLength: input.useCycleLength ? stats.averageCycleLength : undefined,
+      });
+      await savePregnancyProfile(profile);
+      setLifeStage('pregnancy', todayISO());
+      refreshSettings();
+      await refresh();
+    },
+    [stats.averageCycleLength, refresh, refreshSettings],
+  );
+
+  const updateDueDate = useCallback(
+    async (dueDate: ISODate, source: DueDateSource) => {
+      if (!pregnancyProfile) return;
+      await savePregnancyProfile(editDueDate(pregnancyProfile, dueDate, source));
+      await refresh();
+    },
+    [pregnancyProfile, refresh],
+  );
+
+  const endPregnancyBirth = useCallback(
+    async (endDate: ISODate) => {
+      if (!pregnancyProfile) return;
+      await savePregnancyProfile(endByBirth(pregnancyProfile, endDate));
+      setLifeStage('cycle', todayISO());
+      refreshSettings();
+      await refresh();
+    },
+    [pregnancyProfile, refresh, refreshSettings],
+  );
+
+  const endPregnancyLoss = useCallback(
+    async (endDate: ISODate) => {
+      if (!pregnancyProfile) return;
+      await savePregnancyProfile(endByLoss(pregnancyProfile, endDate));
+      setLifeStage('cycle', todayISO());
+      refreshSettings();
+      await refresh();
+    },
+    [pregnancyProfile, refresh, refreshSettings],
+  );
+
+  const saveKickSession = useCallback(
+    async (s: KickSession) => {
+      await addKickSession(s);
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const saveContractionSession = useCallback(
+    async (s: ContractionSession) => {
+      await addContractionSession(s);
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const isPregnant = lifeStage === 'pregnancy' && pregnancyProfile?.status === 'active';
+
+  const gestation: GestationalAge | null = useMemo(
+    () => (isPregnant && pregnancyProfile ? gestationalAge(pregnancyProfile.dueDate, todayISO()) : null),
+    [isPregnant, pregnancyProfile],
+  );
+
+  const currentTrimester: Trimester | null = useMemo(
+    () => (gestation ? trimester(gestation.weeks) : null),
+    [gestation],
+  );
+
+  const daysToDue: number | null = useMemo(
+    () => (isPregnant && pregnancyProfile ? daysUntilDue(pregnancyProfile.dueDate, todayISO()) : null),
+    [isPregnant, pregnancyProfile],
+  );
+
+  const weekContentToday: WeekContent | null = useMemo(
+    () => (gestation ? weekContent(gestation.weeks) : null),
+    [gestation],
+  );
 
   const isTtc = lifeStage === 'ttc';
 
@@ -194,5 +317,19 @@ export function useHealthData() {
     ovulationConfirmation,
     conceptionToday,
     refreshSettings,
+    pregnancyProfile,
+    isPregnant,
+    gestation,
+    currentTrimester,
+    daysToDue,
+    weekContentToday,
+    startPregnancyMode,
+    updateDueDate,
+    endPregnancyBirth,
+    endPregnancyLoss,
+    kickSessions,
+    contractionSessions,
+    saveKickSession,
+    saveContractionSession,
   };
 }

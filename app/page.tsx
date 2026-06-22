@@ -8,31 +8,54 @@ import { CycleSummary } from '@/src/components/CycleSummary';
 import { InsightCard } from '@/src/components/InsightCard';
 import { DailyContentCard } from '@/src/components/DailyContentCard';
 import { ConceptionCard } from '@/src/components/ConceptionCard';
+import { PregnancyCard } from '@/src/components/PregnancyCard';
+import { PostLossCard } from '@/src/components/PostLossCard';
 import { topInsight } from '@/src/domain/insights/insights';
 import { todayISO } from '@/src/domain/dates';
 
 export default function HomePage() {
   const router = useRouter();
-  const { cycles, stats, prediction, insights, dailyContent, lifeStage, conceptionToday, ovulationConfirmation, loading } =
-    useHealthData();
+  const {
+    cycles, stats, prediction, insights, dailyContent, lifeStage,
+    conceptionToday, ovulationConfirmation, loading,
+    isPregnant, gestation, currentTrimester, daysToDue, weekContentToday,
+    pregnancyProfile,
+  } = useHealthData();
 
   useEffect(() => {
-    if (!loading && cycles.length === 0) router.replace('/onboarding');
-  }, [loading, cycles.length, router]);
+    if (!loading && cycles.length === 0 && !pregnancyProfile) router.replace('/onboarding');
+  }, [loading, cycles.length, pregnancyProfile, router]);
 
   if (loading) return <main className="p-6">Loading…</main>;
 
   const lastPeriodStart = cycles.at(-1)?.startDate ?? null;
   const highlight = topInsight(insights);
 
+  const endedByLoss =
+    !isPregnant &&
+    pregnancyProfile?.status === 'ended' &&
+    pregnancyProfile?.endReason === 'loss' &&
+    cycles.length === 0;
+
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <CycleSummary
-        prediction={prediction}
-        stats={stats}
-        lastPeriodStart={lastPeriodStart}
-        today={todayISO()}
-      />
+      {isPregnant && gestation && currentTrimester && daysToDue !== null && weekContentToday ? (
+        <PregnancyCard
+          gestation={gestation}
+          trimester={currentTrimester}
+          daysToDue={daysToDue}
+          week={weekContentToday}
+        />
+      ) : endedByLoss ? (
+        <PostLossCard />
+      ) : (
+        <CycleSummary
+          prediction={prediction}
+          stats={stats}
+          lastPeriodStart={lastPeriodStart}
+          today={todayISO()}
+        />
+      )}
       {highlight && <InsightCard insight={highlight} />}
       {lifeStage === 'ttc' && (
         <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
@@ -60,6 +83,11 @@ export default function HomePage() {
         {lifeStage === 'ttc' && (
           <Link href="/fertility" className="rounded-md border px-4 py-3">
             Fertility
+          </Link>
+        )}
+        {isPregnant && (
+          <Link href="/pregnancy" className="rounded-md border px-4 py-3">
+            Pregnancy
           </Link>
         )}
       </nav>

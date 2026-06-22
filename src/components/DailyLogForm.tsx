@@ -7,6 +7,7 @@ import {
   FLOW_OPTIONS,
   MOOD_OPTIONS,
   SYMPTOM_OPTIONS,
+  PREGNANCY_SYMPTOM_OPTIONS,
   MUCUS_OPTIONS,
   LH_OPTIONS,
 } from '@/src/domain/log-options';
@@ -56,8 +57,13 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     cycles,
     lifeStage,
     bbtUnit,
+    isPregnant,
   } = useHealthData();
   const existing = dailyLogs.find((l) => l.date === date);
+
+  const symptomChoices = isPregnant
+    ? Array.from(new Set([...SYMPTOM_OPTIONS, ...PREGNANCY_SYMPTOM_OPTIONS]))
+    : SYMPTOM_OPTIONS;
 
   const [flow, setFlow] = useState<FlowIntensity>('none');
   const [symptoms, setSymptoms] = useState<string[]>([]);
@@ -157,7 +163,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
       <section>
         <h2 className="mb-2 text-sm font-medium">Symptoms</h2>
         <div className="flex flex-wrap gap-2">
-          {SYMPTOM_OPTIONS.map((s) => (
+          {symptomChoices.map((s) => (
             <Chip
               key={s}
               label={s}
