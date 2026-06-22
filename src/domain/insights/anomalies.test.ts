@@ -24,7 +24,7 @@ const log = (date: string, symptoms: string[]): DailyLog => ({
 describe('generateAnomalyInsights', () => {
   it('flags an overdue period', () => {
     const cycles: Cycle[] = [{ id: 'a', startDate: '2026-05-13' }];
-    const prediction = generatePrediction(cycles, '2026-06-13'); // nextPeriodStart 2026-06-10
+    const prediction = generatePrediction(cycles); // nextPeriodStart 2026-06-10
     const out = generateAnomalyInsights({
       cycles,
       dailyLogs: [],
@@ -43,7 +43,7 @@ describe('generateAnomalyInsights', () => {
       { id: 'a', startDate: '2026-05-13' },
       { id: 'b', startDate: '2026-06-11' },
     ];
-    const prediction = generatePrediction(cycles, '2026-06-13');
+    const prediction = generatePrediction(cycles);
     const out = generateAnomalyInsights({
       cycles,
       dailyLogs: [],

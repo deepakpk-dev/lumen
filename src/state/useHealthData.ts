@@ -255,7 +255,7 @@ export function useHealthData() {
   }, [isTtc, confirmations, cycles, ovulationConfirmation]);
 
   const prediction: Prediction | null = useMemo(
-    () => generatePrediction(cycles, todayISO(), observed),
+    () => generatePrediction(cycles, observed),
     [cycles, observed],
   );
 

@@ -8,7 +8,7 @@ const cycles: Cycle[] = [
   { id: 'b', startDate: '2026-01-29', endDate: '2026-02-02' },
   { id: 'c', startDate: '2026-02-26', endDate: '2026-03-02' },
 ];
-const prediction = generatePrediction(cycles, '2026-03-10')!;
+const prediction = generatePrediction(cycles)!;
 
 describe('getDayMarker', () => {
   it('marks logged period days', () => {

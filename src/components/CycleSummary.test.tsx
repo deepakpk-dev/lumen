@@ -14,7 +14,7 @@ const cycles: Cycle[] = [
 describe('CycleSummary', () => {
   it('shows the prediction explanation and disclaimer', () => {
     const stats = computeCycleStats(cycles);
-    const prediction = generatePrediction(cycles, '2026-03-10')!;
+    const prediction = generatePrediction(cycles)!;
     render(
       <CycleSummary
         prediction={prediction}

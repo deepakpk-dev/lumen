@@ -55,7 +55,6 @@ function buildExplanation(stats: CycleStats, confidence: Confidence): string {
 
 export function generatePrediction(
   cycles: Cycle[],
-  _today: ISODate,
   observed?: ObservedFertility,
 ): Prediction | null {
   if (cycles.length === 0) return null;

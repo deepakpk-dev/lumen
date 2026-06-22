@@ -36,11 +36,11 @@ describe('predictionConfidence', () => {
 
 describe('generatePrediction', () => {
   it('returns null with no cycles', () => {
-    expect(generatePrediction([], '2026-06-17')).toBeNull();
+    expect(generatePrediction([])).toBeNull();
   });
 
   it('predicts next period one average-cycle after the last start', () => {
-    const p = generatePrediction(regular, '2026-04-01');
+    const p = generatePrediction(regular);
     expect(p).not.toBeNull();
     // last start 2026-03-26 + 28 days
     expect(p!.nextPeriodStart).toBe('2026-04-23');
@@ -49,7 +49,7 @@ describe('generatePrediction', () => {
   });
 
   it('places ovulation 14 days before the predicted period', () => {
-    const p = generatePrediction(regular, '2026-04-01');
+    const p = generatePrediction(regular);
     expect(p!.ovulationDate).toBe('2026-04-09'); // 2026-04-23 - 14
     expect(p!.fertileWindow.start).toBe('2026-04-04'); // ovulation - 5
     expect(p!.fertileWindow.end).toBe('2026-04-10'); // ovulation + 1
@@ -61,14 +61,14 @@ describe('generatePrediction', () => {
       cyc('b', '2026-01-22'), // 21
       cyc('c', '2026-03-01'), // 38
     ];
-    const p = generatePrediction(irregular, '2026-03-05');
+    const p = generatePrediction(irregular);
     expect(p!.confidence).toBe('low');
     const { earliest, latest } = p!.nextPeriodStartRange;
     expect(earliest).not.toBe(latest); // non-zero margin
   });
 
   it('always includes a non-empty explanation', () => {
-    const p = generatePrediction(regular, '2026-04-01');
+    const p = generatePrediction(regular);
     expect(p!.explanation.length).toBeGreaterThan(0);
   });
 });

@@ -10,13 +10,13 @@ const cycles: Cycle[] = [
 
 describe('generatePrediction with observed fertility', () => {
   it('is unchanged when no observed input is passed', () => {
-    const base = generatePrediction(cycles, '2026-06-01');
+    const base = generatePrediction(cycles);
     // nextPeriodStart = last start + 28 = 2026-06-26; ovulation = -14 = 2026-06-12
     expect(base?.ovulationDate).toBe('2026-06-12');
   });
 
   it('uses an observed luteal length instead of 14', () => {
-    const out = generatePrediction(cycles, '2026-06-01', { lutealLength: 12 });
+    const out = generatePrediction(cycles, { lutealLength: 12 });
     expect(out?.ovulationDate).toBe('2026-06-14'); // nextPeriod - 12
   });
 
@@ -29,7 +29,7 @@ describe('generatePrediction with observed fertility', () => {
       confidence: 'high',
       explanation: '',
     };
-    const out = generatePrediction(cycles, '2026-06-01', { currentCycleOvulation: conf });
+    const out = generatePrediction(cycles, { currentCycleOvulation: conf });
     expect(out?.ovulationDate).toBe('2026-06-10');
     expect(out?.fertileWindow).toEqual({ start: '2026-06-05', end: '2026-06-11' });
     expect(out?.explanation).toContain('Refined using your logged ovulation signals.');

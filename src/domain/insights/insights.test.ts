@@ -19,7 +19,7 @@ describe('generateInsights', () => {
 
   it('orders attention insights ahead of info insights', () => {
     const cycles: Cycle[] = [{ id: 'a', startDate: '2026-05-13' }];
-    const prediction = generatePrediction(cycles, '2026-06-13'); // overdue by 3
+    const prediction = generatePrediction(cycles); // nextPeriodStart overdue vs the today below
     const out = generateInsights({
       cycles,
       dailyLogs: [],
