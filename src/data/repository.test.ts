@@ -6,7 +6,15 @@ import {
   getCycles,
   getDailyLog,
   upsertDailyLog,
+  getPregnancyProfile,
+  savePregnancyProfile,
+  deletePregnancyProfile,
+  addKickSession,
+  getKickSessions,
+  addContractionSession,
+  getContractionSessions,
 } from './repository';
+import type { PregnancyProfile } from '@/src/domain/types';
 
 beforeEach(async () => {
   await deleteAll();
@@ -43,5 +51,47 @@ describe('repository', () => {
     const empty = await exportAll();
     expect(empty.cycles).toHaveLength(0);
     expect(empty.dailyLogs).toHaveLength(0);
+  });
+});
+
+const profile: PregnancyProfile = {
+  id: 'current',
+  dueDate: '2026-10-08',
+  lmp: '2026-01-01',
+  dueDateSource: 'lmp',
+  startedAt: '2026-01-10',
+  status: 'active',
+};
+
+describe('pregnancy repository', () => {
+  it('stores and reads the singleton pregnancy profile', async () => {
+    await savePregnancyProfile(profile);
+    expect((await getPregnancyProfile())?.dueDate).toBe('2026-10-08');
+    await deletePregnancyProfile();
+    expect(await getPregnancyProfile()).toBeUndefined();
+  });
+
+  it('stores kick and contraction sessions', async () => {
+    await addKickSession({ id: 'k1', date: '2026-06-21', startedAt: '2026-06-21T10:00:00.000Z', kickTimestamps: [] });
+    await addContractionSession({ id: 'c1', date: '2026-06-21', contractions: [] });
+    expect(await getKickSessions()).toHaveLength(1);
+    expect(await getContractionSessions()).toHaveLength(1);
+  });
+
+  it('export includes pregnancy data and delete clears it', async () => {
+    await savePregnancyProfile(profile);
+    await addKickSession({ id: 'k2', date: '2026-06-21', startedAt: '2026-06-21T10:00:00.000Z', kickTimestamps: [] });
+    await addContractionSession({ id: 'c2', date: '2026-06-21', contractions: [] });
+
+    const dump = await exportAll();
+    expect(dump.pregnancyProfile?.dueDate).toBe('2026-10-08');
+    expect(dump.kickSessions).toHaveLength(1);
+    expect(dump.contractionSessions).toHaveLength(1);
+
+    await deleteAll();
+    const empty = await exportAll();
+    expect(empty.pregnancyProfile).toBeNull();
+    expect(empty.kickSessions).toHaveLength(0);
+    expect(empty.contractionSessions).toHaveLength(0);
   });
 });
