@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useHealthData } from '@/src/state/useHealthData';
 import { todayISO } from '@/src/domain/dates';
+import { PregnancyEndFlow } from '@/src/components/PregnancyEndFlow';
 
 type Method = 'due' | 'lmp' | 'cycle';
 
@@ -53,6 +54,7 @@ export function PregnancyControls() {
             Save
           </button>
         </div>
+        <PregnancyEndFlow />
       </div>
     );
   }
