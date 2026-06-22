@@ -1,26 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { OnboardingForm } from './OnboardingForm';
-import { deleteAll, getCycles } from '@/src/data/repository';
 
-beforeEach(async () => {
-  await deleteAll();
+const startPeriod = vi.fn().mockResolvedValue(undefined);
+const startPregnancyMode = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/src/state/useHealthData', () => ({
+  useHealthData: () => ({ startPeriod, startPregnancyMode }),
+}));
+
+beforeEach(() => {
+  startPeriod.mockClear();
+  startPregnancyMode.mockClear();
 });
 
 describe('OnboardingForm', () => {
-  it('saves the last period date and calls onComplete', async () => {
+  it('starts cycle tracking by default', async () => {
     const onComplete = vi.fn();
     render(<OnboardingForm onComplete={onComplete} />);
+    fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
+    expect(startPeriod).toHaveBeenCalled();
+  });
 
-    const dateInput = screen.getByLabelText(/last period start/i);
-    await userEvent.clear(dateInput);
-    await userEvent.type(dateInput, '2026-06-01');
-    await userEvent.click(screen.getByRole('button', { name: /get started/i }));
-
-    await waitFor(() => expect(onComplete).toHaveBeenCalled());
-    const cycles = await getCycles();
-    expect(cycles).toHaveLength(1);
-    expect(cycles[0].startDate).toBe('2026-06-01');
+  it('starts pregnancy mode when the pregnant goal is chosen', () => {
+    const onComplete = vi.fn();
+    render(<OnboardingForm onComplete={onComplete} />);
+    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
+    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
+    expect(startPregnancyMode).toHaveBeenCalledWith(expect.objectContaining({ dueDate: '2026-10-08' }));
   });
 });
