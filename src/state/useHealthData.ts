@@ -25,7 +25,20 @@ import {
   getKickSessions,
   addContractionSession,
   getContractionSessions,
+  getPostpartumProfile,
+  savePostpartumProfile,
+  addEpdsEntry,
+  getEpdsEntries,
 } from '@/src/data/repository';
+import {
+  setBreastfeeding,
+  editBirthDate,
+  endPostpartum,
+} from '@/src/domain/postpartum/lifecycle';
+import { postpartumWeek, recoveryStage, type RecoveryStage } from '@/src/domain/postpartum/recovery';
+import { postpartumWeekContent, type PostpartumWeekContent } from '@/src/domain/postpartum/weeks';
+import { scoreEpds } from '@/src/domain/postpartum/epds';
+import type { PostpartumProfile, PostpartumReturnTo, EpdsEntry } from '@/src/domain/types';
 import {
   gestationalAge,
   trimester,
@@ -73,6 +86,8 @@ export function useHealthData() {
   const [pregnancyProfile, setPregnancyProfile] = useState<PregnancyProfile | null>(null);
   const [kickSessions, setKickSessions] = useState<KickSession[]>([]);
   const [contractionSessions, setContractionSessions] = useState<ContractionSession[]>([]);
+  const [postpartumProfile, setPostpartumProfile] = useState<PostpartumProfile | null>(null);
+  const [epdsEntries, setEpdsEntries] = useState<EpdsEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
   const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
@@ -90,18 +105,22 @@ export function useHealthData() {
   }, [refreshSettings]);
 
   const refresh = useCallback(async () => {
-    const [c, l, p, ks, cs] = await Promise.all([
+    const [c, l, p, ks, cs, pp, ep] = await Promise.all([
       getCycles(),
       getAllDailyLogs(),
       getPregnancyProfile(),
       getKickSessions(),
       getContractionSessions(),
+      getPostpartumProfile(),
+      getEpdsEntries(),
     ]);
     setCycles(c);
     setDailyLogs(l);
     setPregnancyProfile(p ?? null);
     setKickSessions(ks);
     setContractionSessions(cs);
+    setPostpartumProfile(pp ?? null);
+    setEpdsEntries(ep);
     setLoading(false);
   }, []);
 
@@ -186,6 +205,50 @@ export function useHealthData() {
     [pregnancyProfile, refresh, refreshSettings],
   );
 
+  const saveEpdsCheckin = useCallback(
+    async (responses: number[]) => {
+      const result = scoreEpds(responses);
+      await addEpdsEntry({
+        id: newId(),
+        date: todayISO(),
+        responses,
+        total: result.total,
+        band: result.band,
+      });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const setPostpartumBreastfeeding = useCallback(
+    async (value: boolean) => {
+      if (!postpartumProfile) return;
+      await savePostpartumProfile(setBreastfeeding(postpartumProfile, value));
+      await refresh();
+    },
+    [postpartumProfile, refresh],
+  );
+
+  const updateBirthDate = useCallback(
+    async (birthDate: ISODate) => {
+      if (!postpartumProfile) return;
+      await savePostpartumProfile(editBirthDate(postpartumProfile, birthDate));
+      await refresh();
+    },
+    [postpartumProfile, refresh],
+  );
+
+  const endPostpartumMode = useCallback(
+    async (returnTo: PostpartumReturnTo) => {
+      if (!postpartumProfile) return;
+      await savePostpartumProfile(endPostpartum(postpartumProfile, { returnTo, endDate: todayISO() }));
+      setLifeStage(returnTo, todayISO());
+      refreshSettings();
+      await refresh();
+    },
+    [postpartumProfile, refresh, refreshSettings],
+  );
+
   const saveKickSession = useCallback(
     async (s: KickSession) => {
       await addKickSession(s);
@@ -223,6 +286,25 @@ export function useHealthData() {
     () => (gestation ? weekContent(gestation.weeks) : null),
     [gestation],
   );
+
+  const isPostpartum = lifeStage === 'postpartum' && postpartumProfile?.status === 'active';
+
+  const postpartumWeekNumber: number | null = useMemo(
+    () => (isPostpartum && postpartumProfile ? postpartumWeek(postpartumProfile.birthDate, todayISO()) : null),
+    [isPostpartum, postpartumProfile],
+  );
+
+  const recoveryStageToday: RecoveryStage | null = useMemo(
+    () => (isPostpartum && postpartumProfile ? recoveryStage(postpartumProfile.birthDate, todayISO()) : null),
+    [isPostpartum, postpartumProfile],
+  );
+
+  const postpartumContentToday: PostpartumWeekContent | null = useMemo(
+    () => (postpartumWeekNumber !== null ? postpartumWeekContent(postpartumWeekNumber) : null),
+    [postpartumWeekNumber],
+  );
+
+  const latestEpds: EpdsEntry | null = epdsEntries[0] ?? null;
 
   const isTtc = lifeStage === 'ttc';
 
@@ -331,5 +413,16 @@ export function useHealthData() {
     contractionSessions,
     saveKickSession,
     saveContractionSession,
+    postpartumProfile,
+    isPostpartum,
+    postpartumWeekNumber,
+    recoveryStageToday,
+    postpartumContentToday,
+    epdsEntries,
+    latestEpds,
+    saveEpdsCheckin,
+    setPostpartumBreastfeeding,
+    updateBirthDate,
+    endPostpartumMode,
   };
 }
