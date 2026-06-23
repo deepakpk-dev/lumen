@@ -31,6 +31,7 @@ import {
   getEpdsEntries,
 } from '@/src/data/repository';
 import {
+  startPostpartum,
   setBreastfeeding,
   editBirthDate,
   endPostpartum,
@@ -187,7 +188,8 @@ export function useHealthData() {
     async (endDate: ISODate) => {
       if (!pregnancyProfile) return;
       await savePregnancyProfile(endByBirth(pregnancyProfile, endDate));
-      setLifeStage('cycle', todayISO());
+      await savePostpartumProfile(startPostpartum({ birthDate: endDate, today: todayISO() }));
+      setLifeStage('postpartum', todayISO());
       refreshSettings();
       await refresh();
     },
