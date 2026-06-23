@@ -8,6 +8,8 @@ import {
   MOOD_OPTIONS,
   SYMPTOM_OPTIONS,
   PREGNANCY_SYMPTOM_OPTIONS,
+  POSTPARTUM_SYMPTOM_OPTIONS,
+  POSTPARTUM_MOOD_OPTIONS,
   MUCUS_OPTIONS,
   LH_OPTIONS,
 } from '@/src/domain/log-options';
@@ -61,11 +63,18 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   } = useHealthData();
   const existing = dailyLogs.find((l) => l.date === date);
 
+  const isPostpartum = lifeStage === 'postpartum';
+
   const symptomChoices = isPregnant
     ? Array.from(new Set([...SYMPTOM_OPTIONS, ...PREGNANCY_SYMPTOM_OPTIONS]))
-    : SYMPTOM_OPTIONS;
+    : isPostpartum
+      ? POSTPARTUM_SYMPTOM_OPTIONS
+      : SYMPTOM_OPTIONS;
+
+  const moodChoices = isPostpartum ? POSTPARTUM_MOOD_OPTIONS : MOOD_OPTIONS;
 
   const [flow, setFlow] = useState<FlowIntensity>('none');
+  const [lochia, setLochia] = useState<FlowIntensity>('none');
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
@@ -82,6 +91,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     if (existing) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate form fields from the selected date's saved log
       setFlow(existing.flow ?? 'none');
+      setLochia(existing.lochia ?? 'none');
       setSymptoms(existing.symptoms);
       setMoods(existing.moods);
       setNotes(existing.notes ?? '');
@@ -104,6 +114,18 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   }
 
   async function handleSave() {
+    if (isPostpartum) {
+      await saveLog({
+        date,
+        flow: 'none',
+        lochia,
+        symptoms,
+        moods,
+        notes: notes || undefined,
+      });
+      setSaved(true);
+      return;
+    }
     const parsedBbt = bbt.trim() === '' ? undefined : Number(bbt);
     const bbtC =
       parsedBbt === undefined
@@ -151,14 +173,25 @@ export function DailyLogForm({ date }: { date: ISODate }) {
 
   return (
     <div className="space-y-6">
-      <section>
-        <h2 className="mb-2 text-sm font-medium">Flow</h2>
-        <div className="flex flex-wrap gap-2">
-          {FLOW_OPTIONS.map((f) => (
-            <Chip key={f} label={f} active={flow === f} onClick={() => setFlow(f)} />
-          ))}
-        </div>
-      </section>
+      {isPostpartum ? (
+        <section>
+          <h2 className="mb-2 text-sm font-medium">Lochia (bleeding)</h2>
+          <div className="flex flex-wrap gap-2">
+            {FLOW_OPTIONS.map((f) => (
+              <Chip key={f} label={f} active={lochia === f} onClick={() => setLochia(f)} />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section>
+          <h2 className="mb-2 text-sm font-medium">Flow</h2>
+          <div className="flex flex-wrap gap-2">
+            {FLOW_OPTIONS.map((f) => (
+              <Chip key={f} label={f} active={flow === f} onClick={() => setFlow(f)} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-2 text-sm font-medium">Symptoms</h2>
@@ -177,7 +210,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
       <section>
         <h2 className="mb-2 text-sm font-medium">Mood</h2>
         <div className="flex flex-wrap gap-2">
-          {MOOD_OPTIONS.map((m) => (
+          {moodChoices.map((m) => (
             <Chip
               key={m}
               label={m}

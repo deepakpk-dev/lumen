@@ -51,3 +51,31 @@ export const PREGNANCY_SYMPTOM_OPTIONS: string[] = [
   'Trouble sleeping',
   'Pelvic pressure',
 ];
+
+export const POSTPARTUM_SYMPTOM_OPTIONS: string[] = [
+  'Afterpains',
+  'Perineal pain',
+  'C-section pain',
+  'Breast pain',
+  'Engorgement',
+  'Sore nipples',
+  'Night sweats',
+  'Constipation',
+  'Hemorrhoids',
+  'Fatigue',
+  'Back pain',
+  'Hair loss',
+];
+
+export const POSTPARTUM_MOOD_OPTIONS: string[] = [
+  'Happy',
+  'Calm',
+  'Bonding',
+  'Anxious',
+  'Overwhelmed',
+  'Tearful',
+  'Irritable',
+  'Sad',
+  'Numb',
+  'Guilty',
+];
