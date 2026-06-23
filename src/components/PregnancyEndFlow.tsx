@@ -43,7 +43,8 @@ export function PregnancyEndFlow() {
     return (
       <div className="space-y-2 rounded-md border border-rose-200 bg-rose-50 p-3">
         <p className="text-sm text-neutral-700">
-          Wonderful news. We&apos;ll switch you back to cycle tracking whenever you&apos;re ready.
+          Congratulations. We&apos;ll switch to postpartum mode to support your recovery — you can
+          return to cycle tracking whenever you&apos;re ready.
         </p>
         <button
           type="button"
