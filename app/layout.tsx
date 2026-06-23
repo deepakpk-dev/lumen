@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistrar } from '@/src/components/ServiceWorkerRegistrar';
@@ -41,6 +42,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegistrar />
         <PasscodeGate>{children}</PasscodeGate>
+        <footer className="mt-auto border-t border-neutral-200 px-6 py-4 text-center text-xs text-neutral-500">
+          <Link href="/privacy" className="underline">
+            Privacy &amp; your data
+          </Link>
+        </footer>
       </body>
     </html>
   );

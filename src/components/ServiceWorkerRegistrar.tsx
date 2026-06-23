@@ -1,9 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
+import { requestPersistentStorage } from '@/src/storage/persist';
 
 export function ServiceWorkerRegistrar() {
   useEffect(() => {
+    // Ask the browser to keep our on-device data durable (best-effort).
+    void requestPersistentStorage();
+
     if (!('serviceWorker' in navigator)) return;
 
     // In development the cache-first service worker serves a stale app shell

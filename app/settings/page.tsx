@@ -50,6 +50,10 @@ export default function SettingsPage() {
         <p className="text-xs text-neutral-500">
           Your health data is stored only on this device. We never upload it.
         </p>
+        <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
+          Because it lives only here, clearing your browser data, using private mode, or losing
+          this device will erase it. Export regularly to keep a backup.
+        </p>
         <DataControls onDeleted={() => router.replace('/onboarding')} />
       </section>
     </main>

@@ -8,6 +8,7 @@ type Goal = 'cycle' | 'pregnant';
 
 export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
   const { startPeriod, startPregnancyMode } = useHealthData();
+  const [step, setStep] = useState<'intro' | 'setup'>('intro');
   const [goal, setGoal] = useState<Goal>('cycle');
   const [date, setDate] = useState(todayISO());
   const [dueDate, setDueDate] = useState('');
@@ -23,6 +24,37 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
     }
     setSaving(false);
     onComplete();
+  }
+
+  if (step === 'intro') {
+    return (
+      <main className="mx-auto max-w-md space-y-6 p-6">
+        <div>
+          <h1 className="text-2xl font-semibold">Welcome to Lumen</h1>
+          <p className="mt-2 text-sm text-neutral-600">
+            A private space to track your cycle, pregnancy, and recovery.
+          </p>
+        </div>
+        <ul className="space-y-2 text-sm text-neutral-700">
+          <li>
+            <span className="font-medium">Your data stays on this device.</span> Nothing is
+            uploaded — no accounts, no tracking.
+          </li>
+          <li>
+            <span className="font-medium">It&apos;s not medical advice.</span> Lumen is for
+            self-tracking and general information — it is not a contraceptive and not a substitute
+            for professional care.
+          </li>
+        </ul>
+        <button
+          type="button"
+          onClick={() => setStep('setup')}
+          className="w-full rounded-md bg-rose-600 px-4 py-2 font-medium text-white"
+        >
+          Continue
+        </button>
+      </main>
+    );
   }
 
   return (
