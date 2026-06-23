@@ -10,6 +10,7 @@ import { DailyContentCard } from '@/src/components/DailyContentCard';
 import { ConceptionCard } from '@/src/components/ConceptionCard';
 import { PregnancyCard } from '@/src/components/PregnancyCard';
 import { PostLossCard } from '@/src/components/PostLossCard';
+import { PostpartumCard } from '@/src/components/PostpartumCard';
 import { topInsight } from '@/src/domain/insights/insights';
 import { todayISO } from '@/src/domain/dates';
 
@@ -20,6 +21,7 @@ export default function HomePage() {
     conceptionToday, ovulationConfirmation, loading,
     isPregnant, gestation, currentTrimester, daysToDue, weekContentToday,
     pregnancyProfile,
+    isPostpartum, postpartumWeekNumber, recoveryStageToday, latestEpds,
   } = useHealthData();
 
   useEffect(() => {
@@ -39,7 +41,13 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      {isPregnant && gestation && currentTrimester && daysToDue !== null && weekContentToday ? (
+      {isPostpartum && postpartumWeekNumber !== null && recoveryStageToday ? (
+        <PostpartumCard
+          week={postpartumWeekNumber}
+          stage={recoveryStageToday}
+          latestBand={latestEpds?.band ?? null}
+        />
+      ) : isPregnant && gestation && currentTrimester && daysToDue !== null && weekContentToday ? (
         <PregnancyCard
           gestation={gestation}
           trimester={currentTrimester}
@@ -59,11 +67,11 @@ export default function HomePage() {
       {/* Cycle insight + daily reads are cycle-stage content; hide them while
           pregnancy mode is the active context to avoid surfacing period/PMS
           material to a pregnant user. */}
-      {!isPregnant && highlight && <InsightCard insight={highlight} />}
+      {!isPregnant && !isPostpartum && highlight && <InsightCard insight={highlight} />}
       {lifeStage === 'ttc' && (
         <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
       )}
-      {!isPregnant && <DailyContentCard article={dailyContent} />}
+      {!isPregnant && !isPostpartum && <DailyContentCard article={dailyContent} />}
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
         <Link href="/log" className="rounded-md bg-rose-600 px-4 py-3 text-white">
           Log today
@@ -91,6 +99,11 @@ export default function HomePage() {
         {isPregnant && (
           <Link href="/pregnancy" className="rounded-md border px-4 py-3">
             Pregnancy
+          </Link>
+        )}
+        {isPostpartum && (
+          <Link href="/postpartum" className="rounded-md border px-4 py-3">
+            Postpartum
           </Link>
         )}
       </nav>
