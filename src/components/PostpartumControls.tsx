@@ -8,7 +8,7 @@ export function PostpartumControls() {
     isPostpartum, postpartumProfile, epdsEntries,
     setPostpartumBreastfeeding, updateBirthDate, endPostpartumMode,
   } = useHealthData();
-  const [editBirth, setEditBirth] = useState('');
+  const [editBirth, setEditBirth] = useState(postpartumProfile?.birthDate ?? '');
   const [ending, setEnding] = useState(false);
 
   if (!isPostpartum || !postpartumProfile) return null;

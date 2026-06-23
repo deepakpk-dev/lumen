@@ -209,6 +209,7 @@ export function useHealthData() {
 
   const saveEpdsCheckin = useCallback(
     async (responses: number[]) => {
+      if (!postpartumProfile) return;
       const result = scoreEpds(responses);
       await addEpdsEntry({
         id: newId(),
@@ -219,7 +220,7 @@ export function useHealthData() {
       });
       await refresh();
     },
-    [refresh],
+    [postpartumProfile, refresh],
   );
 
   const setPostpartumBreastfeeding = useCallback(

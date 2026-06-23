@@ -41,6 +41,18 @@ describe('postpartum hook state', () => {
     expect(result.current.latestEpds?.band).toBe('possible');
   });
 
+  it('saveEpdsCheckin does nothing when no postpartum profile is active', async () => {
+    // Do NOT save a profile or set lifeStage — no postpartumProfile present
+    const { result } = renderHook(() => useHealthData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.postpartumProfile).toBeNull();
+    await act(async () => {
+      await result.current.saveEpdsCheckin([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    });
+    expect(result.current.latestEpds).toBeNull();
+    expect(result.current.epdsEntries).toHaveLength(0);
+  });
+
   it('endPostpartumMode switches life stage and ends the profile', async () => {
     await savePostpartumProfile(profile);
     setLifeStage('postpartum', '2026-06-08');
