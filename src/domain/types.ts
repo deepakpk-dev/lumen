@@ -5,7 +5,7 @@ export type FlowIntensity = 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
 export type LHResult = 'negative' | 'positive';
 export type MucusType = 'dry' | 'sticky' | 'creamy' | 'watery' | 'egg-white';
 
-export type LifeStage = 'cycle' | 'ttc' | 'pregnancy' | 'menopause';
+export type LifeStage = 'cycle' | 'ttc' | 'pregnancy' | 'postpartum' | 'menopause';
 
 export interface DailyLog {
   date: ISODate;
@@ -19,6 +19,9 @@ export interface DailyLog {
   mucus?: MucusType;
   intercourse?: boolean;
   intercourseProtected?: boolean;
+  // Postpartum (Phase 5) — bleeding after birth; kept separate from `flow`
+  // so it never feeds cycle stats or predictions.
+  lochia?: FlowIntensity;
 }
 
 export interface Cycle {
@@ -89,4 +92,25 @@ export interface ContractionSession {
   id: string;
   date: ISODate;
   contractions: Contraction[];
+}
+
+export type PostpartumStatus = 'active' | 'ended';
+export type PostpartumReturnTo = 'cycle' | 'ttc';
+
+export interface PostpartumProfile {
+  id: 'current'; // singleton key
+  birthDate: ISODate;
+  startedAt: ISODate;
+  breastfeeding?: boolean; // content/education only — never a prediction input
+  status: PostpartumStatus;
+  endDate?: ISODate;
+  returnedTo?: PostpartumReturnTo;
+}
+
+export interface EpdsEntry {
+  id: string;
+  date: ISODate;
+  responses: number[]; // the 10 raw 0–3 values
+  total: number;
+  band: 'low' | 'possible' | 'probable';
 }
