@@ -1,6 +1,6 @@
 // src/components/EpdsCheckin.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import { EpdsCheckin } from './EpdsCheckin';
 import { EPDS_QUESTIONS } from '@/src/domain/postpartum/epds';
 
@@ -9,19 +9,10 @@ vi.mock('@/src/state/useHealthData', () => ({
   useHealthData: () => ({ saveEpdsCheckin }),
 }));
 
-beforeEach(() => saveEpdsCheckin.mockReset());
-
-/**
- * Answer all 10 questions by picking the radio at the given option index for each question.
- * Relies on options rendering in declared order (index 0 = first declared option, etc.).
- */
-function answerAllByIndex(optionIndex: number) {
-  const groups = screen.getAllByRole('radiogroup');
-  for (const g of groups) {
-    const radios = within(g).getAllByRole('radio');
-    fireEvent.click(radios[optionIndex]);
-  }
-}
+beforeEach(() => {
+  saveEpdsCheckin.mockReset();
+  saveEpdsCheckin.mockResolvedValue(undefined);
+});
 
 /**
  * Answer all 10 questions by clicking the option with value=0 (best/no-symptom answer).
@@ -29,7 +20,7 @@ function answerAllByIndex(optionIndex: number) {
  * We use EPDS_QUESTIONS directly to find the zero-value option by label.
  */
 function answerAllBest() {
-  const groups = screen.getAllByRole('radiogroup');
+  const groups = screen.getAllByRole('group');
   groups.forEach((g, qi) => {
     const question = EPDS_QUESTIONS[qi];
     const zeroOption = question.options.find((o) => o.value === 0)!;
@@ -43,7 +34,7 @@ function answerAllBest() {
  * the option with the specified value.
  */
 function answerAllBestExcept(exceptQi: number, exceptValue: number) {
-  const groups = screen.getAllByRole('radiogroup');
+  const groups = screen.getAllByRole('group');
   groups.forEach((g, qi) => {
     const question = EPDS_QUESTIONS[qi];
     if (qi === exceptQi) {
@@ -72,11 +63,17 @@ describe('EpdsCheckin', () => {
     expect(button).not.toBeDisabled();
   });
 
-  it('does NOT show the crisis block when all answers are value 0 (total 0, no self-harm)', () => {
+  it('does NOT show the crisis block when all answers are value 0 (total 0, no self-harm)', async () => {
     render(<EpdsCheckin />);
     answerAllBest();
     fireEvent.click(screen.getByRole('button', { name: /see my result/i }));
     expect(saveEpdsCheckin).toHaveBeenCalled();
+
+    // Wait for the async save → result transition
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /see my result/i })).not.toBeInTheDocument();
+    });
+
     // Crisis block should not appear
     expect(screen.queryByText(/support is available/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/crisis/i)).not.toBeInTheDocument();
@@ -86,7 +83,7 @@ describe('EpdsCheckin', () => {
     expect(screen.getAllByText(/healthcare provider/i).length).toBeGreaterThan(0);
   });
 
-  it('shows the crisis block when the self-harm item (q10, index 9) is non-zero', () => {
+  it('shows the crisis block when the self-harm item (q10, index 9) is non-zero', async () => {
     render(<EpdsCheckin />);
     // Answer q10 (index 9) with value=3 ("Yes, quite often") — the FIRST option for that question
     // All other questions answered with value=0
@@ -99,15 +96,15 @@ describe('EpdsCheckin', () => {
     const responses = saveEpdsCheckin.mock.calls[0][0] as number[];
     expect(responses[9]).toBeGreaterThan(0);
 
-    // Crisis/support block must appear
-    expect(screen.getByText(/support is available/i)).toBeInTheDocument();
+    // Crisis/support block must appear (wait for async)
+    await screen.findByText(/support is available/i);
   });
 
-  it('shows the crisis block when total score is >= 13 (probable band)', () => {
+  it('shows the crisis block when total score is >= 13 (probable band)', async () => {
     render(<EpdsCheckin />);
     // Answer all questions with value=3 to produce max score (30)
     // For reverse-scored items (q1, q2, q4), value=3 is last option; for others it's first
-    const groups = screen.getAllByRole('radiogroup');
+    const groups = screen.getAllByRole('group');
     groups.forEach((g, qi) => {
       const question = EPDS_QUESTIONS[qi];
       const highOption = question.options.find((o) => o.value === 3)!;
@@ -117,15 +114,18 @@ describe('EpdsCheckin', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /see my result/i }));
     expect(saveEpdsCheckin).toHaveBeenCalled();
-    expect(screen.getByText(/support is available/i)).toBeInTheDocument();
+
+    // Wait for async result
+    await screen.findByText(/support is available/i);
   });
 
-  it('shows score, band text, and non-diagnostic copy in the result', () => {
+  it('shows score, band text, and non-diagnostic copy in the result', async () => {
     render(<EpdsCheckin />);
     answerAllBest();
     fireEvent.click(screen.getByRole('button', { name: /see my result/i }));
-    // Score shown
-    expect(screen.getByText(/0\s*\/\s*30|score.*0/i)).toBeInTheDocument();
+
+    // Score shown — precise match for rendered "Score: 0 / 30"
+    await screen.findByText(/score:\s*0\s*\/\s*30/i);
     // Non-diagnostic disclaimer (at least one element — bandText may also contain this phrase)
     expect(screen.getAllByText(/screening tool, not a diagnosis/i).length).toBeGreaterThan(0);
     // Provider instructions (at least one element)
@@ -142,5 +142,28 @@ describe('EpdsCheckin', () => {
   it('renders a non-diagnostic intro before the questions', () => {
     render(<EpdsCheckin />);
     expect(screen.getByText(/screening tool, not a diagnosis/i)).toBeInTheDocument();
+  });
+
+  it('renders exactly 10 question groups', () => {
+    render(<EpdsCheckin />);
+    expect(screen.getAllByRole('group')).toHaveLength(10);
+  });
+
+  it('shows an error message and no result when saveEpdsCheckin rejects', async () => {
+    saveEpdsCheckin.mockRejectedValueOnce(new Error('network error'));
+    render(<EpdsCheckin />);
+    answerAllBest();
+    fireEvent.click(screen.getByRole('button', { name: /see my result/i }));
+
+    // Wait for the async rejection to propagate
+    const errorMsg = await screen.findByRole('alert');
+    expect(errorMsg).toHaveTextContent(/couldn't save your check-in/i);
+
+    // Result and crisis UI must NOT render (the result heading is "Your check-in" in an h2)
+    expect(screen.queryByRole('heading', { name: /your check-in/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/support is available/i)).not.toBeInTheDocument();
+
+    // Submit button must still be available to retry
+    expect(screen.getByRole('button', { name: /see my result/i })).not.toBeDisabled();
   });
 });

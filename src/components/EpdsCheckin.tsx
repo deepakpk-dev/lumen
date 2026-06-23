@@ -8,6 +8,7 @@ export function EpdsCheckin() {
   const { saveEpdsCheckin } = useHealthData();
   const [answers, setAnswers] = useState<(number | null)[]>(Array(10).fill(null));
   const [result, setResult] = useState<EpdsResult | null>(null);
+  const [saveError, setSaveError] = useState(false);
 
   const complete = answers.every((a) => a !== null);
 
@@ -22,9 +23,15 @@ export function EpdsCheckin() {
   async function submit() {
     if (!complete) return;
     const responses = answers as number[];
+    setSaveError(false);
+    try {
+      await saveEpdsCheckin(responses);
+    } catch {
+      setSaveError(true);
+      return;
+    }
     const r = scoreEpds(responses);
     setResult(r);
-    await saveEpdsCheckin(responses);
   }
 
   if (result) {
@@ -68,7 +75,7 @@ export function EpdsCheckin() {
       </p>
 
       {EPDS_QUESTIONS.map((q, qi) => (
-        <fieldset key={q.prompt} role="radiogroup" aria-label={q.prompt} className="space-y-2">
+        <fieldset key={q.prompt} className="space-y-2">
           <legend className="text-sm font-medium">{q.prompt}</legend>
           {q.options.map((o) => (
             <label key={o.label} className="flex items-center gap-2 text-sm">
@@ -84,6 +91,12 @@ export function EpdsCheckin() {
           ))}
         </fieldset>
       ))}
+
+      {saveError && (
+        <p className="text-sm text-rose-700" role="alert">
+          We couldn&apos;t save your check-in. Please try again.
+        </p>
+      )}
 
       <button
         type="button"
