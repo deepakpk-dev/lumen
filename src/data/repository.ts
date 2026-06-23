@@ -5,6 +5,8 @@ import type {
   PregnancyProfile,
   KickSession,
   ContractionSession,
+  PostpartumProfile,
+  EpdsEntry,
 } from '@/src/domain/types';
 import { db } from './db';
 
@@ -85,4 +87,25 @@ export async function deleteAll(): Promise<void> {
   await db.pregnancyProfile.clear();
   await db.kickSessions.clear();
   await db.contractionSessions.clear();
+}
+
+export async function getPostpartumProfile(): Promise<PostpartumProfile | undefined> {
+  return db.postpartumProfile.get('current');
+}
+
+export async function savePostpartumProfile(p: PostpartumProfile): Promise<void> {
+  await db.postpartumProfile.put(p);
+}
+
+export async function deletePostpartumProfile(): Promise<void> {
+  await db.postpartumProfile.delete('current');
+}
+
+export async function addEpdsEntry(e: EpdsEntry): Promise<void> {
+  await db.epdsEntries.put(e);
+}
+
+export async function getEpdsEntries(): Promise<EpdsEntry[]> {
+  const all = await db.epdsEntries.toArray();
+  return all.sort((a, b) => b.date.localeCompare(a.date));
 }
