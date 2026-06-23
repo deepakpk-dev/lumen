@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { DataControls } from '@/src/components/DataControls';
 import { PasscodeControls } from '@/src/components/PasscodeControls';
+import { PostpartumControls } from '@/src/components/PostpartumControls';
 import { PregnancyControls } from '@/src/components/PregnancyControls';
 import { TtcControls } from '@/src/components/TtcControls';
 
@@ -35,6 +36,14 @@ export default function SettingsPage() {
           contraction timer. Educational only — not a substitute for medical care.
         </p>
         <PregnancyControls />
+      </section>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium text-neutral-600">Postpartum</h2>
+        <p className="text-xs text-neutral-500">
+          After birth, Lumen supports your recovery with weekly guidance and a mood check-in.
+          This section appears while postpartum mode is active.
+        </p>
+        <PostpartumControls />
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600">Your data</h2>
