@@ -71,6 +71,8 @@ export async function exportAll(): Promise<{
   pregnancyProfile: PregnancyProfile | null;
   kickSessions: KickSession[];
   contractionSessions: ContractionSession[];
+  postpartumProfile: PostpartumProfile | null;
+  epdsEntries: EpdsEntry[];
 }> {
   return {
     cycles: await getCycles(),
@@ -78,6 +80,8 @@ export async function exportAll(): Promise<{
     pregnancyProfile: (await getPregnancyProfile()) ?? null,
     kickSessions: await getKickSessions(),
     contractionSessions: await getContractionSessions(),
+    postpartumProfile: (await getPostpartumProfile()) ?? null,
+    epdsEntries: await getEpdsEntries(),
   };
 }
 
@@ -87,6 +91,8 @@ export async function deleteAll(): Promise<void> {
   await db.pregnancyProfile.clear();
   await db.kickSessions.clear();
   await db.contractionSessions.clear();
+  await db.postpartumProfile.clear();
+  await db.epdsEntries.clear();
 }
 
 export async function getPostpartumProfile(): Promise<PostpartumProfile | undefined> {

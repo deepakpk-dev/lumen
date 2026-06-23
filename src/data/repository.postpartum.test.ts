@@ -7,6 +7,8 @@ import {
   deletePostpartumProfile,
   addEpdsEntry,
   getEpdsEntries,
+  deleteAll,
+  exportAll,
 } from './repository';
 import type { PostpartumProfile, EpdsEntry } from '@/src/domain/types';
 
@@ -39,4 +41,15 @@ describe('EPDS entries repo', () => {
     await addEpdsEntry(b);
     expect((await getEpdsEntries()).map((e) => e.id)).toEqual(['b', 'a']);
   });
+});
+
+it('deleteAll clears postpartum tables; exportAll returns them', async () => {
+  await savePostpartumProfile(profile);
+  await addEpdsEntry({ id: 'a', date: '2026-06-10', responses: Array(10).fill(0), total: 0, band: 'low' });
+  const dump = await exportAll();
+  expect(dump.postpartumProfile).not.toBeNull();
+  expect(dump.epdsEntries).toHaveLength(1);
+  await deleteAll();
+  expect(await getPostpartumProfile()).toBeUndefined();
+  expect(await getEpdsEntries()).toHaveLength(0);
 });
