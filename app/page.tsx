@@ -20,13 +20,14 @@ export default function HomePage() {
     cycles, stats, prediction, insights, dailyContent, lifeStage,
     conceptionToday, ovulationConfirmation, loading,
     isPregnant, gestation, currentTrimester, daysToDue, weekContentToday,
-    pregnancyProfile,
+    pregnancyProfile, postpartumProfile,
     isPostpartum, postpartumWeekNumber, recoveryStageToday, latestEpds,
   } = useHealthData();
 
   useEffect(() => {
-    if (!loading && cycles.length === 0 && !pregnancyProfile) router.replace('/onboarding');
-  }, [loading, cycles.length, pregnancyProfile, router]);
+    if (!loading && cycles.length === 0 && !pregnancyProfile && !postpartumProfile)
+      router.replace('/onboarding');
+  }, [loading, cycles.length, pregnancyProfile, postpartumProfile, router]);
 
   if (loading) return <main className="p-6">Loading…</main>;
 
