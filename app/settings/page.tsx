@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DataControls } from '@/src/components/DataControls';
 import { PasscodeControls } from '@/src/components/PasscodeControls';
@@ -11,7 +12,12 @@ export default function SettingsPage() {
   const router = useRouter();
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <h1 className="text-xl font-semibold">Settings</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Settings</h1>
+        <Link href="/" className="text-sm text-neutral-500 underline">
+          Home
+        </Link>
+      </div>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600">Passcode lock</h2>
         <p className="text-xs text-neutral-500">

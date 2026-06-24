@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useHealthData } from '@/src/state/useHealthData';
 import { CycleCalendar } from '@/src/components/CycleCalendar';
@@ -24,7 +25,12 @@ export default function CalendarPage() {
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
-      <h1 className="text-xl font-semibold">Calendar</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Calendar</h1>
+        <Link href="/" className="text-sm text-neutral-500 underline">
+          Home
+        </Link>
+      </div>
       <div className="flex items-center justify-between">
         <button
           type="button"
