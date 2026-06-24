@@ -1,6 +1,6 @@
 # Lumen — User Guide
 
-> **Lumen** is a private, offline‑first period, fertility, and pregnancy tracker. Everything you log stays **on your device** — there's no account, no cloud, and no tracking. This guide walks you through every screen so you can get the most out of it.
+> **Lumen** is a private, offline‑first period, fertility, pregnancy, and postpartum tracker. Everything you log stays **on your device** — there's no account, no cloud, and no tracking. This guide walks you through every screen so you can get the most out of it.
 
 <p align="center"><em>🌙 Track your cycle · 🤰 Plan or follow a pregnancy · 📚 Learn from cited, plain‑language articles — all in one place.</em></p>
 
@@ -20,10 +20,11 @@
 10. [Understanding your cycle phases](#understanding-your-cycle-phases)
 11. [Trying‑to‑conceive (TTC) mode](#trying-to-conceive-ttc-mode)
 12. [Pregnancy mode](#pregnancy-mode)
-13. [Your privacy & your data](#your-privacy--your-data)
-14. [Install Lumen as an app](#install-lumen-as-an-app)
-15. [Troubleshooting & FAQ](#troubleshooting--faq)
-16. [Important: medical disclaimer](#important-medical-disclaimer)
+13. [Postpartum mode](#postpartum-mode)
+14. [Your privacy & your data](#your-privacy--your-data)
+15. [Install Lumen as an app](#install-lumen-as-an-app)
+16. [Troubleshooting & FAQ](#troubleshooting--faq)
+17. [Important: medical disclaimer](#important-medical-disclaimer)
 
 ---
 
@@ -54,21 +55,24 @@ flowchart TD
     H --> S["⚙️ Settings"]
     H -. "TTC mode on" .-> F["🌡️ Fertility"]
     H -. "Pregnancy mode on" .-> P["🤰 Pregnancy"]
+    H -. "Postpartum mode on" .-> PP["🤱 Postpartum"]
     P --> K["👣 Kick counter"]
     P --> T["⏱️ Contraction timer"]
-    S --> M{{"Switch modes:<br/>Cycle · TTC · Pregnancy"}}
+    PP --> E["💗 Mood check-in"]
+    S --> M{{"Switch modes:<br/>Cycle · TTC · Pregnancy · Postpartum"}}
 
     style H fill:#e11d48,color:#fff
     style M fill:#fff,stroke:#e11d48
 ```
 
-Lumen works in **three modes**. You're always in one of them, and you switch between them in **Settings**:
+Lumen works in **four modes**. You're always in one of them. You switch most modes in **Settings**, while **Postpartum** is entered automatically after a birth (see below):
 
 | Mode | For | Turn it on in |
 |------|-----|---------------|
 | 🩸 **Cycle** (default) | Tracking periods, symptoms, and predictions | On by default |
 | 🌱 **TTC** (trying to conceive) | Pinpointing your fertile window with BBT, LH tests & mucus | Settings → *Trying to conceive* |
 | 🤰 **Pregnancy** | Week‑by‑week pregnancy, kick counts & contractions | Settings → *Pregnancy* |
+| 🤱 **Postpartum** | Recovery + mental‑health support after birth | Automatic when you confirm **Baby arrived** |
 
 ---
 
@@ -138,11 +142,13 @@ Home adapts to your mode and your most relevant information sits at the top.
 | **Settings** | Switch modes, set a passcode, export or delete data. |
 | **Fertility** | *Appears only in TTC mode* — your BBT chart and conception guidance. |
 | **Pregnancy** | *Appears only in Pregnancy mode* — your week‑by‑week hub. |
+| **Postpartum** | *Appears only in Postpartum mode* — your recovery hub and mood check-in. |
 
 The card at the very top changes with your situation:
 - **Cycle mode** → current phase, cycle day, and your next‑period prediction with a **confidence** label.
 - **TTC mode** → a **conception guidance** card (today's chance: high / medium / low).
 - **Pregnancy mode** → your **week, trimester, and countdown to your due date**.
+- **Postpartum mode** → your **recovery week and stage**, plus the band of your most recent mood check-in.
 
 ---
 
@@ -393,8 +399,93 @@ The **Pregnancy** tile opens your hub:
 
 Under **Settings → Pregnancy → Manage pregnancy**, you can tell Lumen your pregnancy has ended:
 
-- **Baby arrived** 🎉 — Lumen congratulates you and switches back to cycle tracking whenever you're ready.
-- **My pregnancy has ended** 🤍 — Lumen responds with a **compassionate, no‑pressure** screen: no celebratory messaging, no period prompts, and links to support. You return to cycle mode only when *you* choose to.
+- **Baby arrived** 🎉 — Lumen congratulates you and switches into [**Postpartum mode**](#postpartum-mode) to support your recovery. You can return to cycle tracking whenever you're ready.
+- **My pregnancy has ended** 🤍 — Lumen responds with a **compassionate, no‑pressure** screen: no celebratory messaging, no period prompts, and links to support. You return to cycle mode only when *you* choose to. (This path never enters postpartum mode.)
+
+---
+
+## Postpartum mode
+
+Postpartum mode is a recovery‑focused home for the weeks after birth. Instead of dropping you straight back into period tracking, it supports your **physical recovery and mental health** with week‑by‑week guidance, a validated mood check‑in, and gentle recovery logging.
+
+> 💙 Postpartum mode is **about you, the mother** — not a baby tracker. It doesn't log feeds, diapers, or baby sleep.
+
+### How you get here
+
+Postpartum mode turns on **automatically** when you confirm **Baby arrived** under *Settings → Pregnancy → Manage pregnancy* (or in the Pregnancy hub). Lumen anchors a recovery clock to your **birth date** and opens a recovery space. There's no manual toggle to start it — it always follows a birth.
+
+> 🤍 The **pregnancy‑loss** path never enters postpartum mode. It stays on its own compassionate screen and returns to cycle tracking only when you choose.
+
+### The Postpartum hub
+
+A **Postpartum** tile appears on Home and in the nav. It opens your hub:
+
+- A header card showing **Postpartum · week N** and your **recovery stage**:
+  | Stage | Roughly when |
+  |-------|--------------|
+  | **Early recovery** | Weeks 0–6 (the acute phase) |
+  | **Recovering** | Weeks 6–12 |
+  | **Ongoing recovery** | 12 weeks onward |
+- **This week's focus** — plain‑language recovery notes covering bleeding (lochia), perineal/C‑section healing, afterpains, night sweats, pelvic floor, sleep, mood, and feeding.
+- **When your cycle returns** — an honest note that periods can take weeks to many months to come back, that breastfeeding can delay them, and that **Lumen will not guess a date**.
+- Quick links: **Mood check‑in**, **Log recovery**, and **Manage postpartum** (Settings).
+- **Sources** for the week's content (NHS, ACOG, Office on Women's Health) and an educational‑only disclaimer.
+
+> 💡 Recovery content runs through about week 12; after that, the hub keeps showing the "three months and beyond" guidance.
+
+### The mood check‑in (EPDS)
+
+The heart of postpartum mode is a **mood check‑in** based on the **Edinburgh Postnatal Depression Scale (EPDS)** — a widely used, validated screening questionnaire.
+
+1. From the hub, tap **Mood check‑in**.
+2. Answer **10 short questions** about how you've felt **over the past 7 days**.
+3. Tap **See my result** to get your **score out of 30** and a supportive, plain‑language reading.
+
+```mermaid
+flowchart TD
+    Q["💗 10 questions<br/>(past 7 days)"] --> S{"Lumen scores<br/>your answers"}
+    S --> R["Score / 30 +<br/>supportive summary"]
+    S -. "score is high, or any<br/>self-harm response" .-> C["🆘 Support resources<br/>appear"]
+    style S fill:#e11d48,color:#fff
+    style C fill:#fff,stroke:#e11d48
+```
+
+| Score | What Lumen shows |
+|-------|------------------|
+| **Under 10** | Lower range |
+| **10–12** | Some symptoms — worth sharing with your provider |
+| **13 or more** | Please reach out to your provider |
+
+Every result carries the same reminder: **this is a screening tool, not a diagnosis — please share it with your healthcare provider.**
+
+> 🆘 If your score is high **or** you give any answer above zero to the question about thoughts of harming yourself, Lumen shows a prominent **"Support is available"** block: contact your provider, call a crisis or mental‑health line in your area, and contact emergency services if you're in immediate danger. The guidance is region‑agnostic (it names the *kind* of help, not a specific number, so it's never out‑of‑date or wrong‑country).
+
+Your past check‑ins are saved and listed under *Settings → Postpartum*.
+
+### Logging your recovery
+
+In postpartum mode, **Log recovery** swaps in postpartum‑specific fields:
+
+| Field | Options |
+|-------|---------|
+| **Lochia (bleeding)** | none · spotting · light · medium · heavy |
+| **Symptoms** | Afterpains · Perineal pain · C‑section pain · Breast pain · Engorgement · Sore nipples · Night sweats · Constipation · Hemorrhoids · Fatigue · Back pain · Hair loss |
+| **Mood** | Happy · Calm · Bonding · Anxious · Overwhelmed · Tearful · Irritable · Sad · Numb · Guilty |
+
+> ⚠️ **Lochia is recorded separately from period flow.** Postpartum bleeding never feeds your cycle stats or predictions — it's kept apart so your recovery and your cycle history don't get tangled.
+
+### Manage postpartum & moving on
+
+Under **Settings → Postpartum** you can:
+
+- Mark **I am breastfeeding** — this tunes the educational copy only and is **never** used as a prediction input.
+- **Edit your birth date** if the recovery clock needs adjusting.
+- Review your **mood check‑in history**.
+- **End postpartum mode** when you're ready, choosing where to go next:
+  - **Back to cycle tracking**
+  - **Start trying to conceive** (TTC mode)
+
+Exit is entirely **your choice** — Lumen never predicts when your cycle will return and never nags you to move on.
 
 ---
 
@@ -474,9 +565,15 @@ Data is stored only on the device where you logged it and isn't backed up to any
 </details>
 
 <details>
-<summary><strong>How do I switch between cycle, TTC, and pregnancy modes?</strong></summary>
+<summary><strong>How do I switch between cycle, TTC, pregnancy, and postpartum modes?</strong></summary>
 
-All three are in **Settings**: *Trying to conceive* and *Pregnancy* each have a toggle/start button. Turning a mode off returns you to standard cycle tracking.
+*Trying to conceive* and *Pregnancy* each have a toggle/start button in **Settings**; turning a mode off returns you to standard cycle tracking. **Postpartum** mode is the exception — it isn't a manual toggle. It starts automatically when you confirm **Baby arrived** in the pregnancy end flow, and you leave it from *Settings → Postpartum* (back to cycle, or into TTC).
+</details>
+
+<details>
+<summary><strong>Is the postpartum mood check‑in a diagnosis?</strong></summary>
+
+No. It's a **screening tool** (the Edinburgh Postnatal Depression Scale) that gives you a score and a supportive summary. It is not a diagnosis — always share your result with your healthcare provider, and use the on‑screen support resources if you're struggling.
 </details>
 
 <details>
