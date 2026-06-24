@@ -18,6 +18,8 @@ const MARKER_LABEL: Record<DayMarker, string> = {
   none: '',
 };
 
+const LEGEND: DayMarker[] = ['period', 'predicted-period', 'fertile', 'ovulation'];
+
 export function CycleCalendar({
   cycles,
   prediction,
@@ -75,9 +77,16 @@ export function CycleCalendar({
           );
         })}
       </div>
-      <ul className="mt-4 space-y-1 text-xs text-neutral-600">
-        <li>● Period &nbsp; ◐ Predicted period</li>
-        <li>● Fertile window &nbsp; ◉ Ovulation</li>
+      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-600">
+        {LEGEND.map((marker) => (
+          <li key={marker} className="flex items-center gap-1.5">
+            <span
+              aria-hidden
+              className={`inline-block h-3 w-3 rounded-sm ${MARKER_STYLE[marker]}`}
+            />
+            <span className="capitalize">{MARKER_LABEL[marker]}</span>
+          </li>
+        ))}
       </ul>
     </div>
   );
