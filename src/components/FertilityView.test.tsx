@@ -4,6 +4,7 @@ import 'fake-indexeddb/auto';
 import { FertilityView } from '@/src/components/FertilityView';
 import { db } from '@/src/data/db';
 import { setLifeStage } from '@/src/settings/preferences';
+import { HealthDataProvider } from '@/src/state/useHealthData';
 
 describe('FertilityView', () => {
   beforeEach(async () => {
@@ -15,7 +16,7 @@ describe('FertilityView', () => {
   });
 
   it('renders the fertility heading and disclaimer', async () => {
-    render(<FertilityView />);
+    render(<FertilityView />, { wrapper: HealthDataProvider });
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1, name: /Fertility/i })).toBeTruthy()
     );

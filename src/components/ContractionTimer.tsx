@@ -72,7 +72,7 @@ export function ContractionTimer() {
         ) : (
           <ul className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
             {contractionSessions.map((s: ContractionSession) => (
-              <li key={s.id}>{s.date}: {s.contractions.length} contractions</li>
+              <li key={s.id}>{s.date}: {s.contractions.length} contraction{s.contractions.length === 1 ? '' : 's'}</li>
             ))}
           </ul>
         )}

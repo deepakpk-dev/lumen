@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import 'fake-indexeddb/auto';
-import { useHealthData } from '@/src/state/useHealthData';
+import { useHealthData, HealthDataProvider } from '@/src/state/useHealthData';
 import { db } from '@/src/data/db';
 import { setLifeStage } from '@/src/settings/preferences';
 
@@ -13,7 +13,7 @@ describe('useHealthData TTC mode', () => {
   });
 
   it('exposes null TTC outputs in cycle mode', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.lifeStage).toBe('cycle');
     expect(result.current.conceptionToday).toBeNull();
@@ -22,7 +22,7 @@ describe('useHealthData TTC mode', () => {
 
   it('computes conception guidance in TTC mode', async () => {
     setLifeStage('ttc', '2026-06-01');
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       result.current.refreshSettings();

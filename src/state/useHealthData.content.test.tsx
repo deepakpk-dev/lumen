@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import 'fake-indexeddb/auto';
-import { useHealthData } from './useHealthData';
+import { useHealthData, HealthDataProvider } from './useHealthData';
 import { db } from '@/src/data/db';
 
 describe('useHealthData content', () => {
@@ -12,7 +12,7 @@ describe('useHealthData content', () => {
   });
 
   it('exposes a content feed and a daily article', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(Array.isArray(result.current.contentFeed)).toBe(true);
@@ -21,7 +21,7 @@ describe('useHealthData content', () => {
   });
 
   it('prioritises getting-started content before any data is logged', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const top = result.current.contentFeed[0].article;

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useHealthData } from './useHealthData';
+import { useHealthData, HealthDataProvider } from './useHealthData';
 import { deleteAll } from '@/src/data/repository';
 
 beforeEach(async () => {
@@ -9,7 +9,7 @@ beforeEach(async () => {
 
 describe('useHealthData', () => {
   it('starts a period and recomputes a prediction', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {

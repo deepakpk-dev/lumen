@@ -5,7 +5,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { db } from '@/src/data/db';
 import { savePostpartumProfile, savePregnancyProfile } from '@/src/data/repository';
 import { setLifeStage, clearPreferences } from '@/src/settings/preferences';
-import { useHealthData } from './useHealthData';
+import { useHealthData, HealthDataProvider } from './useHealthData';
 import type { PostpartumProfile, PregnancyProfile } from '@/src/domain/types';
 
 const profile: PostpartumProfile = {
@@ -22,7 +22,7 @@ describe('postpartum hook state', () => {
   it('derives recovery week and content in postpartum mode', async () => {
     await savePostpartumProfile(profile);
     setLifeStage('postpartum', '2026-06-08');
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.isPostpartum).toBe(true);
     expect(result.current.postpartumWeekNumber).toBeGreaterThanOrEqual(1);
@@ -32,7 +32,7 @@ describe('postpartum hook state', () => {
   it('saves a scored EPDS check-in and exposes the latest', async () => {
     await savePostpartumProfile(profile);
     setLifeStage('postpartum', '2026-06-08');
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.saveEpdsCheckin([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
@@ -43,7 +43,7 @@ describe('postpartum hook state', () => {
 
   it('saveEpdsCheckin does nothing when no postpartum profile is active', async () => {
     // Do NOT save a profile or set lifeStage — no postpartumProfile present
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.postpartumProfile).toBeNull();
     await act(async () => {
@@ -56,7 +56,7 @@ describe('postpartum hook state', () => {
   it('endPostpartumMode switches life stage and ends the profile', async () => {
     await savePostpartumProfile(profile);
     setLifeStage('postpartum', '2026-06-08');
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.endPostpartumMode('cycle');
@@ -73,7 +73,7 @@ it('confirming birth enters postpartum mode with a profile', async () => {
   };
   await savePregnancyProfile(preg);
   setLifeStage('pregnancy', '2026-06-08');
-  const { result } = renderHook(() => useHealthData());
+  const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
   await waitFor(() => expect(result.current.loading).toBe(false));
   await act(async () => {
     await result.current.endPregnancyBirth('2026-06-20');

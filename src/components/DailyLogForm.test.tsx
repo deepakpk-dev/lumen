@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DailyLogForm } from './DailyLogForm';
 import { addCycle, deleteAll, getCycles, getDailyLog } from '@/src/data/repository';
+import { HealthDataProvider } from '@/src/state/useHealthData';
 
 beforeEach(async () => {
   await deleteAll();
@@ -10,7 +11,7 @@ beforeEach(async () => {
 
 describe('DailyLogForm', () => {
   it('saves selected symptoms and mood for the date', async () => {
-    render(<DailyLogForm date="2026-06-17" />);
+    render(<DailyLogForm date="2026-06-17" />, { wrapper: HealthDataProvider });
 
     await userEvent.click(screen.getByRole('button', { name: /cramps/i }));
     await userEvent.click(screen.getByRole('button', { name: /happy/i }));
@@ -26,7 +27,7 @@ describe('DailyLogForm', () => {
   it('extends the current period instead of creating a new cycle for the next flow day', async () => {
     await addCycle({ id: 'cycle-1', startDate: '2026-06-16' });
 
-    render(<DailyLogForm date="2026-06-17" />);
+    render(<DailyLogForm date="2026-06-17" />, { wrapper: HealthDataProvider });
 
     await userEvent.click(screen.getByRole('button', { name: /^medium$/i }));
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -44,7 +45,7 @@ describe('DailyLogForm', () => {
     // so the old start-anchored check would split day 8 into a phantom cycle.
     await addCycle({ id: 'cycle-1', startDate: '2026-06-10', endDate: '2026-06-16' });
 
-    render(<DailyLogForm date="2026-06-17" />);
+    render(<DailyLogForm date="2026-06-17" />, { wrapper: HealthDataProvider });
 
     await userEvent.click(screen.getByRole('button', { name: /^medium$/i }));
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -60,7 +61,7 @@ describe('DailyLogForm', () => {
   it('starts a new cycle when the flow day is well past the previous period', async () => {
     await addCycle({ id: 'cycle-1', startDate: '2026-05-10', endDate: '2026-05-15' });
 
-    render(<DailyLogForm date="2026-06-07" />);
+    render(<DailyLogForm date="2026-06-07" />, { wrapper: HealthDataProvider });
 
     await userEvent.click(screen.getByRole('button', { name: /^medium$/i }));
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -73,7 +74,7 @@ describe('DailyLogForm', () => {
   });
 
   it('does not start a new cycle from spotting alone', async () => {
-    render(<DailyLogForm date="2026-06-17" />);
+    render(<DailyLogForm date="2026-06-17" />, { wrapper: HealthDataProvider });
 
     await userEvent.click(screen.getByRole('button', { name: /^spotting$/i }));
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
