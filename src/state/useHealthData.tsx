@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import type {
   Cycle,
   CycleStats,
@@ -81,7 +82,7 @@ function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `c_${Date.now()}_${Math.random()}`;
 }
 
-export function useHealthData() {
+function useHealthDataState() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [pregnancyProfile, setPregnancyProfile] = useState<PregnancyProfile | null>(null);
@@ -428,4 +429,21 @@ export function useHealthData() {
     updateBirthDate,
     endPostpartumMode,
   };
+}
+
+type HealthData = ReturnType<typeof useHealthDataState>;
+
+const HealthDataContext = createContext<HealthData | null>(null);
+
+export function HealthDataProvider({ children }: { children: ReactNode }) {
+  const value = useHealthDataState();
+  return <HealthDataContext.Provider value={value}>{children}</HealthDataContext.Provider>;
+}
+
+export function useHealthData(): HealthData {
+  const ctx = useContext(HealthDataContext);
+  if (ctx === null) {
+    throw new Error('useHealthData must be used within a HealthDataProvider');
+  }
+  return ctx;
 }

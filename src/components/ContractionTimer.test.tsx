@@ -28,4 +28,16 @@ describe('ContractionTimer', () => {
     fireEvent.click(screen.getByRole('button', { name: /save session/i }));
     expect(saveContractionSession).toHaveBeenCalledTimes(1);
   });
+
+  it('uses the singular noun for a session with one contraction', () => {
+    contractionSessions = [
+      {
+        id: 's1',
+        date: '2026-06-21',
+        contractions: [{ start: '2026-06-21T09:00:00.000Z', end: '2026-06-21T09:01:00.000Z' }],
+      },
+    ];
+    render(<ContractionTimer />);
+    expect(screen.getByText('2026-06-21: 1 contraction')).toBeTruthy();
+  });
 });

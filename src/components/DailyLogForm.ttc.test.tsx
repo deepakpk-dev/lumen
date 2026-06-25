@@ -7,6 +7,7 @@ import { db } from '@/src/data/db';
 import { setLifeStage, setBbtUnit } from '@/src/settings/preferences';
 import { getDailyLog } from '@/src/data/repository';
 import { fToC } from '@/src/domain/fertility/units';
+import { HealthDataProvider } from '@/src/state/useHealthData';
 
 describe('DailyLogForm TTC section', () => {
   beforeEach(async () => {
@@ -16,14 +17,14 @@ describe('DailyLogForm TTC section', () => {
   });
 
   it('hides fertility fields in cycle mode', async () => {
-    render(<DailyLogForm date="2026-06-12" />);
+    render(<DailyLogForm date="2026-06-12" />, { wrapper: HealthDataProvider });
     await waitFor(() => expect(screen.getByText('Flow')).toBeTruthy());
     expect(screen.queryByText(/Basal body temperature/i)).toBeNull();
   });
 
   it('shows fertility fields in TTC mode', async () => {
     setLifeStage('ttc', '2026-06-01');
-    render(<DailyLogForm date="2026-06-12" />);
+    render(<DailyLogForm date="2026-06-12" />, { wrapper: HealthDataProvider });
     await waitFor(() =>
       expect(screen.getByText(/Basal body temperature/i)).toBeTruthy(),
     );
@@ -36,7 +37,7 @@ describe('DailyLogForm TTC section', () => {
     setBbtUnit('F');
     const user = userEvent.setup();
 
-    render(<DailyLogForm date="2026-06-15" />);
+    render(<DailyLogForm date="2026-06-15" />, { wrapper: HealthDataProvider });
 
     await waitFor(() =>
       expect(screen.getByLabelText(/Basal body temperature/i)).toBeTruthy(),

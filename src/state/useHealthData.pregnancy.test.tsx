@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useHealthData } from './useHealthData';
+import { useHealthData, HealthDataProvider } from './useHealthData';
 import { deleteAll } from '@/src/data/repository';
 import { clearPreferences } from '@/src/settings/preferences';
 
@@ -11,7 +11,7 @@ beforeEach(async () => {
 
 describe('useHealthData pregnancy', () => {
   it('starts pregnancy mode and exposes derived gestation state', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -26,7 +26,7 @@ describe('useHealthData pregnancy', () => {
   });
 
   it('ends pregnancy by loss and returns to cycle mode', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.startPregnancyMode({ dueDate: '2026-10-08' });
@@ -44,7 +44,7 @@ describe('useHealthData pregnancy', () => {
   });
 
   it('saves kick and contraction sessions', async () => {
-    const { result } = renderHook(() => useHealthData());
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {

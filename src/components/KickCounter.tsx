@@ -71,7 +71,7 @@ export function KickCounter() {
         ) : (
           <ul className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
             {kickSessions.map((s) => (
-              <li key={s.id}>{s.date}: {s.kickTimestamps.length} kicks</li>
+              <li key={s.id}>{s.date}: {s.kickTimestamps.length} kick{s.kickTimestamps.length === 1 ? '' : 's'}</li>
             ))}
           </ul>
         )}
