@@ -20,12 +20,12 @@ export function PregnancyCard({
         : `${Math.abs(daysToDue)} days past due`;
 
   return (
-    <section className="space-y-2 rounded-lg border border-rose-200 bg-rose-50 p-4">
+    <section className="space-y-2 rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/40">
       <h2 className="text-base font-semibold">
         {gestation.weeks} weeks {gestation.days} days
       </h2>
-      <p className="text-sm text-neutral-700">Trimester {trimester} · {countdown}</p>
-      <p className="text-sm text-neutral-700">
+      <p className="text-sm text-neutral-700 dark:text-neutral-300">Trimester {trimester} · {countdown}</p>
+      <p className="text-sm text-neutral-700 dark:text-neutral-300">
         Your baby is about the size of <span className="font-medium">{week.sizeComparison}</span>.
       </p>
     </section>

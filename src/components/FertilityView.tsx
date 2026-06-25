@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
 import { BbtChart } from '@/src/components/BbtChart';
 import { ConceptionCard } from '@/src/components/ConceptionCard';
@@ -36,18 +37,23 @@ export function FertilityView() {
 
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <h1 className="text-xl font-semibold">Fertility</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Fertility</h1>
+        <Link href="/" className="text-sm text-neutral-500 dark:text-neutral-400 underline">
+          Home
+        </Link>
+      </div>
 
       <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium text-neutral-600">BBT chart</h2>
+        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">BBT chart</h2>
         <BbtChart points={points} ovulationDate={ovulationConfirmation?.ovulationDate} unit={bbtUnit} />
       </section>
 
       <section className="space-y-1">
-        <h2 className="text-sm font-medium text-neutral-600">Ovulation status</h2>
-        <p className="text-sm text-neutral-700">
+        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Ovulation status</h2>
+        <p className="text-sm text-neutral-700 dark:text-neutral-300">
           {ovulationConfirmation
             ? ovulationConfirmation.explanation
             : 'No ovulation signals logged for this cycle yet.'}
@@ -55,8 +61,8 @@ export function FertilityView() {
       </section>
 
       {showNote && !dismissed && (
-        <section className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-4">
-          <p className="text-sm text-neutral-700">
+        <section className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">
             You&apos;ve been tracking for a while. If you have questions about
             conceiving, it can help to talk with a healthcare provider — this is
             common and there is support available.
@@ -64,14 +70,14 @@ export function FertilityView() {
           <button
             type="button"
             onClick={() => setDismissed(true)}
-            className="text-xs text-neutral-500 underline"
+            className="text-xs text-neutral-500 dark:text-neutral-400 underline"
           >
             Dismiss
           </button>
         </section>
       )}
 
-      <p className="text-[11px] text-neutral-500">
+      <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
         Lumen is not a contraceptive and not a substitute for fertility
         treatment or medical advice.
       </p>

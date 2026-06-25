@@ -27,7 +27,7 @@ export default function CalendarPage() {
     <main className="mx-auto max-w-md space-y-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Calendar</h1>
-        <Link href="/" className="text-sm text-neutral-500 underline">
+        <Link href="/" className="text-sm text-neutral-500 underline dark:text-neutral-400">
           Home
         </Link>
       </div>
@@ -62,7 +62,7 @@ export default function CalendarPage() {
         <button
           type="button"
           onClick={() => setMonth(today)}
-          className="text-sm text-rose-600 underline"
+          className="text-sm text-rose-600 underline dark:text-rose-400"
         >
           Back to this month
         </button>

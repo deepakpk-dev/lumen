@@ -106,7 +106,7 @@ export function ContentLibrary({
         </div>
 
         {browse.length === 0 ? (
-          <p className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600">
+          <p className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
             No articles match your search.
           </p>
         ) : (

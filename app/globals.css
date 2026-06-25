@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Let native form controls, scrollbars, etc. follow the active scheme. */
+  color-scheme: light dark;
 }
 
 @theme inline {
@@ -23,4 +25,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  /* Keep content clear of the notch / rounded corners on installed PWAs.
+     Bottom inset is handled on the footer so it stays anchored to the edge. */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }

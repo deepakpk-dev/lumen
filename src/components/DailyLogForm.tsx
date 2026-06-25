@@ -30,8 +30,10 @@ function Chip({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-sm ${
-        active ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300'
+      className={`inline-flex min-h-[44px] items-center rounded-full border px-4 text-sm ${
+        active
+          ? 'border-rose-600 bg-rose-600 text-white'
+          : 'border-neutral-300 dark:border-neutral-700'
       }`}
     >
       {label}
@@ -229,13 +231,13 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           id="notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 p-2"
+          className="w-full rounded-md border border-neutral-300 p-2 dark:border-neutral-700 dark:bg-transparent"
           rows={3}
         />
       </section>
 
       {lifeStage === 'ttc' && (
-        <section className="space-y-4 rounded-md border border-neutral-200 p-3">
+        <section className="space-y-4 rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
           <div>
             <label htmlFor="bbt" className="mb-2 block text-sm font-medium">
               Basal body temperature (°{bbtUnit})
@@ -247,7 +249,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
               inputMode="decimal"
               value={bbt}
               onChange={(e) => setBbt(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 p-2"
+              className="w-full rounded-md border border-neutral-300 p-2 dark:border-neutral-700 dark:bg-transparent"
             />
           </div>
           <div>
@@ -302,7 +304,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
       <button
         type="button"
         onClick={handleSave}
-        className="w-full rounded-md bg-rose-600 px-4 py-2 font-medium text-white"
+        className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white"
       >
         Save
       </button>

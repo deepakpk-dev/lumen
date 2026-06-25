@@ -4,7 +4,7 @@ import { InsightCard } from './InsightCard';
 export function InsightsList({ insights }: { insights: Insight[] }) {
   if (insights.length === 0) {
     return (
-      <div className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600">
+      <div className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
         Keep logging to unlock insights.
       </div>
     );

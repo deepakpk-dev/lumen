@@ -31,11 +31,11 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
       <main className="mx-auto max-w-md space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-semibold">Welcome to Lumen</h1>
-          <p className="mt-2 text-sm text-neutral-600">
+          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
             A private space to track your cycle, pregnancy, and recovery.
           </p>
         </div>
-        <ul className="space-y-2 text-sm text-neutral-700">
+        <ul className="space-y-2 text-sm text-neutral-700 dark:text-neutral-300">
           <li>
             <span className="font-medium">Your data stays on this device.</span> Nothing is
             uploaded — no accounts, no tracking.
@@ -49,7 +49,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
         <button
           type="button"
           onClick={() => setStep('setup')}
-          className="w-full rounded-md bg-rose-600 px-4 py-2 font-medium text-white"
+          className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white"
         >
           Continue
         </button>
@@ -61,7 +61,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
     <form onSubmit={handleSubmit} className="mx-auto max-w-md space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold">Welcome</h1>
-        <p className="mt-2 text-sm text-neutral-600">
+        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
           Let&apos;s set things up. This stays private on your device.
         </p>
       </div>
@@ -71,7 +71,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
           type="button"
           aria-pressed={goal === 'cycle'}
           onClick={() => setGoal('cycle')}
-          className={`rounded-md border px-4 py-2 ${goal === 'cycle' ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300'}`}
+          className={`rounded-md border px-4 py-3 ${goal === 'cycle' ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
         >
           Track my cycle
         </button>
@@ -79,7 +79,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
           type="button"
           aria-pressed={goal === 'pregnant'}
           onClick={() => setGoal('pregnant')}
-          className={`rounded-md border px-4 py-2 ${goal === 'pregnant' ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300'}`}
+          className={`rounded-md border px-4 py-3 ${goal === 'pregnant' ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
         >
           I&apos;m pregnant
         </button>
@@ -97,7 +97,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
             value={date}
             max={todayISO()}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2"
+            className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2"
           />
         </div>
       ) : (
@@ -111,7 +111,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2"
+            className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2"
           />
         </div>
       )}
@@ -119,7 +119,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
       <button
         type="submit"
         disabled={saving || (goal === 'pregnant' && !dueDate)}
-        className="w-full rounded-md bg-rose-600 px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white disabled:opacity-50"
       >
         Get started
       </button>

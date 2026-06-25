@@ -11,13 +11,13 @@ export default function ArticlePage() {
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
-      <Link href="/library" className="text-sm text-neutral-500 underline">
+      <Link href="/library" className="text-sm text-neutral-500 underline dark:text-neutral-400">
         ← Back to library
       </Link>
       {article ? (
         <ArticleReader article={article} />
       ) : (
-        <p className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600">
+        <p className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
           Article not found.
         </p>
       )}

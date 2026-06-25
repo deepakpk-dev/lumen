@@ -38,13 +38,13 @@ export function PasscodeControls() {
   if (enabled) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700">
+        <p className="text-sm text-neutral-700 dark:text-neutral-300">
           Passcode lock is <span className="font-medium">enabled</span>.
         </p>
         <button
           type="button"
           onClick={handleClear}
-          className="w-full rounded-md border border-red-300 px-4 py-2 text-red-700"
+          className="w-full rounded-md border border-red-300 px-4 py-3 text-red-700 dark:border-red-900 dark:text-red-400"
         >
           Remove passcode
         </button>
@@ -54,7 +54,7 @@ export function PasscodeControls() {
 
   return (
     <form onSubmit={handleSet} className="space-y-3">
-      <p className="text-sm text-neutral-700">
+      <p className="text-sm text-neutral-700 dark:text-neutral-300">
         Passcode lock is <span className="font-medium">disabled</span>.
       </p>
       <input
@@ -65,12 +65,12 @@ export function PasscodeControls() {
         value={code}
         onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
         placeholder="Enter numeric passcode"
-        className="w-full rounded-md border border-neutral-300 px-3 py-2"
+        className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <button
         type="submit"
-        className="w-full rounded-md bg-rose-600 px-4 py-2 text-white"
+        className="w-full rounded-md bg-rose-600 px-4 py-3 text-white"
       >
         Set passcode
       </button>

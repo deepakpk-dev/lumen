@@ -32,7 +32,7 @@ export function PregnancyControls() {
   if (isPregnant && pregnancyProfile) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700">
+        <p className="text-sm text-neutral-700 dark:text-neutral-300">
           Pregnancy mode is on. Due date: <span className="font-medium">{pregnancyProfile.dueDate}</span>.
         </p>
         <div className="flex items-end gap-2">
@@ -43,7 +43,7 @@ export function PregnancyControls() {
               aria-label="edit due date"
               value={editDue}
               onChange={(e) => setEditDue(e.target.value)}
-              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2"
+              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
             />
           </label>
           <button
@@ -62,7 +62,7 @@ export function PregnancyControls() {
   return (
     <div className="space-y-3">
       <fieldset className="space-y-2 text-sm">
-        <legend className="text-neutral-700">How would you like to start?</legend>
+        <legend className="text-neutral-700 dark:text-neutral-300">How would you like to start?</legend>
         <div className="flex items-center gap-2">
           <input
             type="radio"
@@ -105,12 +105,12 @@ export function PregnancyControls() {
             max={method === 'lmp' ? todayISO() : undefined}
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2"
+            className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
           />
         </label>
       )}
 
-      <button type="button" onClick={start} className="w-full rounded-md bg-rose-600 px-4 py-2 text-white">
+      <button type="button" onClick={start} className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
         Start pregnancy mode
       </button>
     </div>

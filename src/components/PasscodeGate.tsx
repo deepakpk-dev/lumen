@@ -38,12 +38,12 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
           inputMode="numeric"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-center"
+          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-center dark:border-neutral-700"
         />
         {error && (
-          <p className="text-center text-sm text-red-600">Incorrect passcode</p>
+          <p className="text-center text-sm text-red-600 dark:text-red-400">Incorrect passcode</p>
         )}
-        <button type="submit" className="w-full rounded-md bg-rose-600 px-4 py-2 text-white">
+        <button type="submit" className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
           Unlock
         </button>
       </form>

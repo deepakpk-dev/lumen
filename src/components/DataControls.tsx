@@ -34,7 +34,7 @@ export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
       <button
         type="button"
         onClick={handleExport}
-        className="w-full rounded-md border px-4 py-2"
+        className="w-full rounded-md border px-4 py-3"
       >
         Export my data
       </button>
@@ -43,13 +43,13 @@ export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className="w-full rounded-md border border-red-300 px-4 py-2 text-red-700"
+          className="w-full rounded-md border border-red-300 px-4 py-3 text-red-700 dark:border-red-900 dark:text-red-400"
         >
           Delete all data
         </button>
       ) : (
-        <div className="space-y-2 rounded-md border border-red-300 p-3">
-          <p className="text-sm text-red-700">
+        <div className="space-y-2 rounded-md border border-red-300 p-3 dark:border-red-900">
+          <p className="text-sm text-red-700 dark:text-red-400">
             This permanently deletes everything on this device. This cannot be
             undone.
           </p>
@@ -57,14 +57,14 @@ export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
             <button
               type="button"
               onClick={handleDelete}
-              className="flex-1 rounded-md bg-red-600 px-4 py-2 text-white"
+              className="flex-1 rounded-md bg-red-600 px-4 py-3 text-white"
             >
               Yes, delete
             </button>
             <button
               type="button"
               onClick={() => setConfirming(false)}
-              className="flex-1 rounded-md border px-4 py-2"
+              className="flex-1 rounded-md border px-4 py-3"
             >
               Cancel
             </button>

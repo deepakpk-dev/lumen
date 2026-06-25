@@ -8,12 +8,12 @@ export function ArticleReader({ article }: { article: ContentArticle }) {
     <article className="space-y-5">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">{article.title}</h1>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           {article.readingMinutes} min read
         </p>
       </header>
 
-      <div className="space-y-3 text-neutral-800">
+      <div className="space-y-3 text-neutral-800 dark:text-neutral-200">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -35,7 +35,7 @@ export function ArticleReader({ article }: { article: ContentArticle }) {
         </ReactMarkdown>
       </div>
 
-      <section className="rounded-2xl bg-neutral-50 p-4 text-sm">
+      <section className="rounded-2xl bg-neutral-50 p-4 text-sm dark:bg-neutral-900">
         <h2 className="font-semibold">Sources</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           {article.sources.map((s) => (
@@ -51,12 +51,12 @@ export function ArticleReader({ article }: { article: ContentArticle }) {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs text-neutral-500">
+        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
           {article.medicalReviewer} · Last reviewed {article.lastReviewed}
         </p>
       </section>
 
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
         This is general education, not a substitute for professional medical
         advice. If you&apos;re concerned about your health, contact a clinician.
       </p>

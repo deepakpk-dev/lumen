@@ -47,7 +47,7 @@ export function CycleCalendar({
 
   return (
     <div>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-neutral-500">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-neutral-500 dark:text-neutral-400">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
           <div key={i}>{d}</div>
         ))}
@@ -77,7 +77,7 @@ export function CycleCalendar({
           );
         })}
       </div>
-      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-600">
+      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-600 dark:text-neutral-300">
         {LEGEND.map((marker) => (
           <li key={marker} className="flex items-center gap-1.5">
             <span

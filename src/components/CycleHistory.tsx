@@ -9,7 +9,7 @@ export function CycleHistory({
   stats: CycleStats;
 }) {
   if (cycles.length === 0) {
-    return <p className="text-neutral-600">No cycles logged yet.</p>;
+    return <p className="text-neutral-600 dark:text-neutral-300">No cycles logged yet.</p>;
   }
 
   const lengths = computeCycleLengths(cycles);
@@ -20,23 +20,23 @@ export function CycleHistory({
   return (
     <div className="space-y-6">
       <dl className="grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-xl bg-neutral-100 p-3">
-          <dt className="text-xs text-neutral-500">Avg cycle</dt>
+        <div className="rounded-xl bg-neutral-100 p-3 dark:bg-neutral-800">
+          <dt className="text-xs text-neutral-500 dark:text-neutral-400">Avg cycle</dt>
           <dd className="text-lg font-semibold">{stats.averageCycleLength} days</dd>
         </div>
-        <div className="rounded-xl bg-neutral-100 p-3">
-          <dt className="text-xs text-neutral-500">Avg period</dt>
+        <div className="rounded-xl bg-neutral-100 p-3 dark:bg-neutral-800">
+          <dt className="text-xs text-neutral-500 dark:text-neutral-400">Avg period</dt>
           <dd className="text-lg font-semibold">{stats.averagePeriodLength} days</dd>
         </div>
-        <div className="rounded-xl bg-neutral-100 p-3">
-          <dt className="text-xs text-neutral-500">Regularity</dt>
+        <div className="rounded-xl bg-neutral-100 p-3 dark:bg-neutral-800">
+          <dt className="text-xs text-neutral-500 dark:text-neutral-400">Regularity</dt>
           <dd className="text-lg font-semibold">
             {stats.isRegular ? 'Regular' : 'Variable'}
           </dd>
         </div>
       </dl>
 
-      <ul className="divide-y divide-neutral-200">
+      <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
         {sorted.map((c, i) => {
           // lengths[k] is the gap from chronological cycle k to k+1, so it
           // belongs to that earlier cycle. Map this newest-first row back to
@@ -47,7 +47,7 @@ export function CycleHistory({
           return (
             <li key={c.id} className="flex justify-between py-3 text-sm">
               <span>{c.startDate}</span>
-              <span className="text-neutral-500">
+              <span className="text-neutral-500 dark:text-neutral-400">
                 {length ? `${length} day cycle` : 'Current cycle'}
               </span>
             </li>

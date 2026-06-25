@@ -37,24 +37,24 @@ export function EpdsCheckin() {
   if (result) {
     return (
       <div className="space-y-4">
-        <section className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-4">
+        <section className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="text-base font-semibold">Your check-in</h2>
-          <p className="text-sm text-neutral-700">Score: {result.total} / 30</p>
-          <p className="text-sm text-neutral-700">{result.bandText}</p>
-          <p className="text-xs text-neutral-500">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">Score: {result.total} / 30</p>
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">{result.bandText}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
             This is a screening tool, not a diagnosis. Please share your result with your
             healthcare provider.
           </p>
         </section>
 
         {result.riskFlag && (
-          <section className="space-y-2 rounded-md border border-rose-300 bg-rose-50 p-4">
-            <h3 className="text-sm font-semibold text-rose-800">Support is available</h3>
-            <p className="text-sm text-neutral-700">
+          <section className="space-y-2 rounded-md border border-rose-300 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/40">
+            <h3 className="text-sm font-semibold text-rose-800 dark:text-rose-300">Support is available</h3>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
               You do not have to go through this alone. If you are in danger or thinking of
               harming yourself, please reach out right now.
             </p>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700">
+            <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
               <li>Contact your healthcare provider as soon as you can.</li>
               <li>Call a crisis or mental-health support line in your area.</li>
               <li>If you are in immediate danger, contact your local emergency services.</li>
@@ -62,14 +62,14 @@ export function EpdsCheckin() {
           </section>
         )}
 
-        <p className="text-[11px] text-neutral-500">Source: {EPDS_SOURCE}</p>
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-400">Source: {EPDS_SOURCE}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-neutral-700">
+      <p className="text-sm text-neutral-700 dark:text-neutral-300">
         This short check-in asks how you have felt in the past 7 days. It is a screening tool,
         not a diagnosis. Answer the option closest to how you have been feeling.
       </p>
@@ -93,7 +93,7 @@ export function EpdsCheckin() {
       ))}
 
       {saveError && (
-        <p className="text-sm text-rose-700" role="alert">
+        <p className="text-sm text-rose-700 dark:text-rose-300" role="alert">
           We couldn&apos;t save your check-in. Please try again.
         </p>
       )}
@@ -102,7 +102,7 @@ export function EpdsCheckin() {
         type="button"
         onClick={submit}
         disabled={!complete}
-        className="w-full rounded-md bg-rose-600 px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white disabled:opacity-50"
       >
         See my result
       </button>

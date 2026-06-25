@@ -12,7 +12,7 @@ export default function LibraryPage() {
     <main className="mx-auto max-w-md space-y-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Library</h1>
-        <Link href="/" className="text-sm text-neutral-500 underline">
+        <Link href="/" className="text-sm text-neutral-500 underline dark:text-neutral-400">
           Home
         </Link>
       </div>

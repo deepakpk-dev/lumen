@@ -32,7 +32,7 @@ export function PostpartumControls() {
             aria-label="edit birth date"
             value={editBirth}
             onChange={(e) => setEditBirth(e.target.value)}
-            className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2"
+            className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
           />
         </label>
         <button
@@ -45,11 +45,11 @@ export function PostpartumControls() {
       </div>
 
       <div className="space-y-1">
-        <h3 className="text-sm font-medium text-neutral-600">Mood check-in history</h3>
+        <h3 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Mood check-in history</h3>
         {epdsEntries.length === 0 ? (
-          <p className="text-sm text-neutral-500">No check-ins yet.</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">No check-ins yet.</p>
         ) : (
-          <ul className="space-y-1 text-sm text-neutral-700">
+          <ul className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
             {epdsEntries.map((e) => (
               <li key={e.id}>
                 {e.date} — {e.total} / 30 ({e.band})
@@ -63,13 +63,13 @@ export function PostpartumControls() {
         <button
           type="button"
           onClick={() => setEnding(true)}
-          className="w-full rounded-md border px-4 py-2 text-sm text-neutral-700"
+          className="w-full rounded-md border px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300"
         >
           End postpartum mode
         </button>
       ) : (
         <div className="space-y-2 rounded-md border p-3">
-          <p className="text-sm text-neutral-700">Where would you like to go next?</p>
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">Where would you like to go next?</p>
           <button
             type="button"
             onClick={() => endPostpartumMode('cycle')}
@@ -87,7 +87,7 @@ export function PostpartumControls() {
           <button
             type="button"
             onClick={() => setEnding(false)}
-            className="w-full rounded-md px-4 py-2 text-sm text-neutral-500"
+            className="w-full rounded-md px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400"
           >
             Cancel
           </button>

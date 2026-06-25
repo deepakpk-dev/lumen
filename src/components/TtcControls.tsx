@@ -37,13 +37,13 @@ export function TtcControls() {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-neutral-700">
+      <p className="text-sm text-neutral-700 dark:text-neutral-300">
         TTC mode is <span className="font-medium">{ttc ? 'on' : 'off'}</span>.
       </p>
       <button
         type="button"
         onClick={toggleTtc}
-        className={`w-full rounded-md px-4 py-2 text-white ${ttc ? 'bg-neutral-600' : 'bg-rose-600'}`}
+        className={`w-full rounded-md px-4 py-3 text-white ${ttc ? 'bg-neutral-600' : 'bg-rose-600'}`}
       >
         {ttc ? 'Turn off TTC mode' : 'Turn on TTC mode'}
       </button>
@@ -56,7 +56,7 @@ export function TtcControls() {
               type="button"
               aria-pressed={unit === u}
               onClick={() => chooseUnit(u)}
-              className={`rounded-full border px-3 py-1 ${unit === u ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300'}`}
+              className={`inline-flex min-h-[44px] items-center rounded-full border px-4 ${unit === u ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
             >
               °{u}
             </button>
