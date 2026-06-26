@@ -12,6 +12,7 @@ export function FertilityView() {
   const {
     dailyLogs,
     cycles,
+    stats,
     ovulationConfirmation,
     conceptionToday,
     bbtUnit,
@@ -44,7 +45,11 @@ export function FertilityView() {
         </Link>
       </div>
 
-      <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
+      <ConceptionCard
+        guidance={conceptionToday}
+        confirmation={ovulationConfirmation}
+        hasCycleHistory={stats.cycleCount > 0}
+      />
 
       <section className="space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">BBT chart</h2>

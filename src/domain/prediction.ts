@@ -17,11 +17,13 @@ export interface ObservedFertility {
 }
 
 export function predictionConfidence(stats: CycleStats): Confidence {
-  const inputCount = stats.inputCycleCount;
   if (stats.cycleCount >= 3 && stats.isRegular) return 'high';
-  if (inputCount >= 3 && !stats.isRegular) return 'low';
-  if (inputCount >= 1) return 'medium';
-  return 'low';
+  // No full cycle measured yet (a single logged period gives zero cycle
+  // lengths), so predictions rest entirely on the 28-day default — don't imply
+  // more certainty than we have.
+  if (stats.cycleCount === 0) return 'low';
+  if (stats.inputCycleCount >= 3 && !stats.isRegular) return 'low';
+  return 'medium';
 }
 
 export function getCyclePhase(cycleDay: number, stats: CycleStats): CyclePhase {

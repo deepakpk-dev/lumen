@@ -5,21 +5,24 @@ import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
 import { todayISO } from '@/src/domain/dates';
 
-type Goal = 'cycle' | 'ttc' | 'pregnant';
+export type Goal = 'cycle' | 'ttc' | 'pregnant';
 
-export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
+export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => void }) {
   const { startPeriod, startPregnancyMode, setTtcMode } = useHealthData();
   const [step, setStep] = useState<'intro' | 'setup'>('intro');
   const [goal, setGoal] = useState<Goal>('cycle');
-  const [date, setDate] = useState(todayISO());
+  const [date, setDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // The required date depends on the goal; bail if it's missing so a stray
+    // submit can't seed a cycle off an empty date or route onward without setup.
+    if (goal === 'pregnant' ? !dueDate : !date) return;
     setSaving(true);
     if (goal === 'pregnant') {
-      if (dueDate) await startPregnancyMode({ dueDate });
+      await startPregnancyMode({ dueDate });
     } else {
       // Both cycle and TTC need a seeded cycle so predictions and the fertile
       // window work from day one; TTC additionally switches on fertility mode.
@@ -27,7 +30,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
       if (goal === 'ttc') setTtcMode(true);
     }
     setSaving(false);
-    onComplete();
+    onComplete(goal);
   }
 
   const goalOptions: { value: Goal; label: string; hint: string }[] = [
@@ -199,6 +202,9 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
           <label htmlFor="last-period" className="block text-sm font-medium">
             When did your last period start?
           </label>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Pick the first day of your most recent period.
+          </p>
           <input
             id="last-period"
             aria-label="last period start"
@@ -227,7 +233,7 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
 
       <button
         type="submit"
-        disabled={saving || (goal === 'pregnant' && !dueDate)}
+        disabled={saving || (goal === 'pregnant' ? !dueDate : !date)}
         className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white disabled:opacity-50"
       >
         Get started

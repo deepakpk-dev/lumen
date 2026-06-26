@@ -24,9 +24,16 @@ describe('predictionConfidence', () => {
   it('is high for 3+ regular cycles', () => {
     expect(predictionConfidence(computeCycleStats(regular))).toBe('high');
   });
-  it('is medium for a single cycle', () => {
+  it('is low for a single logged period (no measured cycle yet — only the 28-day default)', () => {
     expect(
       predictionConfidence(computeCycleStats([cyc('a', '2026-01-01')])),
+    ).toBe('low');
+  });
+  it('is medium once at least one full cycle has been measured', () => {
+    expect(
+      predictionConfidence(
+        computeCycleStats([cyc('a', '2026-01-01'), cyc('b', '2026-01-29')]),
+      ),
     ).toBe('medium');
   });
   it('is low for no cycles', () => {

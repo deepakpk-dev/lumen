@@ -70,7 +70,11 @@ export default function HomePage() {
           material to a pregnant user. */}
       {!isPregnant && !isPostpartum && highlight && <InsightCard insight={highlight} />}
       {lifeStage === 'ttc' && (
-        <ConceptionCard guidance={conceptionToday} confirmation={ovulationConfirmation} />
+        <ConceptionCard
+          guidance={conceptionToday}
+          confirmation={ovulationConfirmation}
+          hasCycleHistory={stats.cycleCount > 0}
+        />
       )}
       {/* The reading library and daily read are cycle-stage content; in TTC,
           pregnancy, and postpartum modes each stage surfaces its own guidance,

@@ -12,9 +12,13 @@ const LEVEL_STYLE: Record<ConceptionGuidance['level'], string> = {
 export function ConceptionCard({
   guidance,
   confirmation,
+  hasCycleHistory = true,
 }: {
   guidance: ConceptionGuidance | null;
   confirmation: OvulationConfirmation | null;
+  // False until at least one full cycle has been logged, so a day-one user
+  // isn't told the estimate comes from history they don't have yet.
+  hasCycleHistory?: boolean;
 }) {
   if (!guidance) return null;
   return (
@@ -24,7 +28,9 @@ export function ConceptionCard({
       <p className="text-xs text-neutral-600 dark:text-neutral-400">
         {confirmation
           ? `Ovulation ${confirmation.status === 'confirmed' ? 'confirmed' : 'estimated'} around ${confirmation.ovulationDate}.`
-          : 'Ovulation estimated from your cycle history.'}
+          : hasCycleHistory
+            ? 'Ovulation estimated from your cycle history.'
+            : 'Based on a typical 28-day cycle — this sharpens as you log periods and temperatures.'}
       </p>
       <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
         Lumen is not a contraceptive and not a substitute for fertility

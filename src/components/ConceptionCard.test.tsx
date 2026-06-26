@@ -19,4 +19,22 @@ describe('ConceptionCard', () => {
     expect(screen.getByText(/most fertile days/i)).toBeTruthy();
     expect(screen.getByText(/not a contraceptive/i)).toBeTruthy();
   });
+
+  const guidance = {
+    date: '2026-06-12',
+    level: 'low' as const,
+    label: 'Low chance to conceive',
+    reason: 'You are outside your fertile window today.',
+  };
+
+  it('does not claim cycle history when there is none', () => {
+    render(<ConceptionCard guidance={guidance} confirmation={null} hasCycleHistory={false} />);
+    expect(screen.getByText(/typical 28-day cycle/i)).toBeTruthy();
+    expect(screen.queryByText(/from your cycle history/i)).toBeNull();
+  });
+
+  it('attributes the estimate to cycle history once cycles have been logged', () => {
+    render(<ConceptionCard guidance={guidance} confirmation={null} hasCycleHistory />);
+    expect(screen.getByText(/from your cycle history/i)).toBeTruthy();
+  });
 });
