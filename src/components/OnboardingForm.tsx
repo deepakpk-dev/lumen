@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
 import { todayISO } from '@/src/domain/dates';
 
@@ -27,33 +28,133 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
   }
 
   if (step === 'intro') {
+    // Full-bleed gradient welcome. Rendered as a fixed overlay so it covers the
+    // app's global footer (which would clash on the gradient) and supplies its
+    // own privacy link. Tapping Continue swaps to the unchanged setup step, at
+    // which point this unmounts and the normal layout (incl. footer) returns.
     return (
-      <main className="mx-auto max-w-md space-y-6 p-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Welcome to Lumen</h1>
-          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-            A private space to track your cycle, pregnancy, and recovery.
+      <div
+        className="lumen-welcome fixed inset-0 z-50 overflow-y-auto text-white"
+        style={{
+          background: 'linear-gradient(160deg, #e11d48, #9f1239 72%)',
+          fontFamily: "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+          paddingTop: 'calc(env(safe-area-inset-top) + 28px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)',
+          paddingLeft: 'calc(env(safe-area-inset-left) + 24px)',
+          paddingRight: 'calc(env(safe-area-inset-right) + 24px)',
+        }}
+      >
+        <style>{`
+          .lumen-welcome .lumen-fade { animation: lumen-fade-in .5s ease-out both; }
+          @keyframes lumen-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: none; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .lumen-welcome .lumen-fade { animation: none; }
+          }
+        `}</style>
+
+        <div className="lumen-fade mx-auto flex min-h-full w-full max-w-md flex-col">
+          {/* Wordmark */}
+          <div className="flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="h-[22px] w-[22px] rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 32% 30%, #fff, #ffd7df 60%, #fbb6c4)',
+                boxShadow: '0 0 16px rgba(255,255,255,0.55)',
+              }}
+            />
+            <span className="text-[15px] font-bold tracking-[0.18em]">LUMEN</span>
+          </div>
+
+          {/* Heading */}
+          <div className="mt-12">
+            <h1 className="text-[34px] font-bold leading-10 tracking-[-0.5px]">Welcome to Lumen</h1>
+            <p className="mt-3 text-[17px] leading-6 text-white/90">
+              A private space to track your cycle, pregnancy, and recovery.
+            </p>
+          </div>
+
+          {/* Benefits */}
+          <ul className="mt-9 space-y-5">
+            <li className="flex gap-4">
+              <span
+                aria-hidden="true"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="4" y="11" width="16" height="9" rx="2" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
+              </span>
+              <p className="text-[15px] leading-[22px]">
+                <span className="font-semibold">Your data stays on this device.</span> Nothing is
+                uploaded — no accounts, no tracking.
+              </p>
+            </li>
+            <li className="flex gap-4">
+              <span
+                aria-hidden="true"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3l7 3v5c0 4.4-3 7.8-7 9-4-1.2-7-4.6-7-9V6l7-3z" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+              </span>
+              <p className="text-[15px] leading-[22px]">
+                <span className="font-semibold">It&apos;s not medical advice.</span> Lumen is for
+                self-tracking and general information — it is not a contraceptive and not a
+                substitute for professional care.
+              </p>
+            </li>
+          </ul>
+
+          {/* Spacer pushes the CTA to the bottom on tall screens; collapses (and
+              the screen scrolls) on short ones. */}
+          <div className="flex-1" aria-hidden="true" />
+
+          {/* CTA */}
+          <button
+            type="button"
+            onClick={() => setStep('setup')}
+            className="mt-10 w-full rounded-xl bg-white px-4 py-3.5 text-base font-semibold text-[#9f1239] shadow-[0_8px_24px_rgba(0,0,0,0.18)] transition hover:bg-white/95 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"
+          >
+            Continue
+          </button>
+
+          {/* Privacy link (in-gradient; replaces the global footer that this
+              overlay covers) */}
+          <p className="mt-4 text-center">
+            <Link
+              href="/privacy"
+              className="rounded text-[13px] text-white/80 underline underline-offset-2 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"
+            >
+              Privacy &amp; your data →
+            </Link>
           </p>
         </div>
-        <ul className="space-y-2 text-sm text-neutral-700 dark:text-neutral-300">
-          <li>
-            <span className="font-medium">Your data stays on this device.</span> Nothing is
-            uploaded — no accounts, no tracking.
-          </li>
-          <li>
-            <span className="font-medium">It&apos;s not medical advice.</span> Lumen is for
-            self-tracking and general information — it is not a contraceptive and not a substitute
-            for professional care.
-          </li>
-        </ul>
-        <button
-          type="button"
-          onClick={() => setStep('setup')}
-          className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white"
-        >
-          Continue
-        </button>
-      </main>
+      </div>
     );
   }
 
