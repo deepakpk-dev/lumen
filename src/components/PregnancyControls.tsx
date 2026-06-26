@@ -7,7 +7,7 @@ import { PregnancyEndFlow } from '@/src/components/PregnancyEndFlow';
 
 type Method = 'due' | 'lmp' | 'cycle';
 
-export function PregnancyControls() {
+export function PregnancyControls({ onStarted }: { onStarted?: () => void }) {
   const { isPregnant, pregnancyProfile, startPregnancyMode, updateDueDate, cycles } =
     useHealthData();
   const [method, setMethod] = useState<Method>('due');
@@ -16,17 +16,18 @@ export function PregnancyControls() {
 
   const lastPeriodStart = cycles.at(-1)?.startDate ?? null;
 
-  function start() {
+  async function start() {
     if (method === 'due') {
       if (!value) return;
-      startPregnancyMode({ dueDate: value });
+      await startPregnancyMode({ dueDate: value });
     } else if (method === 'lmp') {
       if (!value) return;
-      startPregnancyMode({ lmp: value });
+      await startPregnancyMode({ lmp: value });
     } else {
       if (!lastPeriodStart) return;
-      startPregnancyMode({ lmp: lastPeriodStart, source: 'cycle', useCycleLength: true });
+      await startPregnancyMode({ lmp: lastPeriodStart, source: 'cycle', useCycleLength: true });
     }
+    onStarted?.();
   }
 
   if (isPregnant && pregnancyProfile) {

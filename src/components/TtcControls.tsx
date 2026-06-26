@@ -1,39 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  getLifeStage,
-  setLifeStage,
-  getBbtUnit,
-  setBbtUnit,
-  type BbtUnit,
-} from '@/src/settings/preferences';
-import { todayISO } from '@/src/domain/dates';
+import { useHealthData } from '@/src/state/useHealthData';
+import type { BbtUnit } from '@/src/settings/preferences';
 
-export function TtcControls() {
-  const [ready, setReady] = useState(false);
-  const [ttc, setTtc] = useState(false);
-  const [unit, setUnit] = useState<BbtUnit>('C');
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the `ready` gate
-    setTtc(getLifeStage() === 'ttc');
-    setUnit(getBbtUnit());
-    setReady(true);
-  }, []);
+export function TtcControls({ onEnabled }: { onEnabled?: () => void }) {
+  const { lifeStage, bbtUnit, setTtcMode, setBbtUnitPreference } = useHealthData();
+  const ttc = lifeStage === 'ttc';
 
   function toggleTtc() {
     const next = !ttc;
-    setLifeStage(next ? 'ttc' : 'cycle', todayISO());
-    setTtc(next);
+    setTtcMode(next);
+    if (next) onEnabled?.();
   }
-
-  function chooseUnit(u: BbtUnit) {
-    setBbtUnit(u);
-    setUnit(u);
-  }
-
-  if (!ready) return null;
 
   return (
     <div className="space-y-3">
@@ -54,9 +32,9 @@ export function TtcControls() {
             <button
               key={u}
               type="button"
-              aria-pressed={unit === u}
-              onClick={() => chooseUnit(u)}
-              className={`inline-flex min-h-[44px] items-center rounded-full border px-4 ${unit === u ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
+              aria-pressed={bbtUnit === u}
+              onClick={() => setBbtUnitPreference(u)}
+              className={`inline-flex min-h-[44px] items-center rounded-full border px-4 ${bbtUnit === u ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
             >
               °{u}
             </button>

@@ -75,6 +75,7 @@ import {
   getBbtUnit,
   getTtcStartDate,
   setLifeStage,
+  setBbtUnit as setBbtUnitPref,
   type BbtUnit,
 } from '@/src/settings/preferences';
 
@@ -105,6 +106,25 @@ function useHealthDataState() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration of preferences from localStorage
     refreshSettings();
   }, [refreshSettings]);
+
+  // Toggle TTC mode through the shared context so every consumer (daily-log
+  // BBT field, home conception card, fertility nav) reacts immediately —
+  // writing the preference alone leaves the live context stale until reload.
+  const setTtcMode = useCallback(
+    (on: boolean) => {
+      setLifeStage(on ? 'ttc' : 'cycle', todayISO());
+      refreshSettings();
+    },
+    [refreshSettings],
+  );
+
+  const setBbtUnitPreference = useCallback(
+    (u: BbtUnit) => {
+      setBbtUnitPref(u);
+      refreshSettings();
+    },
+    [refreshSettings],
+  );
 
   const refresh = useCallback(async () => {
     const [c, l, p, ks, cs, pp, ep] = await Promise.all([
@@ -369,15 +389,18 @@ function useHealthDataState() {
   const today = todayISO();
 
   const contentFeed: ScoredArticle[] = useMemo(() => {
-    const context = deriveContentContext({
-      cycles,
-      dailyLogs,
-      stats,
-      prediction,
-      today,
-    });
+    const context = deriveContentContext(
+      {
+        cycles,
+        dailyLogs,
+        stats,
+        prediction,
+        today,
+      },
+      lifeStage,
+    );
     return buildContentFeed(ARTICLES, context);
-  }, [cycles, dailyLogs, stats, prediction, today]);
+  }, [cycles, dailyLogs, stats, prediction, today, lifeStage]);
 
   const dailyContent: ContentArticle | null = useMemo(
     () => selectDailyContent(contentFeed, today),
@@ -403,6 +426,8 @@ function useHealthDataState() {
     ovulationConfirmation,
     conceptionToday,
     refreshSettings,
+    setTtcMode,
+    setBbtUnitPreference,
     pregnancyProfile,
     isPregnant,
     gestation,
