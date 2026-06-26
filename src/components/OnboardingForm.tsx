@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useHealthData } from '@/src/state/useHealthData';
 import { todayISO } from '@/src/domain/dates';
 
-type Goal = 'cycle' | 'pregnant';
+type Goal = 'cycle' | 'ttc' | 'pregnant';
 
 export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
-  const { startPeriod, startPregnancyMode } = useHealthData();
+  const { startPeriod, startPregnancyMode, setTtcMode } = useHealthData();
   const [step, setStep] = useState<'intro' | 'setup'>('intro');
   const [goal, setGoal] = useState<Goal>('cycle');
   const [date, setDate] = useState(todayISO());
@@ -20,11 +20,20 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
     if (goal === 'pregnant') {
       if (dueDate) await startPregnancyMode({ dueDate });
     } else {
+      // Both cycle and TTC need a seeded cycle so predictions and the fertile
+      // window work from day one; TTC additionally switches on fertility mode.
       await startPeriod(date);
+      if (goal === 'ttc') setTtcMode(true);
     }
     setSaving(false);
     onComplete();
   }
+
+  const goalOptions: { value: Goal; label: string; hint: string }[] = [
+    { value: 'cycle', label: 'Track my cycle', hint: 'Periods, symptoms, and predictions' },
+    { value: 'ttc', label: 'Trying to conceive', hint: 'Fertile window, BBT, and ovulation' },
+    { value: 'pregnant', label: "I'm pregnant", hint: 'Week-by-week, kicks, and contractions' },
+  ];
 
   if (step === 'intro') {
     return (
@@ -66,26 +75,25 @@ export function OnboardingForm({ onComplete }: { onComplete: () => void }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <button
-          type="button"
-          aria-pressed={goal === 'cycle'}
-          onClick={() => setGoal('cycle')}
-          className={`rounded-md border px-4 py-3 ${goal === 'cycle' ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
-        >
-          Track my cycle
-        </button>
-        <button
-          type="button"
-          aria-pressed={goal === 'pregnant'}
-          onClick={() => setGoal('pregnant')}
-          className={`rounded-md border px-4 py-3 ${goal === 'pregnant' ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
-        >
-          I&apos;m pregnant
-        </button>
-      </div>
+      <fieldset className="space-y-2 text-sm">
+        <legend className="mb-2 block font-medium">What brings you to Lumen?</legend>
+        {goalOptions.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={goal === o.value}
+            onClick={() => setGoal(o.value)}
+            className={`block w-full rounded-md border px-4 py-3 text-left ${goal === o.value ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
+          >
+            <span className="block font-medium">{o.label}</span>
+            <span className={`block text-xs ${goal === o.value ? 'text-rose-50' : 'text-neutral-500 dark:text-neutral-400'}`}>
+              {o.hint}
+            </span>
+          </button>
+        ))}
+      </fieldset>
 
-      {goal === 'cycle' ? (
+      {goal !== 'pregnant' ? (
         <div className="space-y-2">
           <label htmlFor="last-period" className="block text-sm font-medium">
             When did your last period start?
