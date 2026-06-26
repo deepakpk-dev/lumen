@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PregnancyControls } from './PregnancyControls';
 
 const startPregnancyMode = vi.fn().mockResolvedValue(undefined);
@@ -29,6 +29,22 @@ describe('PregnancyControls', () => {
     expect(startPregnancyMode).toHaveBeenCalledWith(
       expect.objectContaining({ dueDate: '2026-10-08' }),
     );
+  });
+
+  it('redirects (calls onStarted) after starting pregnancy from a due date', async () => {
+    const onStarted = vi.fn();
+    render(<PregnancyControls onStarted={onStarted} />);
+    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
+    fireEvent.click(screen.getByRole('button', { name: /start pregnancy mode/i }));
+    await waitFor(() => expect(onStarted).toHaveBeenCalled());
+  });
+
+  it('does not redirect when no date has been entered', () => {
+    const onStarted = vi.fn();
+    render(<PregnancyControls onStarted={onStarted} />);
+    fireEvent.click(screen.getByRole('button', { name: /start pregnancy mode/i }));
+    expect(startPregnancyMode).not.toHaveBeenCalled();
+    expect(onStarted).not.toHaveBeenCalled();
   });
 
   it('shows the due date when already pregnant', () => {

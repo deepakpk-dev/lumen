@@ -6,7 +6,7 @@ import { ContentLibrary } from '@/src/components/ContentLibrary';
 import { ARTICLES } from '@/src/content';
 
 export default function LibraryPage() {
-  const { contentFeed, loading } = useHealthData();
+  const { contentFeed, loading, lifeStage } = useHealthData();
   if (loading) return <main className="p-6">Loading…</main>;
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
@@ -16,7 +16,15 @@ export default function LibraryPage() {
           Home
         </Link>
       </div>
-      <ContentLibrary feed={contentFeed} all={ARTICLES} />
+      {lifeStage === 'cycle' ? (
+        <ContentLibrary feed={contentFeed} all={ARTICLES} />
+      ) : (
+        <p className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+          These reads cover cycle tracking and are available in cycle mode. While
+          you&apos;re in your current mode, look for guidance tailored to this
+          stage on its own screen.
+        </p>
+      )}
     </main>
   );
 }

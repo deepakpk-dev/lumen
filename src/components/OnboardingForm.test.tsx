@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OnboardingForm } from './OnboardingForm';
 
 const startPeriod = vi.fn().mockResolvedValue(undefined);
 const startPregnancyMode = vi.fn().mockResolvedValue(undefined);
+const setTtcMode = vi.fn();
 vi.mock('@/src/state/useHealthData', () => ({
-  useHealthData: () => ({ startPeriod, startPregnancyMode }),
+  useHealthData: () => ({ startPeriod, startPregnancyMode, setTtcMode }),
 }));
 
 beforeEach(() => {
   startPeriod.mockClear();
   startPregnancyMode.mockClear();
+  setTtcMode.mockClear();
 });
 
 // Advance past the first-run intro screen to the setup form.
@@ -32,6 +34,22 @@ describe('OnboardingForm', () => {
     renderSetup();
     fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
     expect(startPeriod).toHaveBeenCalled();
+  });
+
+  it('starts cycle tracking with TTC mode on when the conceiving goal is chosen', async () => {
+    renderSetup();
+    fireEvent.click(screen.getByRole('button', { name: /trying to conceive/i }));
+    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
+    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
+    expect(startPeriod).toHaveBeenCalledWith('2026-06-01');
+    await waitFor(() => expect(setTtcMode).toHaveBeenCalledWith(true));
+  });
+
+  it('does not enable TTC mode for the plain cycle goal', async () => {
+    renderSetup();
+    fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
+    await waitFor(() => expect(startPeriod).toHaveBeenCalled());
+    expect(setTtcMode).not.toHaveBeenCalled();
   });
 
   it('starts pregnancy mode when the pregnant goal is chosen', () => {

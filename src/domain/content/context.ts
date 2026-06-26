@@ -1,9 +1,13 @@
 import type { ContentInput, ContentContext } from './types';
 import { RECENT_LOG_WINDOW } from './types';
+import type { LifeStage } from '@/src/domain/types';
 import { phaseForDate } from '@/src/domain/insights/phase-assignment';
 import { daysBetween } from '@/src/domain/dates';
 
-export function deriveContentContext(input: ContentInput): ContentContext {
+export function deriveContentContext(
+  input: ContentInput,
+  lifeStage: LifeStage = 'cycle',
+): ContentContext {
   const { cycles, dailyLogs, stats, today } = input;
   const hasData = cycles.length > 0 || dailyLogs.length > 0;
 
@@ -20,6 +24,6 @@ export function deriveContentContext(input: ContentInput): ContentContext {
     recentSymptoms: [...recent],
     isIrregular: hasData && !stats.isRegular,
     hasData,
-    lifeStage: 'cycle',
+    lifeStage,
   };
 }

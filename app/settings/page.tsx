@@ -33,7 +33,7 @@ export default function SettingsPage() {
           conception guidance. Lumen is not a contraceptive and not a substitute for
           fertility treatment or medical advice.
         </p>
-        <TtcControls />
+        <TtcControls onEnabled={() => router.push('/')} />
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Pregnancy</h2>
@@ -41,7 +41,7 @@ export default function SettingsPage() {
           Switch on pregnancy mode for week-by-week tracking, a kick counter, and a
           contraction timer. Educational only — not a substitute for medical care.
         </p>
-        <PregnancyControls />
+        <PregnancyControls onStarted={() => router.push('/')} />
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Postpartum</h2>

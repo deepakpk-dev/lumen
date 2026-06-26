@@ -67,6 +67,20 @@ describe('deriveContentContext', () => {
     expect(ctx.recentSymptoms.sort()).toEqual(['Cramps', 'Irritable']);
   });
 
+  it('reflects the provided life stage so content can be scoped to it', () => {
+    const ctx = deriveContentContext(
+      {
+        cycles: [],
+        dailyLogs: [],
+        stats: emptyStats,
+        prediction: null,
+        today: '2026-06-17',
+      },
+      'pregnancy',
+    );
+    expect(ctx.lifeStage).toBe('pregnancy');
+  });
+
   it('flags irregularity only when data exists', () => {
     const withData = deriveContentContext({
       cycles: [{ id: 'c1', startDate: '2026-06-01' }],
