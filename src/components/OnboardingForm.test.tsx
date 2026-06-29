@@ -99,4 +99,29 @@ describe('OnboardingForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
     await waitFor(() => expect(onComplete).toHaveBeenCalledWith('cycle'));
   });
+
+  it('frames the setup step as setup rather than a second welcome', () => {
+    renderSetup();
+    expect(screen.getByRole('heading', { name: /set things up/i })).toBeInTheDocument();
+  });
+
+  it('keeps the Lumen wordmark visible on the setup step for brand continuity', () => {
+    renderSetup();
+    expect(screen.getByText('Lumen')).toBeInTheDocument();
+  });
+
+  it('explains why submit is inactive until a last period date is set, then clears it', () => {
+    renderSetup();
+    expect(screen.getByText(/last period date to continue/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
+    expect(screen.queryByText(/last period date to continue/i)).not.toBeInTheDocument();
+  });
+
+  it('explains why submit is inactive until a due date is set on the pregnant goal', () => {
+    renderSetup();
+    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    expect(screen.getByText(/due date to continue/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
+    expect(screen.queryByText(/due date to continue/i)).not.toBeInTheDocument();
+  });
 });

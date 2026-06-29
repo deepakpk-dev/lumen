@@ -1,11 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
 import { todayISO } from '@/src/domain/dates';
 
 export type Goal = 'cycle' | 'ttc' | 'pregnant';
+
+// Shared stroke style so the goal glyphs match the icon language established on
+// the intro screen (thin outline, rounded joins).
+const iconProps = {
+  width: 20,
+  height: 20,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+// One glyph per goal: a droplet for cycle, a sprout for conceiving, a heart for
+// pregnancy. Decorative only — the button's label/hint text carries the meaning.
+const goalIcon: Record<Goal, ReactNode> = {
+  cycle: (
+    <svg aria-hidden="true" {...iconProps}>
+      <path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z" />
+    </svg>
+  ),
+  ttc: (
+    <svg aria-hidden="true" {...iconProps}>
+      <path d="M12 21v-7" />
+      <path d="M12 14c0-3 2-5 5-5 0 3-2 5-5 5z" />
+      <path d="M12 14c0-2.6-1.8-4.5-4.5-4.5 0 2.6 1.8 4.5 4.5 4.5z" />
+    </svg>
+  ),
+  pregnant: (
+    <svg aria-hidden="true" {...iconProps}>
+      <path d="M12 20s-6.5-4.2-6.5-9A3.5 3.5 0 0 1 12 7a3.5 3.5 0 0 1 6.5 4c0 4.8-6.5 9-6.5 9z" />
+    </svg>
+  ),
+};
+
+function LockIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="mt-0.5 shrink-0"
+    >
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
 
 export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => void }) {
   const { startPeriod, startPregnancyMode, setTtcMode } = useHealthData();
@@ -170,31 +225,90 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
     );
   }
 
+  // The button stays disabled until the goal's required date is set; this same
+  // flag drives the visible reason below it, so an inactive button never reads
+  // as a broken one.
+  const missingDate = goal === 'pregnant' ? !dueDate : !date;
+
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-md space-y-6 p-6">
+      {/* Carry the intro's wordmark into setup so the two screens read as one
+          flow, and signal that setup is the last thing between them and the app. */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-rose-600" />
+          <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-300">
+            Lumen
+          </span>
+        </div>
+        <span className="text-xs text-neutral-400 dark:text-neutral-500">Step 2 of 2</span>
+      </div>
+
       <div>
-        <h1 className="text-2xl font-semibold">Welcome</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Let&apos;s set things up</h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          Let&apos;s set things up. This stays private on your device.
+          A few quick details, then you&apos;re in.
         </p>
       </div>
 
-      <fieldset className="space-y-2 text-sm">
+      <fieldset className="space-y-2.5 text-sm">
         <legend className="mb-2 block font-medium">What brings you to Lumen?</legend>
-        {goalOptions.map((o) => (
-          <button
-            key={o.value}
-            type="button"
-            aria-pressed={goal === o.value}
-            onClick={() => setGoal(o.value)}
-            className={`block w-full rounded-md border px-4 py-3 text-left ${goal === o.value ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
-          >
-            <span className="block font-medium">{o.label}</span>
-            <span className={`block text-xs ${goal === o.value ? 'text-rose-50' : 'text-neutral-500 dark:text-neutral-400'}`}>
-              {o.hint}
-            </span>
-          </button>
-        ))}
+        {goalOptions.map((o) => {
+          const selected = goal === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setGoal(o.value)}
+              className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
+                selected
+                  ? 'border-rose-600 bg-rose-50 dark:border-rose-500 dark:bg-rose-950/40'
+                  : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                  selected
+                    ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/60 dark:text-rose-300'
+                    : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                }`}
+              >
+                {goalIcon[o.value]}
+              </span>
+              <span className="flex-1">
+                <span
+                  className={`block font-medium ${selected ? 'text-rose-900 dark:text-rose-100' : ''}`}
+                >
+                  {o.label}
+                </span>
+                <span
+                  className={`block text-xs ${selected ? 'text-rose-700/80 dark:text-rose-300/80' : 'text-neutral-500 dark:text-neutral-400'}`}
+                >
+                  {o.hint}
+                </span>
+              </span>
+              {selected && (
+                <svg
+                  aria-hidden="true"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-rose-600 dark:text-rose-300"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              )}
+            </button>
+          );
+        })}
       </fieldset>
 
       {goal !== 'pregnant' ? (
@@ -202,9 +316,6 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           <label htmlFor="last-period" className="block text-sm font-medium">
             When did your last period start?
           </label>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Pick the first day of your most recent period.
-          </p>
           <input
             id="last-period"
             aria-label="last period start"
@@ -212,8 +323,12 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             value={date}
             max={todayISO()}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-700 dark:bg-transparent dark:[color-scheme:dark]"
           />
+          <p className="flex items-start gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+            <LockIcon />
+            <span>The first day of your most recent period. Not sure? Your best guess is fine.</span>
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -226,18 +341,35 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-700 dark:bg-transparent dark:[color-scheme:dark]"
           />
+          <p className="flex items-start gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+            <LockIcon />
+            <span>Your estimated due date — you can adjust it anytime.</span>
+          </p>
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={saving || (goal === 'pregnant' ? !dueDate : !date)}
-        className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white disabled:opacity-50"
-      >
-        Get started
-      </button>
+      <div className="space-y-2">
+        <button
+          type="submit"
+          disabled={saving || missingDate}
+          className={`w-full rounded-xl px-4 py-3.5 font-semibold transition ${
+            saving || missingDate
+              ? 'cursor-not-allowed bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
+              : 'bg-rose-600 text-white shadow-[0_8px_24px_rgba(225,29,72,0.25)] hover:bg-rose-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2'
+          }`}
+        >
+          Get started
+        </button>
+        {missingDate && (
+          <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
+            {goal === 'pregnant'
+              ? 'Pick your due date to continue'
+              : 'Pick your last period date to continue'}
+          </p>
+        )}
+      </div>
     </form>
   );
 }
