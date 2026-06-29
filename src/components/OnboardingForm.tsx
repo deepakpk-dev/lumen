@@ -63,7 +63,7 @@ function LockIcon() {
 }
 
 export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => void }) {
-  const { startPeriod, startPregnancyMode, setTtcMode } = useHealthData();
+  const { completeOnboarding } = useHealthData();
   const [step, setStep] = useState<'intro' | 'setup'>('intro');
   const [goal, setGoal] = useState<Goal>('cycle');
   const [date, setDate] = useState('');
@@ -76,14 +76,9 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
     // submit can't seed a cycle off an empty date or route onward without setup.
     if (goal === 'pregnant' ? !dueDate : !date) return;
     setSaving(true);
-    if (goal === 'pregnant') {
-      await startPregnancyMode({ dueDate });
-    } else {
-      // Both cycle and TTC need a seeded cycle so predictions and the fertile
-      // window work from day one; TTC additionally switches on fertility mode.
-      await startPeriod(date);
-      if (goal === 'ttc') setTtcMode(true);
-    }
+    // One call seeds the goal's data, sets its life stage, and clears any prior
+    // stage — so re-onboarding (or onboarding after a wipe) lands cleanly.
+    await completeOnboarding(goal, { date, dueDate });
     setSaving(false);
     onComplete(goal);
   }

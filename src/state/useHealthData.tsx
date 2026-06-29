@@ -22,6 +22,8 @@ import {
   upsertDailyLog,
   getPregnancyProfile,
   savePregnancyProfile,
+  clearPregnancyProfile,
+  clearPostpartumProfile,
   addKickSession,
   getKickSessions,
   addContractionSession,
@@ -194,6 +196,33 @@ function useHealthDataState() {
       await refresh();
     },
     [stats.averageCycleLength, refresh, refreshSettings],
+  );
+
+  // Single entry point for the onboarding setup step. Onboarding is a fresh
+  // start, but the route has no guard and the provider outlives navigation, so
+  // it can run with a stale stage still in memory/storage (a re-onboard, or
+  // arriving here after a data wipe). Clearing the prior pregnancy/postpartum
+  // journey and asserting the goal's life stage makes every goal land cleanly —
+  // the plain cycle goal especially, which otherwise has no path that resets a
+  // carried-over 'pregnancy'/'postpartum'/'ttc' stage. (Goal mirrors the union
+  // in OnboardingForm; kept inline to avoid a component→state import cycle.)
+  const completeOnboarding = useCallback(
+    async (goal: 'cycle' | 'ttc' | 'pregnant', input: { date?: ISODate; dueDate?: ISODate }) => {
+      await clearPregnancyProfile();
+      await clearPostpartumProfile();
+      if (goal === 'pregnant') {
+        await savePregnancyProfile(startPregnancy({ today: todayISO(), dueDate: input.dueDate }));
+        setLifeStage('pregnancy', todayISO());
+      } else {
+        // Both cycle and TTC seed a cycle so predictions work from day one; TTC
+        // additionally lands in fertility mode.
+        if (input.date) await addCycle({ id: newId(), startDate: input.date });
+        setLifeStage(goal === 'ttc' ? 'ttc' : 'cycle', todayISO());
+      }
+      refreshSettings();
+      await refresh();
+    },
+    [refresh, refreshSettings],
   );
 
   const updateDueDate = useCallback(
@@ -417,6 +446,7 @@ function useHealthDataState() {
     dailyContent,
     loading,
     startPeriod,
+    completeOnboarding,
     endPeriod,
     saveLog,
     refresh,

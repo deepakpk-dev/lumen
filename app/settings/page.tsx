@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useHealthData } from '@/src/state/useHealthData';
 import { DataControls } from '@/src/components/DataControls';
 import { PasscodeControls } from '@/src/components/PasscodeControls';
 import { PostpartumControls } from '@/src/components/PostpartumControls';
@@ -10,6 +11,7 @@ import { TtcControls } from '@/src/components/TtcControls';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { refresh, refreshSettings } = useHealthData();
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -60,7 +62,16 @@ export default function SettingsPage() {
           Because it lives only here, clearing your browser data, using private mode, or losing
           this device will erase it. Export regularly to keep a backup.
         </p>
-        <DataControls onDeleted={() => router.replace('/onboarding')} />
+        <DataControls
+          onDeleted={async () => {
+            // The provider outlives this navigation, so reset the live context
+            // after a wipe before leaving — otherwise the just-deleted cycles
+            // and life stage linger in memory and bleed into the next screen.
+            await refresh();
+            refreshSettings();
+            router.replace('/onboarding');
+          }}
+        />
       </section>
     </main>
   );

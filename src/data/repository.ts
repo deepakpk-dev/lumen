@@ -43,6 +43,14 @@ export async function savePregnancyProfile(p: PregnancyProfile): Promise<void> {
   await db.pregnancyProfile.put(p);
 }
 
+// Drop the pregnancy journey (profile + its kick/contraction logs) so a fresh
+// onboarding start can't inherit a stale pregnancy stage.
+export async function clearPregnancyProfile(): Promise<void> {
+  await db.pregnancyProfile.clear();
+  await db.kickSessions.clear();
+  await db.contractionSessions.clear();
+}
+
 export async function deletePregnancyProfile(): Promise<void> {
   await db.pregnancyProfile.delete('current');
 }
@@ -101,6 +109,13 @@ export async function getPostpartumProfile(): Promise<PostpartumProfile | undefi
 
 export async function savePostpartumProfile(p: PostpartumProfile): Promise<void> {
   await db.postpartumProfile.put(p);
+}
+
+// Drop the postpartum journey (profile + its mood check-ins) so a fresh
+// onboarding start can't inherit a stale postpartum stage.
+export async function clearPostpartumProfile(): Promise<void> {
+  await db.postpartumProfile.clear();
+  await db.epdsEntries.clear();
 }
 
 export async function deletePostpartumProfile(): Promise<void> {
