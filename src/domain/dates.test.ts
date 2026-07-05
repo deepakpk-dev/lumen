@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addDays, daysBetween, isValidISODate, parseISODate, toISODate } from './dates';
+import { addDays, daysBetween, isValidISODate, msUntilNextMidnight, parseISODate, toISODate } from './dates';
 
 describe('date utils', () => {
   it('adds days without timezone drift', () => {
@@ -9,6 +9,14 @@ describe('date utils', () => {
   it('counts whole calendar days between dates', () => {
     expect(daysBetween('2026-01-01', '2026-01-29')).toBe(28);
     expect(daysBetween('2026-01-29', '2026-01-01')).toBe(-28);
+  });
+
+  it('measures ms to the next local midnight', () => {
+    // 23:59:50 local → 10s to midnight; 00:00:00 → a full day away.
+    const nearMidnight = new Date(2026, 5, 17, 23, 59, 50);
+    expect(msUntilNextMidnight(nearMidnight)).toBe(10_000);
+    const startOfDay = new Date(2026, 5, 17, 0, 0, 0);
+    expect(msUntilNextMidnight(startOfDay)).toBe(24 * 60 * 60 * 1000);
   });
 
   it('round-trips Date <-> ISODate', () => {

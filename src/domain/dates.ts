@@ -26,6 +26,15 @@ export function todayISO(): ISODate {
   return toISODate(new Date());
 }
 
+// Milliseconds from `now` until the next local midnight (00:00 the following
+// day). Drives the daily rollover of the app's reactive "today" so derivations
+// re-compute when the calendar date changes.
+export function msUntilNextMidnight(now: Date = new Date()): number {
+  const next = new Date(now);
+  next.setHours(24, 0, 0, 0);
+  return next.getTime() - now.getTime();
+}
+
 // True only for a real calendar date in strict YYYY-MM-DD form. Guards untrusted
 // input (e.g. a ?date= URL param) — rejects impossible dates like 2026-02-31 by
 // round-tripping through the parser.

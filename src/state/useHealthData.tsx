@@ -69,7 +69,7 @@ import {
 } from '@/src/domain/pregnancy/lifecycle';
 import { computeCycleStats } from '@/src/domain/cycle-stats';
 import { generatePrediction } from '@/src/domain/prediction';
-import { todayISO } from '@/src/domain/dates';
+import { todayISO, msUntilNextMidnight } from '@/src/domain/dates';
 import { generateInsights } from '@/src/domain/insights/insights';
 import type { Insight } from '@/src/domain/insights/types';
 import { ARTICLES } from '@/src/content';
@@ -108,6 +108,35 @@ function useHealthDataState() {
   const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
   const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
   const [ttcStartDate, setTtcStartDate] = useState<string | null>(null);
+
+  // Reactive "today". Every daily derivation (insights, content feed, gestation,
+  // recovery week, conception guidance) keys off this, so it must advance when
+  // the clock crosses local midnight — otherwise an app left open overnight
+  // shows yesterday's day until a manual reload. We roll it at midnight and
+  // re-check on tab focus/visibility (a backgrounded PWA's timer may not fire).
+  const [today, setToday] = useState<ISODate>(() => todayISO());
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const bump = () => setToday((prev) => (prev === todayISO() ? prev : todayISO()));
+    const schedule = () => {
+      // +1s cushion so we're safely past midnight when the timer fires.
+      timer = setTimeout(() => {
+        bump();
+        schedule();
+      }, msUntilNextMidnight() + 1000);
+    };
+    const onWake = () => {
+      if (!document.hidden) bump();
+    };
+    schedule();
+    document.addEventListener('visibilitychange', onWake);
+    window.addEventListener('focus', onWake);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onWake);
+      window.removeEventListener('focus', onWake);
+    };
+  }, []);
 
   const refreshSettings = useCallback(() => {
     setLifeStageState(getLifeStage());
@@ -334,8 +363,8 @@ function useHealthDataState() {
   const isPregnant = lifeStage === 'pregnancy' && pregnancyProfile?.status === 'active';
 
   const gestation: GestationalAge | null = useMemo(
-    () => (isPregnant && pregnancyProfile ? gestationalAge(pregnancyProfile.dueDate, todayISO()) : null),
-    [isPregnant, pregnancyProfile],
+    () => (isPregnant && pregnancyProfile ? gestationalAge(pregnancyProfile.dueDate, today) : null),
+    [isPregnant, pregnancyProfile, today],
   );
 
   const currentTrimester: Trimester | null = useMemo(
@@ -344,8 +373,8 @@ function useHealthDataState() {
   );
 
   const daysToDue: number | null = useMemo(
-    () => (isPregnant && pregnancyProfile ? daysUntilDue(pregnancyProfile.dueDate, todayISO()) : null),
-    [isPregnant, pregnancyProfile],
+    () => (isPregnant && pregnancyProfile ? daysUntilDue(pregnancyProfile.dueDate, today) : null),
+    [isPregnant, pregnancyProfile, today],
   );
 
   const weekContentToday: WeekContent | null = useMemo(
@@ -356,13 +385,13 @@ function useHealthDataState() {
   const isPostpartum = lifeStage === 'postpartum' && postpartumProfile?.status === 'active';
 
   const postpartumWeekNumber: number | null = useMemo(
-    () => (isPostpartum && postpartumProfile ? postpartumWeek(postpartumProfile.birthDate, todayISO()) : null),
-    [isPostpartum, postpartumProfile],
+    () => (isPostpartum && postpartumProfile ? postpartumWeek(postpartumProfile.birthDate, today) : null),
+    [isPostpartum, postpartumProfile, today],
   );
 
   const recoveryStageToday: RecoveryStage | null = useMemo(
-    () => (isPostpartum && postpartumProfile ? recoveryStage(postpartumProfile.birthDate, todayISO()) : null),
-    [isPostpartum, postpartumProfile],
+    () => (isPostpartum && postpartumProfile ? recoveryStage(postpartumProfile.birthDate, today) : null),
+    [isPostpartum, postpartumProfile, today],
   );
 
   const postpartumContentToday: PostpartumWeekContent | null = useMemo(
@@ -410,12 +439,12 @@ function useHealthDataState() {
   const conceptionToday: ConceptionGuidance | null = useMemo(() => {
     if (!isTtc) return null;
     return conceptionGuidance(
-      todayISO(),
+      today,
       prediction,
       ovulationConfirmation,
-      dailyLogs.find((l) => l.date === todayISO()),
+      dailyLogs.find((l) => l.date === today),
     );
-  }, [isTtc, prediction, ovulationConfirmation, dailyLogs]);
+  }, [isTtc, prediction, ovulationConfirmation, dailyLogs, today]);
   const insights: Insight[] = useMemo(
     () =>
       generateInsights({
@@ -423,12 +452,10 @@ function useHealthDataState() {
         dailyLogs,
         stats,
         prediction,
-        today: todayISO(),
+        today,
       }),
-    [cycles, dailyLogs, stats, prediction],
+    [cycles, dailyLogs, stats, prediction, today],
   );
-
-  const today = todayISO();
 
   const contentFeed: ScoredArticle[] = useMemo(() => {
     const context = deriveContentContext(
@@ -492,6 +519,7 @@ function useHealthDataState() {
   );
 
   return {
+    today,
     cycles,
     dailyLogs,
     stats,

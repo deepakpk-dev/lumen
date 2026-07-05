@@ -13,12 +13,11 @@ import { PregnancyCard } from '@/src/components/PregnancyCard';
 import { PostLossCard } from '@/src/components/PostLossCard';
 import { PostpartumCard } from '@/src/components/PostpartumCard';
 import { topInsight } from '@/src/domain/insights/insights';
-import { todayISO } from '@/src/domain/dates';
 
 export default function HomePage() {
   const router = useRouter();
   const {
-    cycles, stats, prediction, insights, dailyContent, lifeStage,
+    today, cycles, stats, prediction, insights, dailyContent, lifeStage,
     conceptionToday, ovulationConfirmation, loading,
     isPregnant, gestation, currentTrimester, daysToDue, weekContentToday,
     pregnancyProfile, postpartumProfile,
@@ -63,7 +62,7 @@ export default function HomePage() {
           prediction={prediction}
           stats={stats}
           lastPeriodStart={lastPeriodStart}
-          today={todayISO()}
+          today={today}
         />
       )}
       <ReminderBanner />
