@@ -11,76 +11,83 @@ import type {
 } from '@/src/domain/types';
 import { db } from './db';
 import type { ImportedData } from './export';
+import {
+  putRecord,
+  getRecord,
+  getAllRecords,
+  deleteRecord,
+  clearStore,
+} from './storage';
 
 export async function addCycle(cycle: Cycle): Promise<void> {
-  await db.cycles.put(cycle);
+  await putRecord('cycles', cycle.id, cycle);
 }
 
 export async function updateCycle(cycle: Cycle): Promise<void> {
-  await db.cycles.put(cycle);
+  await putRecord('cycles', cycle.id, cycle);
 }
 
 export async function getCycles(): Promise<Cycle[]> {
-  const all = await db.cycles.toArray();
+  const all = await getAllRecords<Cycle>('cycles');
   return all.sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
 
 export async function upsertDailyLog(log: DailyLog): Promise<void> {
-  await db.dailyLogs.put(log);
+  await putRecord('dailyLogs', log.date, log);
 }
 
 export async function getDailyLog(date: ISODate): Promise<DailyLog | undefined> {
-  return db.dailyLogs.get(date);
+  return getRecord<DailyLog>('dailyLogs', date);
 }
 
 export async function getAllDailyLogs(): Promise<DailyLog[]> {
-  return db.dailyLogs.toArray();
+  return getAllRecords<DailyLog>('dailyLogs');
 }
 
 export async function getPregnancyProfile(): Promise<PregnancyProfile | undefined> {
-  return db.pregnancyProfile.get('current');
+  return getRecord<PregnancyProfile>('pregnancyProfile', 'current');
 }
 
 export async function savePregnancyProfile(p: PregnancyProfile): Promise<void> {
-  await db.pregnancyProfile.put(p);
+  await putRecord('pregnancyProfile', p.id, p);
 }
 
 // Drop the pregnancy journey (profile + its kick/contraction logs) so a fresh
 // onboarding start can't inherit a stale pregnancy stage.
 export async function clearPregnancyProfile(): Promise<void> {
-  await db.pregnancyProfile.clear();
-  await db.kickSessions.clear();
-  await db.contractionSessions.clear();
+  await clearStore('pregnancyProfile');
+  await clearStore('kickSessions');
+  await clearStore('contractionSessions');
 }
 
 export async function deletePregnancyProfile(): Promise<void> {
-  await db.pregnancyProfile.delete('current');
+  await deleteRecord('pregnancyProfile', 'current');
 }
 
 export async function addKickSession(s: KickSession): Promise<void> {
-  await db.kickSessions.put(s);
+  await putRecord('kickSessions', s.id, s);
 }
 
 export async function getKickSessions(): Promise<KickSession[]> {
-  const all = await db.kickSessions.toArray();
+  const all = await getAllRecords<KickSession>('kickSessions');
   return all.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
 
 export async function addContractionSession(s: ContractionSession): Promise<void> {
-  await db.contractionSessions.put(s);
+  await putRecord('contractionSessions', s.id, s);
 }
 
 export async function getContractionSessions(): Promise<ContractionSession[]> {
-  const all = await db.contractionSessions.toArray();
+  const all = await getAllRecords<ContractionSession>('contractionSessions');
   return all.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export async function getProgramProgress(): Promise<ProgramProgress[]> {
-  return db.programProgress.toArray();
+  return getAllRecords<ProgramProgress>('programProgress');
 }
 
 export async function saveProgramProgress(p: ProgramProgress): Promise<void> {
-  await db.programProgress.put(p);
+  await putRecord('programProgress', p.programSlug, p);
 }
 
 export async function exportAll(): Promise<{
@@ -105,65 +112,63 @@ export async function exportAll(): Promise<{
   };
 }
 
-// Restore from a parsed export. Upsert by primary key (never clears first) so
-// restoring an older backup onto a device with newer records merges rather
-// than destroys — matching keys are overwritten, records only present locally
-// survive. One transaction so a mid-restore failure rolls back cleanly.
+// Restore from a parsed export. Routes through the same put path as everything
+// else, so records land encrypted when a vault is active. ponytail: no wrapping
+// transaction — encrypted writes await crypto.subtle, which would close a Dexie
+// transaction early. Import is additive (upsert by key), so a re-run after an
+// interrupted import completes it.
 export async function importAll(data: ImportedData): Promise<void> {
-  await db.transaction(
-    'rw',
-    [
-      db.cycles, db.dailyLogs, db.pregnancyProfile, db.kickSessions,
-      db.contractionSessions, db.postpartumProfile, db.epdsEntries, db.programProgress,
-    ],
-    async () => {
-      if (data.cycles.length) await db.cycles.bulkPut(data.cycles);
-      if (data.dailyLogs.length) await db.dailyLogs.bulkPut(data.dailyLogs);
-      if (data.pregnancyProfile) await db.pregnancyProfile.put(data.pregnancyProfile);
-      if (data.kickSessions.length) await db.kickSessions.bulkPut(data.kickSessions);
-      if (data.contractionSessions.length) await db.contractionSessions.bulkPut(data.contractionSessions);
-      if (data.postpartumProfile) await db.postpartumProfile.put(data.postpartumProfile);
-      if (data.epdsEntries.length) await db.epdsEntries.bulkPut(data.epdsEntries);
-      if (data.programProgress.length) await db.programProgress.bulkPut(data.programProgress);
-    },
-  );
+  for (const c of data.cycles) await putRecord('cycles', c.id, c);
+  for (const l of data.dailyLogs) await putRecord('dailyLogs', l.date, l);
+  if (data.pregnancyProfile) await putRecord('pregnancyProfile', data.pregnancyProfile.id, data.pregnancyProfile);
+  for (const s of data.kickSessions) await putRecord('kickSessions', s.id, s);
+  for (const s of data.contractionSessions) await putRecord('contractionSessions', s.id, s);
+  if (data.postpartumProfile) await putRecord('postpartumProfile', data.postpartumProfile.id, data.postpartumProfile);
+  for (const e of data.epdsEntries) await putRecord('epdsEntries', e.id, e);
+  for (const p of data.programProgress) await putRecord('programProgress', p.programSlug, p);
 }
 
+// Full wipe. Clears both the plaintext tables and the encrypted store outright
+// so it erases everything regardless of the current mode (used on delete-all
+// and re-onboarding after a reset).
 export async function deleteAll(): Promise<void> {
-  await db.cycles.clear();
-  await db.dailyLogs.clear();
-  await db.pregnancyProfile.clear();
-  await db.kickSessions.clear();
-  await db.contractionSessions.clear();
-  await db.postpartumProfile.clear();
-  await db.epdsEntries.clear();
-  await db.programProgress.clear();
+  await Promise.all([
+    db.cycles.clear(),
+    db.dailyLogs.clear(),
+    db.pregnancyProfile.clear(),
+    db.kickSessions.clear(),
+    db.contractionSessions.clear(),
+    db.postpartumProfile.clear(),
+    db.epdsEntries.clear(),
+    db.programProgress.clear(),
+    db.records.clear(),
+  ]);
 }
 
 export async function getPostpartumProfile(): Promise<PostpartumProfile | undefined> {
-  return db.postpartumProfile.get('current');
+  return getRecord<PostpartumProfile>('postpartumProfile', 'current');
 }
 
 export async function savePostpartumProfile(p: PostpartumProfile): Promise<void> {
-  await db.postpartumProfile.put(p);
+  await putRecord('postpartumProfile', p.id, p);
 }
 
 // Drop the postpartum journey (profile + its mood check-ins) so a fresh
 // onboarding start can't inherit a stale postpartum stage.
 export async function clearPostpartumProfile(): Promise<void> {
-  await db.postpartumProfile.clear();
-  await db.epdsEntries.clear();
+  await clearStore('postpartumProfile');
+  await clearStore('epdsEntries');
 }
 
 export async function deletePostpartumProfile(): Promise<void> {
-  await db.postpartumProfile.delete('current');
+  await deleteRecord('postpartumProfile', 'current');
 }
 
 export async function addEpdsEntry(e: EpdsEntry): Promise<void> {
-  await db.epdsEntries.put(e);
+  await putRecord('epdsEntries', e.id, e);
 }
 
 export async function getEpdsEntries(): Promise<EpdsEntry[]> {
-  const all = await db.epdsEntries.toArray();
+  const all = await getAllRecords<EpdsEntry>('epdsEntries');
   return all.sort((a, b) => b.date.localeCompare(a.date));
 }
