@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildExportBlob } from './export';
+import { buildExportBlob, parseImport } from './export';
 import type { PostpartumProfile, EpdsEntry } from '@/src/domain/types';
 
 describe('buildExportBlob', () => {
@@ -55,6 +55,36 @@ describe('buildExportBlob', () => {
     expect(parsed.version).toBe(4);
     expect(parsed.programProgress).toHaveLength(1);
     expect(parsed.programProgress[0].completedSteps).toEqual(['how-tracking-works']);
+  });
+});
+
+describe('parseImport', () => {
+  it('round-trips an exported blob', () => {
+    const { json } = buildExportBlob({
+      cycles: [{ id: 'a', startDate: '2026-01-01' }],
+      dailyLogs: [{ date: '2026-01-01', symptoms: [], moods: [] }],
+      epdsEntries: [{ id: 'e', date: '2026-01-02', responses: [], total: 0, band: 'low' }],
+    });
+    const data = parseImport(json);
+    expect(data.cycles).toEqual([{ id: 'a', startDate: '2026-01-01' }]);
+    expect(data.dailyLogs).toHaveLength(1);
+    expect(data.epdsEntries).toHaveLength(1);
+    expect(data.pregnancyProfile).toBeNull();
+    expect(data.programProgress).toEqual([]);
+  });
+
+  it('drops records missing their primary key', () => {
+    const json = JSON.stringify({
+      version: 4,
+      cycles: [{ id: 'a', startDate: '2026-01-01' }, { startDate: '2026-02-01' }],
+    });
+    expect(parseImport(json).cycles).toHaveLength(1);
+  });
+
+  it('rejects non-JSON, non-export, and newer-version files', () => {
+    expect(() => parseImport('not json')).toThrow(/JSON/);
+    expect(() => parseImport('{"foo":1}')).toThrow(/Lumen export/);
+    expect(() => parseImport('{"version":99}')).toThrow(/newer version/);
   });
 });
 

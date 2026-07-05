@@ -10,6 +10,7 @@ import type {
   ProgramProgress,
 } from '@/src/domain/types';
 import { db } from './db';
+import type { ImportedData } from './export';
 
 export async function addCycle(cycle: Cycle): Promise<void> {
   await db.cycles.put(cycle);
@@ -102,6 +103,30 @@ export async function exportAll(): Promise<{
     epdsEntries: await getEpdsEntries(),
     programProgress: await getProgramProgress(),
   };
+}
+
+// Restore from a parsed export. Upsert by primary key (never clears first) so
+// restoring an older backup onto a device with newer records merges rather
+// than destroys — matching keys are overwritten, records only present locally
+// survive. One transaction so a mid-restore failure rolls back cleanly.
+export async function importAll(data: ImportedData): Promise<void> {
+  await db.transaction(
+    'rw',
+    [
+      db.cycles, db.dailyLogs, db.pregnancyProfile, db.kickSessions,
+      db.contractionSessions, db.postpartumProfile, db.epdsEntries, db.programProgress,
+    ],
+    async () => {
+      if (data.cycles.length) await db.cycles.bulkPut(data.cycles);
+      if (data.dailyLogs.length) await db.dailyLogs.bulkPut(data.dailyLogs);
+      if (data.pregnancyProfile) await db.pregnancyProfile.put(data.pregnancyProfile);
+      if (data.kickSessions.length) await db.kickSessions.bulkPut(data.kickSessions);
+      if (data.contractionSessions.length) await db.contractionSessions.bulkPut(data.contractionSessions);
+      if (data.postpartumProfile) await db.postpartumProfile.put(data.postpartumProfile);
+      if (data.epdsEntries.length) await db.epdsEntries.bulkPut(data.epdsEntries);
+      if (data.programProgress.length) await db.programProgress.bulkPut(data.programProgress);
+    },
+  );
 }
 
 export async function deleteAll(): Promise<void> {

@@ -1,13 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { deleteAll, exportAll } from '@/src/data/repository';
-import { buildExportBlob } from '@/src/data/export';
+import { useRef, useState } from 'react';
+import { deleteAll, exportAll, importAll } from '@/src/data/repository';
+import { buildExportBlob, parseImport } from '@/src/data/export';
 import { clearPreferences } from '@/src/settings/preferences';
 import { clearPasscode } from '@/src/security/passcode';
 
-export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
+export function DataControls({
+  onDeleted,
+  onImported,
+}: {
+  onDeleted?: () => void;
+  onImported?: () => void | Promise<void>;
+}) {
   const [confirming, setConfirming] = useState(false);
+  const [status, setStatus] = useState<{ ok: boolean; msg: string } | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   async function handleExport() {
     const data = await exportAll();
@@ -19,6 +27,20 @@ export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file after an error
+    if (!file) return;
+    setStatus(null);
+    try {
+      await importAll(parseImport(await file.text()));
+      await onImported?.();
+      setStatus({ ok: true, msg: 'Data restored from your backup.' });
+    } catch (err) {
+      setStatus({ ok: false, msg: err instanceof Error ? err.message : 'Import failed.' });
+    }
   }
 
   async function handleDelete() {
@@ -38,6 +60,32 @@ export function DataControls({ onDeleted }: { onDeleted?: () => void }) {
       >
         Export my data
       </button>
+
+      <input
+        ref={fileInput}
+        type="file"
+        accept="application/json,.json"
+        onChange={handleImport}
+        className="sr-only"
+      />
+      <button
+        type="button"
+        onClick={() => fileInput.current?.click()}
+        className="w-full rounded-md border px-4 py-3"
+      >
+        Restore from a backup
+      </button>
+
+      {status && (
+        <p
+          className={`text-sm ${
+            status.ok ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+          }`}
+          role="status"
+        >
+          {status.msg}
+        </p>
+      )}
 
       {!confirming ? (
         <button

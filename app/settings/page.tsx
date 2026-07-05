@@ -77,7 +77,8 @@ export default function SettingsPage() {
         </p>
         <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           Because it lives only here, clearing your browser data, using private mode, or losing
-          this device will erase it. Export regularly to keep a backup.
+          this device will erase it. Export regularly, then use “Restore from a backup” on a new
+          device or after clearing data.
         </p>
         <Link
           href="/report"
@@ -93,6 +94,13 @@ export default function SettingsPage() {
             await refresh();
             refreshSettings();
             router.replace('/onboarding');
+          }}
+          onImported={async () => {
+            // Same stale-context reason as onDeleted: pull the restored records
+            // and preferences into the live provider so the app reflects them
+            // without a reload.
+            await refresh();
+            refreshSettings();
           }}
         />
       </section>

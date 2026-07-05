@@ -3,6 +3,7 @@ import {
   addCycle,
   deleteAll,
   exportAll,
+  importAll,
   getCycles,
   getDailyLog,
   upsertDailyLog,
@@ -21,6 +22,24 @@ beforeEach(async () => {
 });
 
 describe('repository', () => {
+  it('restores an export and merges without clobbering newer-only records', async () => {
+    await addCycle({ id: 'local', startDate: '2026-03-01' });
+    await importAll({
+      cycles: [{ id: 'restored', startDate: '2026-01-01' }],
+      dailyLogs: [{ date: '2026-01-01', symptoms: [], moods: [] }],
+      pregnancyProfile: null,
+      kickSessions: [],
+      contractionSessions: [],
+      postpartumProfile: null,
+      epdsEntries: [],
+      programProgress: [],
+    });
+    const cycles = await getCycles();
+    // Restored record added; the local-only record survives the merge.
+    expect(cycles.map((c) => c.id)).toEqual(['restored', 'local']);
+    expect(await getDailyLog('2026-01-01')).toBeDefined();
+  });
+
   it('stores and returns cycles sorted by start date', async () => {
     await addCycle({ id: 'b', startDate: '2026-02-01' });
     await addCycle({ id: 'a', startDate: '2026-01-01' });
