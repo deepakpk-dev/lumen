@@ -120,13 +120,13 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
         <div className="lumen-fade mx-auto flex min-h-full w-full max-w-md flex-col">
           {/* Wordmark */}
           <div className="flex items-center gap-2.5">
-            <span
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon.svg"
+              alt=""
               aria-hidden="true"
-              className="h-[22px] w-[22px] rounded-full"
-              style={{
-                background: 'radial-gradient(circle at 32% 30%, #fff, #ffd7df 60%, #fbb6c4)',
-                boxShadow: '0 0 16px rgba(255,255,255,0.55)',
-              }}
+              className="h-[26px] w-[26px] rounded-[7px]"
+              style={{ boxShadow: '0 0 16px rgba(255,255,255,0.35)' }}
             />
             <span className="text-[15px] font-bold tracking-[0.18em]">LUMEN</span>
           </div>

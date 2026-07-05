@@ -2,9 +2,10 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Lumen — Cycle & Health',
+    name: 'Lumen — Private Cycle & Health Tracker',
     short_name: 'Lumen',
-    description: 'Private, offline-first cycle and health tracking.',
+    description:
+      'Track your menstrual cycle, symptoms, and health privately. Offline-first — your data stays on your device.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

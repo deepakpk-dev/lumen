@@ -17,8 +17,43 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lumen — Cycle & Health",
-  description: "Private, offline-first cycle and health tracking.",
+  title: {
+    default: "Lumen — Private Cycle & Health Tracker",
+    template: "%s · Lumen",
+  },
+  description:
+    "Track your menstrual cycle, symptoms, and health privately. Lumen is offline-first and stores everything on your device — no accounts, no cloud, no data selling.",
+  applicationName: "Lumen",
+  keywords: [
+    "period tracker",
+    "cycle tracking",
+    "menstrual health",
+    "ovulation tracker",
+    "fertility",
+    "private health app",
+    "offline-first",
+    "symptom tracker",
+  ],
+  category: "health",
+  authors: [{ name: "Lumen" }],
+  creator: "Lumen",
+  publisher: "Lumen",
+  formatDetection: { email: false, address: false, telephone: false },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    siteName: "Lumen",
+    title: "Lumen — Private Cycle & Health Tracker",
+    description:
+      "Offline-first cycle and health tracking that keeps your data on your device.",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary",
+    title: "Lumen — Private Cycle & Health Tracker",
+    description:
+      "Offline-first cycle and health tracking that keeps your data on your device.",
+  },
   icons: {
     icon: "/icon.svg",
     apple: "/apple-touch-icon.png",
