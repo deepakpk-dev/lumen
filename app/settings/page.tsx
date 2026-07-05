@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
 import { DataControls } from '@/src/components/DataControls';
+import { NotificationControls } from '@/src/components/NotificationControls';
 import { PasscodeControls } from '@/src/components/PasscodeControls';
 import { PostpartumControls } from '@/src/components/PostpartumControls';
 import { PregnancyControls } from '@/src/components/PregnancyControls';
@@ -27,6 +28,15 @@ export default function SettingsPage() {
           device; the local database is not encrypted.
         </p>
         <PasscodeControls />
+      </section>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Reminders</h2>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          Lumen can nudge you about your period, fertile window, and daily logging.
+          Because everything stays on this device, notifications appear when you open
+          Lumen — there is no server sending you push messages.
+        </p>
+        <NotificationControls />
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Trying to conceive</h2>

@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
 import { CycleSummary } from '@/src/components/CycleSummary';
+import { ReminderBanner } from '@/src/components/ReminderBanner';
 import { InsightCard } from '@/src/components/InsightCard';
 import { DailyContentCard } from '@/src/components/DailyContentCard';
 import { ConceptionCard } from '@/src/components/ConceptionCard';
@@ -65,6 +66,7 @@ export default function HomePage() {
           today={todayISO()}
         />
       )}
+      <ReminderBanner />
       {/* Cycle insight + daily reads are cycle-stage content; hide them while
           pregnancy mode is the active context to avoid surfacing period/PMS
           material to a pregnant user. */}
