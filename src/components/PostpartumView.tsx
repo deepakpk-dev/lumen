@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
+import { PageShell, NavTile } from '@/src/components/PageShell';
 import { PostpartumCard } from '@/src/components/PostpartumCard';
 import { POSTPARTUM_SOURCES } from '@/src/domain/postpartum/weeks';
 
@@ -24,13 +24,7 @@ export function PostpartumView() {
   }
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
-      <div className="flex justify-end">
-        <Link href="/" className="text-sm text-neutral-500 dark:text-neutral-400 underline">
-          Home
-        </Link>
-      </div>
-
+    <PageShell title="Postpartum" subtitle="Your recovery, week by week.">
       <PostpartumCard
         week={postpartumWeekNumber}
         stage={recoveryStageToday}
@@ -46,7 +40,7 @@ export function PostpartumView() {
         </ul>
       </section>
 
-      <section className="space-y-2 rounded-md border border-neutral-200 p-3">
+      <section className="space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">When your cycle returns</h2>
         <p className="text-sm text-neutral-700 dark:text-neutral-300">
           Your periods may take weeks or many months to return, and breastfeeding can delay them.
@@ -56,15 +50,9 @@ export function PostpartumView() {
       </section>
 
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
-        <Link href="/postpartum/checkin" className="rounded-md border px-4 py-3">
-          Mood check-in
-        </Link>
-        <Link href="/log" className="rounded-md border px-4 py-3">
-          Log recovery
-        </Link>
-        <Link href="/settings" className="rounded-md border px-4 py-3">
-          Manage postpartum
-        </Link>
+        <NavTile href="/postpartum/checkin">Mood check-in</NavTile>
+        <NavTile href="/log">Log recovery</NavTile>
+        <NavTile href="/settings">Manage postpartum</NavTile>
       </nav>
 
       <section className="space-y-1">
@@ -80,6 +68,6 @@ export function PostpartumView() {
         Educational information only — not a substitute for medical advice. Contact your provider
         with any concerns.
       </p>
-    </main>
+    </PageShell>
   );
 }

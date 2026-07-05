@@ -1,6 +1,6 @@
 'use client';
 
-import { BackLink } from '@/src/components/BackLink';
+import { PageShell } from '@/src/components/PageShell';
 import { useState } from 'react';
 import { useHealthData } from '@/src/state/useHealthData';
 import { CycleCalendar } from '@/src/components/CycleCalendar';
@@ -24,9 +24,7 @@ export default function CalendarPage() {
   if (loading) return <main className="p-6">Loading…</main>;
 
   return (
-    <main className="mx-auto max-w-md space-y-4 p-6">
-      <BackLink href="/">Home</BackLink>
-      <h1 className="text-xl font-semibold">Calendar</h1>
+    <PageShell title="Calendar">
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -63,6 +61,6 @@ export default function CalendarPage() {
           Back to this month
         </button>
       )}
-    </main>
+    </PageShell>
   );
 }

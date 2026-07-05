@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
 import { findArticle } from '@/src/content';
-import { BackLink } from '@/src/components/BackLink';
+import { PageShell } from '@/src/components/PageShell';
 
 export default function ProgramPage() {
   const params = useParams<{ slug: string }>();
@@ -12,16 +12,15 @@ export default function ProgramPage() {
   const status = getProgramStatus(params.slug);
 
   return (
-    <main className="mx-auto max-w-md space-y-4 p-6">
-      <BackLink href="/programs">Back to programs</BackLink>
-
+    <PageShell
+      backHref="/programs"
+      backLabel="Programs"
+      title={status?.program.title}
+      subtitle={status?.program.description}
+    >
       {status ? (
         <>
           <header className="space-y-2">
-            <h1 className="text-xl font-semibold">{status.program.title}</h1>
-            <p className="text-sm text-neutral-700 dark:text-neutral-300">
-              {status.program.description}
-            </p>
             <div
               className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
               role="progressbar"
@@ -94,6 +93,6 @@ export default function ProgramPage() {
           Program not found.
         </p>
       )}
-    </main>
+    </PageShell>
   );
 }

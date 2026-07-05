@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
+import { PageShell, NavTile } from '@/src/components/PageShell';
 import { CycleSummary } from '@/src/components/CycleSummary';
+import { parseISODate } from '@/src/domain/dates';
 import { ReminderBanner } from '@/src/components/ReminderBanner';
 import { InsightCard } from '@/src/components/InsightCard';
 import { DailyContentCard } from '@/src/components/DailyContentCard';
@@ -41,7 +43,15 @@ export default function HomePage() {
     cycles.length === 0;
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
+    <PageShell
+      backHref={null}
+      title="Today"
+      subtitle={parseISODate(today).toLocaleDateString(undefined, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      })}
+    >
       {isPostpartum && postpartumWeekNumber !== null && recoveryStageToday ? (
         <PostpartumCard
           week={postpartumWeekNumber}
@@ -81,44 +91,23 @@ export default function HomePage() {
           engine (the feed filters by lifeStage), so each stage surfaces its own
           guidance. Renders nothing when there is no article for today. */}
       <DailyContentCard article={dailyContent} />
+      <Link
+        href="/log"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-4 font-semibold text-white shadow-[0_12px_32px_-8px_rgba(225,29,72,0.55)] transition-all duration-200 hover:shadow-[0_16px_40px_-8px_rgba(225,29,72,0.65)] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
+      >
+        Log today
+      </Link>
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
-        <Link href="/log" className="rounded-md bg-rose-600 px-4 py-3 text-white">
-          Log today
-        </Link>
-        <Link href="/calendar" className="rounded-md border px-4 py-3">
-          Calendar
-        </Link>
-        <Link href="/history" className="rounded-md border px-4 py-3">
-          History
-        </Link>
-        <Link href="/settings" className="rounded-md border px-4 py-3">
-          Settings
-        </Link>
-        <Link href="/insights" className="rounded-md border px-4 py-3">
-          Insights
-        </Link>
-        <Link href="/library" className="rounded-md border px-4 py-3">
-          Library
-        </Link>
-        <Link href="/programs" className="rounded-md border px-4 py-3">
-          Programs
-        </Link>
-        {lifeStage === 'ttc' && (
-          <Link href="/fertility" className="rounded-md border px-4 py-3">
-            Fertility
-          </Link>
-        )}
-        {isPregnant && (
-          <Link href="/pregnancy" className="rounded-md border px-4 py-3">
-            Pregnancy
-          </Link>
-        )}
-        {isPostpartum && (
-          <Link href="/postpartum" className="rounded-md border px-4 py-3">
-            Postpartum
-          </Link>
-        )}
+        <NavTile href="/calendar">Calendar</NavTile>
+        <NavTile href="/history">History</NavTile>
+        <NavTile href="/settings">Settings</NavTile>
+        <NavTile href="/insights">Insights</NavTile>
+        <NavTile href="/library">Library</NavTile>
+        <NavTile href="/programs">Programs</NavTile>
+        {lifeStage === 'ttc' && <NavTile href="/fertility">Fertility</NavTile>}
+        {isPregnant && <NavTile href="/pregnancy">Pregnancy</NavTile>}
+        {isPostpartum && <NavTile href="/postpartum">Postpartum</NavTile>}
       </nav>
-    </main>
+    </PageShell>
   );
 }

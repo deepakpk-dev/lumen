@@ -3,15 +3,14 @@
 import { useParams } from 'next/navigation';
 import { findArticle } from '@/src/content';
 import { ArticleReader } from '@/src/components/ArticleReader';
-import { BackLink } from '@/src/components/BackLink';
+import { PageShell } from '@/src/components/PageShell';
 
 export default function ArticlePage() {
   const params = useParams<{ slug: string }>();
   const article = findArticle(params.slug);
 
   return (
-    <main className="mx-auto max-w-md space-y-4 p-6">
-      <BackLink href="/library">Back to library</BackLink>
+    <PageShell backHref="/library" backLabel="Library">
       {article ? (
         <ArticleReader article={article} />
       ) : (
@@ -19,6 +18,6 @@ export default function ArticlePage() {
           Article not found.
         </p>
       )}
-    </main>
+    </PageShell>
   );
 }

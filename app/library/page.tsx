@@ -1,6 +1,6 @@
 'use client';
 
-import { BackLink } from '@/src/components/BackLink';
+import { PageShell } from '@/src/components/PageShell';
 import { useHealthData } from '@/src/state/useHealthData';
 import { ContentLibrary } from '@/src/components/ContentLibrary';
 import { ARTICLES } from '@/src/content';
@@ -14,9 +14,7 @@ export default function LibraryPage() {
     (a) => a.lifeStages.length === 0 || a.lifeStages.includes(lifeStage),
   );
   return (
-    <main className="mx-auto max-w-md space-y-4 p-6">
-      <BackLink href="/">Home</BackLink>
-      <h1 className="text-xl font-semibold">Library</h1>
+    <PageShell title="Library">
       {stageArticles.length > 0 ? (
         <ContentLibrary feed={contentFeed} all={stageArticles} />
       ) : (
@@ -25,6 +23,6 @@ export default function LibraryPage() {
           tailored to where you are on its own screen.
         </p>
       )}
-    </main>
+    </PageShell>
   );
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BackLink } from '@/src/components/BackLink';
+import { PageShell } from '@/src/components/PageShell';
 
 export const metadata = {
   title: 'Privacy & your data — Lumen',
@@ -7,12 +7,11 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
-      <div>
-        <h1 className="text-xl font-semibold">Privacy &amp; your data</h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">Lumen is private by design.</p>
-      </div>
-
+    <PageShell
+      title={<>Privacy &amp; your data</>}
+      subtitle="Lumen is private by design."
+      backLabel="Back to Lumen"
+    >
       <section className="space-y-2">
         <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Where your data lives</h2>
         <p className="text-sm text-neutral-600 dark:text-neutral-300">
@@ -60,8 +59,6 @@ export default function PrivacyPage() {
           healthcare provider or your local emergency services.
         </p>
       </section>
-
-      <BackLink href="/">Back to Lumen</BackLink>
-    </main>
+    </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { PageShell } from '@/src/components/PageShell';
 import { useHealthData } from '@/src/state/useHealthData';
 import { KICK_TARGET } from '@/src/domain/pregnancy/kicks';
 import { todayISO } from '@/src/domain/dates';
@@ -38,11 +38,7 @@ export function KickCounter() {
   }
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Kick counter</h1>
-        <Link href="/pregnancy" className="text-sm text-rose-600">Back</Link>
-      </div>
+    <PageShell title="Kick counter" backHref="/pregnancy" backLabel="Pregnancy">
 
       {startedAt ? (
         <div className="space-y-4 text-center">
@@ -80,6 +76,6 @@ export function KickCounter() {
       <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
         Counting movements is informational. Contact your provider if you notice reduced movement.
       </p>
-    </main>
+    </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { PageShell } from '@/src/components/PageShell';
 import { useHealthData } from '@/src/state/useHealthData';
 import type { Contraction, ContractionSession } from '@/src/domain/types';
 import { fiveOneOneStatus } from '@/src/domain/pregnancy/contractions';
@@ -35,11 +35,7 @@ export function ContractionTimer() {
   const status = fiveOneOneStatus(contractions, new Date().toISOString());
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Contraction timer</h1>
-        <Link href="/pregnancy" className="text-sm text-rose-600">Back</Link>
-      </div>
+    <PageShell title="Contraction timer" backHref="/pregnancy" backLabel="Pregnancy">
 
       <p className="text-center text-sm text-neutral-700 dark:text-neutral-300">
         {contractions.length} contraction{contractions.length === 1 ? '' : 's'} logged
@@ -81,6 +77,6 @@ export function ContractionTimer() {
       <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
         This timer is informational only and does not diagnose labor. Follow your provider&apos;s guidance.
       </p>
-    </main>
+    </PageShell>
   );
 }
