@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 interface Point {
   date: string;
   value: number;
@@ -17,7 +19,13 @@ export function BbtChart({
   if (points.length === 0) {
     return (
       <p className="rounded-md border border-dashed border-neutral-300 p-4 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-        Log your temperature to see your BBT chart.
+        <Link
+          href="/log"
+          className="font-medium text-rose-700 underline underline-offset-2 transition hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
+        >
+          Log your temperature
+        </Link>{' '}
+        to see your BBT chart.
       </p>
     );
   }
