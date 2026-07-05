@@ -19,7 +19,7 @@ test('first-run onboarding completes and lands on home', async ({ page }) => {
   await page.getByLabel('last period start').fill('2026-06-20');
   await page.getByRole('button', { name: 'Get started' }).click();
 
-  await expect(page.getByRole('link', { name: 'Log today' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Log today', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Calendar' })).toBeVisible();
 });
 
@@ -52,7 +52,7 @@ test('home has no uncaught page errors after onboarding', async ({ page }) => {
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('last period start').fill('2026-06-20');
   await page.getByRole('button', { name: 'Get started' }).click();
-  await expect(page.getByRole('link', { name: 'Log today' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Log today', exact: true })).toBeVisible();
 
   expect(errors).toEqual([]);
 });
