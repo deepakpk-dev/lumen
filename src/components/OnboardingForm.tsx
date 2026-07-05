@@ -124,7 +124,9 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
       <div
         className="lumen-welcome fixed inset-0 z-50 overflow-y-auto text-white"
         style={{
-          background: 'linear-gradient(160deg, #e11d48, #9f1239 72%)',
+          // Aurora glows layered over the brand gradient for depth.
+          background:
+            'radial-gradient(60% 45% at 80% -5%, rgba(255,255,255,0.14), transparent 60%), radial-gradient(50% 40% at 10% 108%, rgba(253,164,175,0.25), transparent 65%), linear-gradient(160deg, #e11d48, #9f1239 72%)',
           fontFamily: "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
           paddingTop: 'calc(env(safe-area-inset-top) + 28px)',
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)',
@@ -133,19 +135,27 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
         }}
       >
         <style>{`
-          .lumen-welcome .lumen-fade { animation: lumen-fade-in .5s ease-out both; }
+          /* Staggered entrance matching the setup step's rhythm. */
+          .lumen-welcome .lumen-fade {
+            opacity: 0;
+            animation: lumen-fade-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+          }
+          .lumen-welcome [data-in='1'] { animation-delay: 0.03s; }
+          .lumen-welcome [data-in='2'] { animation-delay: 0.12s; }
+          .lumen-welcome [data-in='3'] { animation-delay: 0.22s; }
+          .lumen-welcome [data-in='4'] { animation-delay: 0.34s; }
           @keyframes lumen-fade-in {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(14px); }
             to   { opacity: 1; transform: none; }
           }
           @media (prefers-reduced-motion: reduce) {
-            .lumen-welcome .lumen-fade { animation: none; }
+            .lumen-welcome .lumen-fade { animation: none; opacity: 1; }
           }
         `}</style>
 
-        <div className="lumen-fade mx-auto flex min-h-full w-full max-w-md flex-col">
+        <div className="mx-auto flex min-h-full w-full max-w-md flex-col">
           {/* Wordmark */}
-          <div className="flex items-center gap-2.5">
+          <div className="lumen-fade flex items-center gap-2.5" data-in="1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/icon.svg"
@@ -158,19 +168,21 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           </div>
 
           {/* Heading */}
-          <div className="mt-12">
-            <h1 className="text-[34px] font-bold leading-10 tracking-[-0.5px]">Welcome to Lumen</h1>
+          <div className="lumen-fade mt-12" data-in="2">
+            <h1 className="bg-gradient-to-br from-white via-white to-rose-200 bg-clip-text text-[34px] font-bold leading-10 tracking-[-0.5px] text-transparent">
+              Welcome to Lumen
+            </h1>
             <p className="mt-3 text-[17px] leading-6 text-white/90">
               A private space to track your cycle, pregnancy, and recovery.
             </p>
           </div>
 
           {/* Benefits */}
-          <ul className="mt-9 space-y-5">
+          <ul className="lumen-fade mt-9 space-y-5" data-in="3">
             <li className="flex gap-4">
               <span
                 aria-hidden="true"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.12)] ring-1 ring-white/25 backdrop-blur-sm"
               >
                 <svg
                   width="20"
@@ -194,7 +206,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             <li className="flex gap-4">
               <span
                 aria-hidden="true"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.12)] ring-1 ring-white/25 backdrop-blur-sm"
               >
                 <svg
                   width="20"
@@ -226,14 +238,32 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           <button
             type="button"
             onClick={() => setStep('setup')}
-            className="mt-10 w-full rounded-xl bg-white px-4 py-3.5 text-base font-semibold text-[#9f1239] shadow-[0_8px_24px_rgba(0,0,0,0.18)] transition hover:bg-white/95 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"
+            className="lumen-fade group mt-10 w-full rounded-2xl bg-white px-4 py-4 text-base font-semibold text-[#9f1239] shadow-[0_12px_36px_rgba(0,0,0,0.25)] transition-all duration-200 hover:shadow-[0_16px_44px_rgba(0,0,0,0.3)] hover:brightness-[1.02] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"
+            data-in="4"
           >
-            Continue
+            <span className="flex items-center justify-center gap-2">
+              Continue
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              >
+                <path d="M5 12h14" />
+                <path d="m13 6 6 6-6 6" />
+              </svg>
+            </span>
           </button>
 
           {/* Privacy link (in-gradient; replaces the global footer that this
               overlay covers) */}
-          <p className="mt-4 text-center">
+          <p className="lumen-fade mt-4 text-center" data-in="4">
             <Link
               href="/privacy"
               className="rounded text-[13px] text-white/80 underline underline-offset-2 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"
