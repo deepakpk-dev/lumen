@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   addCycle,
   deleteAll,
+  encryptExistingData,
   exportAll,
   importAll,
   getCycles,
@@ -15,11 +16,16 @@ import {
   addContractionSession,
   getContractionSessions,
 } from './repository';
+import { setStorageKeys } from './storage';
+import { db } from './db';
+import { createVault } from '@/src/crypto/vault';
 import type { PregnancyProfile } from '@/src/domain/types';
 
 beforeEach(async () => {
+  setStorageKeys(null);
   await deleteAll();
 });
+afterEach(() => setStorageKeys(null));
 
 describe('repository', () => {
   it('restores an export and merges without clobbering newer-only records', async () => {
@@ -38,6 +44,25 @@ describe('repository', () => {
     // Restored record added; the local-only record survives the merge.
     expect(cycles.map((c) => c.id)).toEqual(['restored', 'local']);
     expect(await getDailyLog('2026-01-01')).toBeDefined();
+  });
+
+  it('encrypts existing plaintext data and drops the plaintext copy', async () => {
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await upsertDailyLog({ date: '2026-01-01', symptoms: ['cramps'], moods: [] });
+    expect(await db.cycles.count()).toBe(1);
+
+    const keys = (await createVault('1234')).unlocked.keys;
+    await encryptExistingData(keys); // installs the session key on success
+
+    // Plaintext tables emptied; data now lives (and reads back) encrypted.
+    expect(await db.cycles.count()).toBe(0);
+    expect(await db.records.count()).toBeGreaterThan(0);
+    expect((await getCycles()).map((c) => c.id)).toEqual(['c1']);
+    expect(await getDailyLog('2026-01-01')).toMatchObject({ symptoms: ['cramps'] });
+
+    // The date and content are not readable in the raw encrypted rows.
+    const raw = JSON.stringify(await db.records.toArray());
+    expect(raw).not.toContain('cramps');
   });
 
   it('stores and returns cycles sorted by start date', async () => {

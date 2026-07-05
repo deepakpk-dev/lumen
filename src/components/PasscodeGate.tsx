@@ -1,51 +1,150 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { hasVault, loadVault, saveVault } from '@/src/security/vault-store';
+import { unlockVault, restoreVault } from '@/src/crypto/vault';
+import { setStorageKeys } from '@/src/data/storage';
 import { hasPasscode, verifyPasscode } from '@/src/security/passcode';
 
+// 'loading' until we know which lock (if any) applies; 'open' renders the app.
+// 'vault' = encrypted device (unlock installs the key before children mount).
+// 'legacy' = a pre-encryption screen-lock passcode, honored until upgraded.
+type Mode = 'loading' | 'open' | 'vault' | 'legacy';
+
 export function PasscodeGate({ children }: { children: React.ReactNode }) {
-  const [locked, setLocked] = useState(false);
+  const [mode, setMode] = useState<Mode>('loading');
   const [code, setCode] = useState('');
-  const [error, setError] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [error, setError] = useState('');
+  const [recovering, setRecovering] = useState(false);
+  const [phrase, setPhrase] = useState('');
+  const [newCode, setNewCode] = useState('');
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the `ready` gate
-    setLocked(hasPasscode());
-    setReady(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time lock detection from localStorage; SSR-safe via the loading gate
+    setMode(hasVault() ? 'vault' : hasPasscode() ? 'legacy' : 'open');
   }, []);
 
-  async function handleUnlock(e: React.FormEvent) {
+  async function handleVaultUnlock(e: React.FormEvent) {
     e.preventDefault();
-    if (await verifyPasscode(code)) {
-      setLocked(false);
-      setError(false);
-    } else {
-      setError(true);
+    const vault = loadVault();
+    if (!vault) return setMode('open');
+    try {
+      const { keys } = await unlockVault(code, vault);
+      // Install the key BEFORE children (the data provider) mount, so the first
+      // hydration reads the encrypted store.
+      setStorageKeys(keys);
+      setCode('');
+      setMode('open');
+    } catch {
+      setError('Incorrect passcode');
     }
   }
 
-  if (!ready) return null;
-  if (!locked) return <>{children}</>;
+  async function handleRestore(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const { vault, unlocked } = await restoreVault(
+        phrase.trim().toLowerCase().replace(/\s+/g, ' '),
+        newCode,
+      );
+      saveVault(vault); // re-wrap under the new passcode
+      setStorageKeys(unlocked.keys);
+      setMode('open');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not restore');
+    }
+  }
 
+  async function handleLegacyUnlock(e: React.FormEvent) {
+    e.preventDefault();
+    if (await verifyPasscode(code)) {
+      setCode('');
+      setMode('open');
+    } else {
+      setError('Incorrect passcode');
+    }
+  }
+
+  if (mode === 'loading') return null;
+  if (mode === 'open') return <>{children}</>;
+
+  const inputClass =
+    'w-full rounded-md border border-neutral-300 px-3 py-2 text-center dark:border-neutral-700';
+
+  if (mode === 'vault' && recovering) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-xs flex-col justify-center p-6">
+        <form onSubmit={handleRestore} className="space-y-4">
+          <h1 className="text-center text-lg font-semibold">Restore with recovery phrase</h1>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Enter your 12-word recovery phrase and choose a new passcode.
+          </p>
+          <textarea
+            aria-label="recovery phrase"
+            value={phrase}
+            onChange={(e) => setPhrase(e.target.value)}
+            rows={3}
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          />
+          <input
+            aria-label="new passcode"
+            type="password"
+            value={newCode}
+            onChange={(e) => setNewCode(e.target.value)}
+            placeholder="New passcode"
+            className={inputClass}
+          />
+          {error && <p className="text-center text-sm text-red-600 dark:text-red-400">{error}</p>}
+          <button type="submit" className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
+            Restore
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRecovering(false);
+              setError('');
+            }}
+            className="w-full text-center text-sm text-neutral-500 underline"
+          >
+            Back to passcode
+          </button>
+        </form>
+      </main>
+    );
+  }
+
+  const onUnlock = mode === 'vault' ? handleVaultUnlock : handleLegacyUnlock;
   return (
     <main className="mx-auto flex min-h-screen max-w-xs flex-col justify-center p-6">
-      <form onSubmit={handleUnlock} className="space-y-4">
+      <form onSubmit={onUnlock} className="space-y-4">
         <h1 className="text-center text-lg font-semibold">Enter passcode</h1>
         <input
           aria-label="passcode"
           type="password"
-          inputMode="numeric"
+          inputMode={mode === 'legacy' ? 'numeric' : 'text'}
           value={code}
-          onChange={(e) => setCode(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-center dark:border-neutral-700"
+          onChange={(e) => {
+            setCode(e.target.value);
+            setError('');
+          }}
+          className={inputClass}
         />
-        {error && (
-          <p className="text-center text-sm text-red-600 dark:text-red-400">Incorrect passcode</p>
-        )}
+        {error && <p className="text-center text-sm text-red-600 dark:text-red-400">{error}</p>}
         <button type="submit" className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
           Unlock
         </button>
+        {mode === 'vault' && (
+          <button
+            type="button"
+            onClick={() => {
+              setRecovering(true);
+              setError('');
+            }}
+            className="w-full text-center text-sm text-neutral-500 underline"
+          >
+            Forgot passcode?
+          </button>
+        )}
       </form>
     </main>
   );

@@ -5,6 +5,8 @@ import { deleteAll, exportAll, importAll } from '@/src/data/repository';
 import { buildExportBlob, parseImport } from '@/src/data/export';
 import { clearPreferences } from '@/src/settings/preferences';
 import { clearPasscode } from '@/src/security/passcode';
+import { clearVault } from '@/src/security/vault-store';
+import { setStorageKeys } from '@/src/data/storage';
 
 export function DataControls({
   onDeleted,
@@ -47,6 +49,8 @@ export function DataControls({
     await deleteAll();
     clearPreferences();
     clearPasscode();
+    clearVault();
+    setStorageKeys(null);
     setConfirming(false);
     onDeleted?.();
   }

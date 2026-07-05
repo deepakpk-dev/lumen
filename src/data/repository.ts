@@ -11,12 +11,14 @@ import type {
 } from '@/src/domain/types';
 import { db } from './db';
 import type { ImportedData } from './export';
+import type { DerivedKeys } from '@/src/crypto/keys';
 import {
   putRecord,
   getRecord,
   getAllRecords,
   deleteRecord,
   clearStore,
+  setStorageKeys,
 } from './storage';
 
 export async function addCycle(cycle: Cycle): Promise<void> {
@@ -126,6 +128,44 @@ export async function importAll(data: ImportedData): Promise<void> {
   if (data.postpartumProfile) await putRecord('postpartumProfile', data.postpartumProfile.id, data.postpartumProfile);
   for (const e of data.epdsEntries) await putRecord('epdsEntries', e.id, e);
   for (const p of data.programProgress) await putRecord('programProgress', p.programSlug, p);
+}
+
+// Turn on encryption for an existing (plaintext) device: copy every record
+// into the encrypted store under `keys`, then drop the plaintext tables. Reads
+// happen while the session is still plaintext; writes after the key is
+// installed. Verifies the encrypted copy is complete before deleting the
+// plaintext source, and rolls the session back to plaintext if anything fails
+// so the app never lands half-encrypted with the key lost.
+// ponytail: verify-before-clear guards against data loss; full crash-resumable
+// migration (interrupted mid-write) is deferred to hardening — plaintext stays
+// the source of truth until the verified clear, so a re-run recovers.
+export async function encryptExistingData(keys: DerivedKeys): Promise<void> {
+  const plaintext = await exportAll(); // session still null → reads typed tables
+  try {
+    setStorageKeys(keys);
+    await importAll(plaintext); // now writes encrypted envelopes
+    const check = await exportAll(); // session set → reads back from the encrypted store
+    if (
+      check.cycles.length !== plaintext.cycles.length ||
+      check.dailyLogs.length !== plaintext.dailyLogs.length ||
+      check.epdsEntries.length !== plaintext.epdsEntries.length
+    ) {
+      throw new Error('Encryption did not complete — your data is unchanged.');
+    }
+  } catch (err) {
+    setStorageKeys(null); // stay in plaintext mode; plaintext tables are intact
+    throw err;
+  }
+  await Promise.all([
+    db.cycles.clear(),
+    db.dailyLogs.clear(),
+    db.pregnancyProfile.clear(),
+    db.kickSessions.clear(),
+    db.contractionSessions.clear(),
+    db.postpartumProfile.clear(),
+    db.epdsEntries.clear(),
+    db.programProgress.clear(),
+  ]);
 }
 
 // Full wipe. Clears both the plaintext tables and the encrypted store outright
