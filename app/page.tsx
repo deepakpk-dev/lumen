@@ -19,7 +19,7 @@ import { topInsight } from '@/src/domain/insights/insights';
 export default function HomePage() {
   const router = useRouter();
   const {
-    today, cycles, stats, prediction, insights, dailyContent, lifeStage,
+    today, cycles, stats, prediction, insights, dailyContent, lifeStage, dailyLogs,
     conceptionToday, ovulationConfirmation, loading,
     isPregnant, gestation, currentTrimester, daysToDue, weekContentToday,
     pregnancyProfile, postpartumProfile,
@@ -95,7 +95,7 @@ export default function HomePage() {
         href="/log"
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-4 font-semibold text-white shadow-[0_12px_32px_-8px_rgba(225,29,72,0.55)] transition-all duration-200 hover:shadow-[0_16px_40px_-8px_rgba(225,29,72,0.65)] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
       >
-        Log today
+        {dailyLogs.some((l) => l.date === today) ? '✓ Edit today’s log' : 'Log today'}
       </Link>
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
         <NavTile href="/calendar">Calendar</NavTile>

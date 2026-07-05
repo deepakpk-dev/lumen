@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { FlowIntensity, ISODate, LHResult, MucusType } from '@/src/domain/types';
 import { useHealthData } from '@/src/state/useHealthData';
 import {
@@ -15,7 +16,7 @@ import {
   LH_OPTIONS,
 } from '@/src/domain/log-options';
 import { cToF, fToC } from '@/src/domain/fertility/units';
-import { daysBetween } from '@/src/domain/dates';
+import { daysBetween, todayISO } from '@/src/domain/dates';
 
 function Chip({
   label,
@@ -54,6 +55,7 @@ function isPeriodFlow(flow: FlowIntensity): boolean {
 const MAX_PERIOD_GAP_DAYS = 2;
 
 export function DailyLogForm({ date }: { date: ISODate }) {
+  const router = useRouter();
   const {
     dailyLogs,
     saveLog,
@@ -114,11 +116,13 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     }
   }, [existing, bbtUnit]);
 
+  // After a save, show the confirmation briefly, then leave: home for today's
+  // log, back to wherever the user came from (calendar/history) for past dates.
   useEffect(() => {
     if (!savedAt) return;
-    const t = setTimeout(() => setSavedAt(0), 3000);
+    const t = setTimeout(() => (date === todayISO() ? router.push('/') : router.back()), 1500);
     return () => clearTimeout(t);
-  }, [savedAt]);
+  }, [savedAt, router, date]);
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value)
