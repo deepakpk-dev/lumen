@@ -25,3 +25,12 @@ export function daysBetween(a: ISODate, b: ISODate): number {
 export function todayISO(): ISODate {
   return toISODate(new Date());
 }
+
+// True only for a real calendar date in strict YYYY-MM-DD form. Guards untrusted
+// input (e.g. a ?date= URL param) — rejects impossible dates like 2026-02-31 by
+// round-tripping through the parser.
+export function isValidISODate(s: string): s is ISODate {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = parseISODate(s);
+  return !Number.isNaN(d.getTime()) && toISODate(d) === s;
+}

@@ -36,4 +36,27 @@ describe('CycleCalendar', () => {
     );
     expect(screen.queryByLabelText(/, today/)).toBeNull();
   });
+
+  it('links past/today cells to the log for that date, but not future cells', () => {
+    render(
+      <CycleCalendar
+        cycles={[]}
+        prediction={null}
+        month="2026-02-10"
+        today="2026-02-10"
+      />,
+    );
+    // A past day is a link to its own log date.
+    expect(screen.getByLabelText(/^2026-02-05/)).toHaveAttribute(
+      'href',
+      '/log?date=2026-02-05',
+    );
+    // Today is loggable too.
+    expect(screen.getByLabelText(/2026-02-10, today/)).toHaveAttribute(
+      'href',
+      '/log?date=2026-02-10',
+    );
+    // A future day is not a link.
+    expect(screen.getByLabelText(/^2026-02-20/)).not.toHaveAttribute('href');
+  });
 });

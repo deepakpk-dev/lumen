@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addDays, daysBetween, parseISODate, toISODate } from './dates';
+import { addDays, daysBetween, isValidISODate, parseISODate, toISODate } from './dates';
 
 describe('date utils', () => {
   it('adds days without timezone drift', () => {
@@ -13,5 +13,14 @@ describe('date utils', () => {
 
   it('round-trips Date <-> ISODate', () => {
     expect(toISODate(parseISODate('2026-06-17'))).toBe('2026-06-17');
+  });
+
+  it('validates ISO dates and rejects malformed/impossible ones', () => {
+    expect(isValidISODate('2026-06-17')).toBe(true);
+    expect(isValidISODate('2026-02-31')).toBe(false); // no such day
+    expect(isValidISODate('2026-13-01')).toBe(false); // no such month
+    expect(isValidISODate('2026-6-7')).toBe(false); // not zero-padded
+    expect(isValidISODate('06/17/2026')).toBe(false);
+    expect(isValidISODate('')).toBe(false);
   });
 });

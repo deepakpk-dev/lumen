@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Cycle, ISODate, Prediction } from '@/src/domain/types';
 import { getDayMarker, type DayMarker } from '@/src/domain/calendar';
 import { parseISODate, toISODate } from '@/src/domain/dates';
@@ -62,15 +63,33 @@ export function CycleCalendar({
           if (MARKER_LABEL[marker]) parts.push(MARKER_LABEL[marker]);
           if (isToday) parts.push('today');
           const label = parts.join(', ');
+          const className = `flex aspect-square items-center justify-center rounded-md text-sm ${MARKER_STYLE[marker]} ${
+            isToday ? 'ring-2 ring-rose-500 ring-offset-1 font-semibold' : ''
+          }`;
+          // Only past/today cells open the log — logging a future day would
+          // corrupt cycle detection. Needs `today` to know which side we're on.
+          const navigable = today !== undefined && date <= today;
+          if (navigable) {
+            return (
+              <Link
+                key={i}
+                href={`/log?date=${date}`}
+                aria-label={label}
+                aria-current={isToday ? 'date' : undefined}
+                title={MARKER_LABEL[marker] || undefined}
+                className={`${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500`}
+              >
+                {day}
+              </Link>
+            );
+          }
           return (
             <div
               key={i}
               aria-label={label}
               aria-current={isToday ? 'date' : undefined}
               title={MARKER_LABEL[marker] || undefined}
-              className={`flex aspect-square items-center justify-center rounded-md text-sm ${MARKER_STYLE[marker]} ${
-                isToday ? 'ring-2 ring-rose-500 ring-offset-1 font-semibold' : ''
-              }`}
+              className={className}
             >
               {day}
             </div>
