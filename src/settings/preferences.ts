@@ -69,6 +69,37 @@ export function setReminderPrefs(prefs: ReminderPrefs): void {
   ls()?.setItem(REMINDERS_KEY, JSON.stringify(prefs));
 }
 
+// A serializable snapshot of all preferences, so a backup/restore carries the
+// life stage, units, and reminder settings — not just the DB records. Without
+// this, restoring a pregnancy/postpartum backup lands in the default 'cycle'
+// stage and the restored profile stays invisible.
+export interface PreferencesSnapshot {
+  lifeStage: LifeStage;
+  bbtUnit: BbtUnit;
+  ttcStartDate: ISODate | null;
+  reminders: ReminderPrefs;
+}
+
+export function exportPreferences(): PreferencesSnapshot {
+  return {
+    lifeStage: getLifeStage(),
+    bbtUnit: getBbtUnit(),
+    ttcStartDate: getTtcStartDate(),
+    reminders: getReminderPrefs(),
+  };
+}
+
+export function importPreferences(p: Partial<PreferencesSnapshot> | null | undefined): void {
+  const store = ls();
+  if (!store || !p) return;
+  // Write lifeStage and ttcStartDate directly (not via setLifeStage, whose
+  // ttc side-effects would clobber the restored start date).
+  if (p.lifeStage) store.setItem(LIFESTAGE_KEY, p.lifeStage);
+  if (p.ttcStartDate) store.setItem(TTCSTART_KEY, p.ttcStartDate);
+  if (p.bbtUnit) setBbtUnit(p.bbtUnit);
+  if (p.reminders) setReminderPrefs(p.reminders);
+}
+
 export function clearPreferences(): void {
   const store = ls();
   if (!store) return;

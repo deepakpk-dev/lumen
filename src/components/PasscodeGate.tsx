@@ -27,7 +27,13 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
   async function handleVaultUnlock(e: React.FormEvent) {
     e.preventDefault();
     const vault = loadVault();
-    if (!vault) return setMode('open');
+    if (!vault) {
+      // A vault exists (hasVault() gated us here) but won't parse. Opening the
+      // app now would drop into plaintext mode and hide the encrypted data —
+      // steer to recovery instead.
+      setError('Your saved passcode data is unreadable. Restore with your recovery phrase.');
+      return;
+    }
     try {
       const { keys } = await unlockVault(code, vault);
       // Install the key BEFORE children (the data provider) mount, so the first
@@ -42,6 +48,10 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
 
   async function handleRestore(e: React.FormEvent) {
     e.preventDefault();
+    if (!newCode.trim()) {
+      setError('Please choose a new passcode.');
+      return;
+    }
     try {
       const { vault, unlocked } = await restoreVault(
         phrase.trim().toLowerCase().replace(/\s+/g, ' '),

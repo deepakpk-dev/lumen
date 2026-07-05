@@ -9,6 +9,7 @@ import type {
   ProgramProgress,
 } from '@/src/domain/types';
 import { todayISO } from '@/src/domain/dates';
+import type { PreferencesSnapshot } from '@/src/settings/preferences';
 
 export function buildExportBlob(data: {
   cycles: Cycle[];
@@ -19,9 +20,10 @@ export function buildExportBlob(data: {
   postpartumProfile?: PostpartumProfile | null;
   epdsEntries?: EpdsEntry[];
   programProgress?: ProgramProgress[];
+  preferences?: PreferencesSnapshot | null;
 }): { filename: string; json: string } {
   const payload = {
-    version: 4 as const,
+    version: 5 as const,
     exportedAt: new Date().toISOString(),
     cycles: data.cycles,
     dailyLogs: data.dailyLogs,
@@ -31,6 +33,9 @@ export function buildExportBlob(data: {
     postpartumProfile: data.postpartumProfile ?? null,
     epdsEntries: data.epdsEntries ?? [],
     programProgress: data.programProgress ?? [],
+    // Life stage, units, reminder settings — restored so a backup carries the
+    // full app state, not just records.
+    preferences: data.preferences ?? null,
   };
   return {
     filename: `lumen-export-${todayISO()}.json`,
@@ -47,9 +52,10 @@ export interface ImportedData {
   postpartumProfile: PostpartumProfile | null;
   epdsEntries: EpdsEntry[];
   programProgress: ProgramProgress[];
+  preferences: PreferencesSnapshot | null;
 }
 
-const EXPORT_VERSION = 4;
+const EXPORT_VERSION = 5;
 
 // Trust boundary: this JSON comes from a user-picked file. Validate the shape
 // and drop any record missing its primary key (bulkPut throws on inbound-key
@@ -88,5 +94,8 @@ export function parseImport(json: string): ImportedData {
     postpartumProfile: one(o.postpartumProfile) as unknown as PostpartumProfile | null,
     epdsEntries: rows(o.epdsEntries, 'id') as unknown as EpdsEntry[],
     programProgress: rows(o.programProgress, 'programSlug') as unknown as ProgramProgress[],
+    // Preferences are a plain object (absent in pre-v5 exports → null, skipped
+    // on restore); importPreferences ignores unknown/missing fields.
+    preferences: one(o.preferences) as unknown as PreferencesSnapshot | null,
   };
 }

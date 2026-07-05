@@ -27,10 +27,10 @@ export function PasscodeControls() {
     setError('');
     try {
       const { vault, unlocked } = await createVault(code);
-      // Encrypt everything already on the device, then keep the vault. Order
-      // matters: encryptExistingData installs the session key on success.
-      await encryptExistingData(unlocked.keys);
-      saveVault(vault);
+      // Encrypt everything already on the device. The vault is persisted (via
+      // this callback) after the encrypted copy is verified but BEFORE the
+      // plaintext is cleared, so a failed key write can't lose data.
+      await encryptExistingData(unlocked.keys, () => saveVault(vault));
       setCode('');
       setPhrase(unlocked.mnemonic);
       setView('phrase');

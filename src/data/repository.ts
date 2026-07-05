@@ -12,6 +12,7 @@ import type {
 import { db } from './db';
 import type { ImportedData } from './export';
 import type { DerivedKeys } from '@/src/crypto/keys';
+import { exportPreferences, importPreferences } from '@/src/settings/preferences';
 import {
   putRecord,
   getRecord,
@@ -19,6 +20,7 @@ import {
   deleteRecord,
   clearStore,
   setStorageKeys,
+  storageIsEncrypted,
 } from './storage';
 
 export async function addCycle(cycle: Cycle): Promise<void> {
@@ -101,6 +103,7 @@ export async function exportAll(): Promise<{
   postpartumProfile: PostpartumProfile | null;
   epdsEntries: EpdsEntry[];
   programProgress: ProgramProgress[];
+  preferences: ReturnType<typeof exportPreferences>;
 }> {
   return {
     cycles: await getCycles(),
@@ -111,6 +114,7 @@ export async function exportAll(): Promise<{
     postpartumProfile: (await getPostpartumProfile()) ?? null,
     epdsEntries: await getEpdsEntries(),
     programProgress: await getProgramProgress(),
+    preferences: exportPreferences(),
   };
 }
 
@@ -128,30 +132,58 @@ export async function importAll(data: ImportedData): Promise<void> {
   if (data.postpartumProfile) await putRecord('postpartumProfile', data.postpartumProfile.id, data.postpartumProfile);
   for (const e of data.epdsEntries) await putRecord('epdsEntries', e.id, e);
   for (const p of data.programProgress) await putRecord('programProgress', p.programSlug, p);
+  // Restore life stage / units / reminders too, so a backup carries the full
+  // app state (a pregnancy backup lands in pregnancy mode, not default cycle).
+  importPreferences(data.preferences);
+}
+
+// Counts for every store an export produced, so the migration below can verify
+// the encrypted copy is complete before it deletes the plaintext source —
+// including the profile singletons and the pregnancy/postpartum stores.
+function storeCounts(d: Awaited<ReturnType<typeof exportAll>>): number[] {
+  return [
+    d.cycles.length,
+    d.dailyLogs.length,
+    d.kickSessions.length,
+    d.contractionSessions.length,
+    d.epdsEntries.length,
+    d.programProgress.length,
+    d.pregnancyProfile ? 1 : 0,
+    d.postpartumProfile ? 1 : 0,
+  ];
 }
 
 // Turn on encryption for an existing (plaintext) device: copy every record
 // into the encrypted store under `keys`, then drop the plaintext tables. Reads
 // happen while the session is still plaintext; writes after the key is
-// installed. Verifies the encrypted copy is complete before deleting the
-// plaintext source, and rolls the session back to plaintext if anything fails
-// so the app never lands half-encrypted with the key lost.
-// ponytail: verify-before-clear guards against data loss; full crash-resumable
-// migration (interrupted mid-write) is deferred to hardening — plaintext stays
-// the source of truth until the verified clear, so a re-run recovers.
-export async function encryptExistingData(keys: DerivedKeys): Promise<void> {
+// installed. Verifies EVERY store's encrypted copy is complete, then persists
+// the vault (via `persistVault`) BEFORE deleting the plaintext source, so a
+// failed key write can never strand data encrypted with a lost key. Rolls the
+// session back to plaintext if anything fails.
+// ponytail: full crash-resumable migration (interrupted mid-write) is deferred
+// to hardening — plaintext stays the source of truth until the verified clear,
+// so a re-run recovers.
+export async function encryptExistingData(
+  keys: DerivedKeys,
+  persistVault: () => void | Promise<void>,
+): Promise<void> {
+  // Refuse to run once a key is already installed: exportAll would then read the
+  // (empty) encrypted store as the "plaintext" source, pass a 0===0 verify, and
+  // wipe the real typed tables.
+  if (storageIsEncrypted()) throw new Error('Encryption is already on.');
   const plaintext = await exportAll(); // session still null → reads typed tables
   try {
     setStorageKeys(keys);
     await importAll(plaintext); // now writes encrypted envelopes
     const check = await exportAll(); // session set → reads back from the encrypted store
-    if (
-      check.cycles.length !== plaintext.cycles.length ||
-      check.dailyLogs.length !== plaintext.dailyLogs.length ||
-      check.epdsEntries.length !== plaintext.epdsEntries.length
-    ) {
+    const before = storeCounts(plaintext);
+    const after = storeCounts(check);
+    if (before.some((n, i) => n !== after[i])) {
       throw new Error('Encryption did not complete — your data is unchanged.');
     }
+    // Persist the key before the destructive clear: if this throws (quota,
+    // private mode), we bail with plaintext still intact rather than losing it.
+    await persistVault();
   } catch (err) {
     setStorageKeys(null); // stay in plaintext mode; plaintext tables are intact
     throw err;

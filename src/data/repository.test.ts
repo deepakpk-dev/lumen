@@ -39,6 +39,7 @@ describe('repository', () => {
       postpartumProfile: null,
       epdsEntries: [],
       programProgress: [],
+      preferences: null,
     });
     const cycles = await getCycles();
     // Restored record added; the local-only record survives the merge.
@@ -52,7 +53,13 @@ describe('repository', () => {
     expect(await db.cycles.count()).toBe(1);
 
     const keys = (await createVault('1234')).unlocked.keys;
-    await encryptExistingData(keys); // installs the session key on success
+    const saved: unknown[] = [];
+    await encryptExistingData(keys, () => {
+      saved.push(true);
+    }); // persists before clear
+
+    // Vault persistence happens before the plaintext wipe.
+    expect(saved).toHaveLength(1);
 
     // Plaintext tables emptied; data now lives (and reads back) encrypted.
     expect(await db.cycles.count()).toBe(0);

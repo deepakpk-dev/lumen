@@ -10,7 +10,7 @@ describe('buildExportBlob', () => {
     });
     expect(filename).toMatch(/lumen-export-.*\.json/);
     const parsed = JSON.parse(json);
-    expect(parsed.version).toBe(4);
+    expect(parsed.version).toBe(5);
     expect(parsed.cycles).toHaveLength(1);
     expect(parsed.dailyLogs).toHaveLength(1);
     // Optional tables default to empty arrays so restore is uniform.
@@ -32,7 +32,7 @@ describe('buildExportBlob', () => {
       contractionSessions: [],
     });
     const parsed = JSON.parse(json);
-    expect(parsed.version).toBe(4);
+    expect(parsed.version).toBe(5);
     expect(parsed.pregnancyProfile.dueDate).toBe('2026-10-08');
     expect(parsed.kickSessions).toEqual([]);
     expect(parsed.contractionSessions).toEqual([]);
@@ -52,7 +52,7 @@ describe('buildExportBlob', () => {
       ],
     });
     const parsed = JSON.parse(json);
-    expect(parsed.version).toBe(4);
+    expect(parsed.version).toBe(5);
     expect(parsed.programProgress).toHaveLength(1);
     expect(parsed.programProgress[0].completedSteps).toEqual(['how-tracking-works']);
   });
@@ -64,6 +64,12 @@ describe('parseImport', () => {
       cycles: [{ id: 'a', startDate: '2026-01-01' }],
       dailyLogs: [{ date: '2026-01-01', symptoms: [], moods: [] }],
       epdsEntries: [{ id: 'e', date: '2026-01-02', responses: [], total: 0, band: 'low' }],
+      preferences: {
+        lifeStage: 'pregnancy',
+        bbtUnit: 'C',
+        ttcStartDate: null,
+        reminders: { notifications: false, logReminder: true, periodReminder: true, fertileReminder: true },
+      },
     });
     const data = parseImport(json);
     expect(data.cycles).toEqual([{ id: 'a', startDate: '2026-01-01' }]);
@@ -71,6 +77,8 @@ describe('parseImport', () => {
     expect(data.epdsEntries).toHaveLength(1);
     expect(data.pregnancyProfile).toBeNull();
     expect(data.programProgress).toEqual([]);
+    // Preferences (life stage etc.) round-trip so a restore isn't stuck in cycle mode.
+    expect(data.preferences?.lifeStage).toBe('pregnancy');
   });
 
   it('drops records missing their primary key', () => {
@@ -97,7 +105,7 @@ it('includes postpartum profile and EPDS entries at version 3', () => {
   ];
   const { json } = buildExportBlob({ cycles: [], dailyLogs: [], postpartumProfile: profile, epdsEntries: epds });
   const parsed = JSON.parse(json);
-  expect(parsed.version).toBe(4);
+  expect(parsed.version).toBe(5);
   expect(parsed.postpartumProfile).toMatchObject({ birthDate: '2026-06-01' });
   expect(parsed.epdsEntries).toHaveLength(1);
 });
