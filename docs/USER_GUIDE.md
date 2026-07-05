@@ -193,7 +193,7 @@ Tap a chip to select it (it turns **pink**); tap again to deselect. You can pick
 
 > ⚠️ **How periods are detected:** Logging a **Light**, **Medium**, or **Heavy** flow tells Lumen your period has started, and it automatically begins a new cycle. **Spotting** and **None** do *not* start a cycle. If you log a period flow within a couple of days of your last bleeding day, Lumen treats it as the *same* period continuing — not a new one.
 
-> 💡 **The Log screen always records today.** To see past days, open the **Calendar**.
+> 💡 **The Log screen opens on today.** To log or edit **any past day**, open the **Calendar** and tap that day.
 
 In **TTC mode** and **Pregnancy mode**, this same screen grows extra fields — see those sections below.
 
@@ -225,6 +225,7 @@ A month‑at‑a‑glance view of your cycle. **Today** is marked with a pink ri
 
 - Use **←** / **→** to move between months and reach past cycles or future predictions.
 - Jumped away? Tap **Back to this month** to return to today.
+- **Tap any past day (or today)** to open its log — this is how you back-fill a day you missed or edit what you recorded. Future days aren't tappable.
 
 ---
 
@@ -260,6 +261,26 @@ Insights are sorted so **attention** items (worth a closer look) appear above ge
 > 💡 Seeing *"Keep logging to unlock insights"*? That just means Lumen needs a bit more data. Keep logging and the cards will appear.
 
 > ⚠️ An anomaly flag is **informational, not a diagnosis**. If something worries you, talk to a clinician.
+
+---
+
+## Reminders
+
+Lumen can gently nudge you so you don't miss what matters — every reminder is computed on your device from your own data.
+
+- **On Home**, a reminder banner appears when something is due: your **period is expected soon**, you're in your **fertile window** (or it's your estimated ovulation day), or you simply **haven't logged today**. Tap it to jump straight to the right screen.
+- **Optional device notifications.** In **Settings → Reminders**, turn on **Show device notifications** to also receive these as system notifications. Your browser asks permission once.
+
+| Setting | What it controls |
+|---------|------------------|
+| **Show device notifications** | Whether reminders also appear as system notifications (needs browser permission) |
+| **Period is coming up** | The "period expected soon" reminder |
+| **Fertile window & ovulation** | The fertile-window / ovulation-day reminder |
+| **Reminder to log today** | The nudge shown when you haven't logged today |
+
+> 🔒 **Because Lumen has no server, reminders appear when you open the app** — nothing in the cloud pushes messages to you. It's the honest trade-off for keeping everything on your device.
+
+> 💡 The Home banner needs no permission and only shows when a reminder is actually relevant — no daily spam. Device notifications are entirely opt-in.
 
 ---
 
@@ -555,7 +576,7 @@ No. Lumen anchors to your last bleeding day, so a period that runs longer than y
 <details>
 <summary><strong>How do I log a day I missed?</strong></summary>
 
-The **Log today** screen always records today. Browse the **Calendar** to review past days.
+Open the **Calendar** and tap the day you missed — that opens its log so you can fill it in. Any past day (or today) can be edited the same way. The **Log today** button always opens today.
 </details>
 
 <details>
