@@ -58,7 +58,7 @@ export default function SettingsPage() {
             Switch on pregnancy mode for week-by-week tracking, a kick counter, and a
             contraction timer. Educational only — not a substitute for medical care.
           </p>
-          <PregnancyControls onStarted={() => router.push('/')} />
+          <PregnancyControls onStarted={() => router.push('/')} onEnded={() => router.push('/')} />
         </section>
       )}
       {isPostpartum && (

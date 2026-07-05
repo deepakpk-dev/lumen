@@ -7,7 +7,7 @@ import { PregnancyEndFlow } from '@/src/components/PregnancyEndFlow';
 
 type Method = 'due' | 'lmp' | 'cycle';
 
-export function PregnancyControls({ onStarted }: { onStarted?: () => void }) {
+export function PregnancyControls({ onStarted, onEnded }: { onStarted?: () => void; onEnded?: () => void }) {
   const { isPregnant, pregnancyProfile, startPregnancyMode, updateDueDate, cycles } =
     useHealthData();
   const [method, setMethod] = useState<Method>('due');
@@ -55,7 +55,7 @@ export function PregnancyControls({ onStarted }: { onStarted?: () => void }) {
             Save
           </button>
         </div>
-        <PregnancyEndFlow />
+        <PregnancyEndFlow onEnded={onEnded} />
       </div>
     );
   }

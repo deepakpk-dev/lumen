@@ -6,7 +6,7 @@ import { todayISO } from '@/src/domain/dates';
 
 type Screen = 'closed' | 'choose' | 'birth' | 'loss';
 
-export function PregnancyEndFlow() {
+export function PregnancyEndFlow({ onEnded }: { onEnded?: () => void }) {
   const { endPregnancyBirth, endPregnancyLoss } = useHealthData();
   const [screen, setScreen] = useState<Screen>('closed');
 
@@ -48,7 +48,7 @@ export function PregnancyEndFlow() {
         </p>
         <button
           type="button"
-          onClick={() => endPregnancyBirth(todayISO())}
+          onClick={async () => { await endPregnancyBirth(todayISO()); onEnded?.(); }}
           className="w-full rounded-md bg-rose-600 px-4 py-2 text-sm text-white"
         >
           Confirm
