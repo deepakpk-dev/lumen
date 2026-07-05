@@ -13,7 +13,12 @@ import { TtcControls } from '@/src/components/TtcControls';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { refresh, refreshSettings } = useHealthData();
+  const { refresh, refreshSettings, isPregnant, isPostpartum } = useHealthData();
+  // Life stages are mutually exclusive, so only offer a switch into a new stage
+  // from an uncommitted state. An active pregnancy/postpartum journey must be
+  // left through its own end-flow (which cleans up the profile) — otherwise a
+  // stray "turn on" here just orphans the still-active profile in storage.
+  const inJourney = isPregnant || isPostpartum;
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
       <BackLink href="/">Home</BackLink>
@@ -35,31 +40,36 @@ export default function SettingsPage() {
         </p>
         <NotificationControls />
       </section>
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Trying to conceive</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Turn on TTC mode to log BBT, LH tests, and cervical mucus, and get daily
-          conception guidance. Lumen is not a contraceptive and not a substitute for
-          fertility treatment or medical advice.
-        </p>
-        <TtcControls onEnabled={() => router.push('/')} />
-      </section>
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Pregnancy</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Switch on pregnancy mode for week-by-week tracking, a kick counter, and a
-          contraction timer. Educational only — not a substitute for medical care.
-        </p>
-        <PregnancyControls onStarted={() => router.push('/')} />
-      </section>
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Postpartum</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          After birth, Lumen supports your recovery with weekly guidance and a mood check-in.
-          This section appears while postpartum mode is active.
-        </p>
-        <PostpartumControls />
-      </section>
+      {!inJourney && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Trying to conceive</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Turn on TTC mode to log BBT, LH tests, and cervical mucus, and get daily
+            conception guidance. Lumen is not a contraceptive and not a substitute for
+            fertility treatment or medical advice.
+          </p>
+          <TtcControls onEnabled={() => router.push('/')} />
+        </section>
+      )}
+      {!isPostpartum && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Pregnancy</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Switch on pregnancy mode for week-by-week tracking, a kick counter, and a
+            contraction timer. Educational only — not a substitute for medical care.
+          </p>
+          <PregnancyControls onStarted={() => router.push('/')} />
+        </section>
+      )}
+      {isPostpartum && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Postpartum</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            After birth, Lumen supports your recovery with weekly guidance and a mood check-in.
+          </p>
+          <PostpartumControls />
+        </section>
+      )}
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Your data</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">

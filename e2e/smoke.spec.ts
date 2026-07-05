@@ -11,11 +11,12 @@ test('first-run onboarding completes and lands on home', async ({ page }) => {
 
   // Intro -> setup.
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByRole('heading', { name: 'Welcome', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "Let's set things up" })).toBeVisible();
 
-  // Default goal is "Track my cycle" with today's date prefilled. Completing the
-  // form writes a cycle to IndexedDB and returns to home — this exercises the
-  // local-first storage path on each engine.
+  // Default goal is "Track my cycle"; set a last-period date, then complete. This
+  // writes a cycle to IndexedDB and returns to home — exercising the local-first
+  // storage path on each engine.
+  await page.getByLabel('last period start').fill('2026-06-20');
   await page.getByRole('button', { name: 'Get started' }).click();
 
   await expect(page.getByRole('link', { name: 'Log today' })).toBeVisible();
@@ -49,6 +50,7 @@ test('home has no uncaught page errors after onboarding', async ({ page }) => {
 
   await page.goto('/');
   await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByLabel('last period start').fill('2026-06-20');
   await page.getByRole('button', { name: 'Get started' }).click();
   await expect(page.getByRole('link', { name: 'Log today' })).toBeVisible();
 
