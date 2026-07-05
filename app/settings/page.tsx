@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { BackLink } from '@/src/components/BackLink';
 import { useRouter } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
 import { DataControls } from '@/src/components/DataControls';
@@ -15,12 +16,8 @@ export default function SettingsPage() {
   const { refresh, refreshSettings } = useHealthData();
   return (
     <main className="mx-auto max-w-md space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Settings</h1>
-        <Link href="/" className="text-sm text-neutral-500 dark:text-neutral-400 underline">
-          Home
-        </Link>
-      </div>
+      <BackLink href="/">Home</BackLink>
+      <h1 className="text-xl font-semibold">Settings</h1>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Passcode lock</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">

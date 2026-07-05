@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { BackLink } from '@/src/components/BackLink';
 import { useHealthData } from '@/src/state/useHealthData';
 import { ContentLibrary } from '@/src/components/ContentLibrary';
 import { ARTICLES } from '@/src/content';
@@ -15,12 +15,8 @@ export default function LibraryPage() {
   );
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Library</h1>
-        <Link href="/" className="text-sm text-neutral-500 underline dark:text-neutral-400">
-          Home
-        </Link>
-      </div>
+      <BackLink href="/">Home</BackLink>
+      <h1 className="text-xl font-semibold">Library</h1>
       {stageArticles.length > 0 ? (
         <ContentLibrary feed={contentFeed} all={stageArticles} />
       ) : (

@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DailyLogForm } from '@/src/components/DailyLogForm';
+import { BackLink } from '@/src/components/BackLink';
 import { isValidISODate, todayISO } from '@/src/domain/dates';
 
 function LogPageInner() {
@@ -15,12 +15,8 @@ function LogPageInner() {
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{heading}</h1>
-        <Link href="/" className="text-sm text-neutral-500 underline dark:text-neutral-400">
-          Home
-        </Link>
-      </div>
+      <BackLink href="/">Home</BackLink>
+      <h1 className="text-xl font-semibold">{heading}</h1>
       <DailyLogForm date={date} />
     </main>
   );

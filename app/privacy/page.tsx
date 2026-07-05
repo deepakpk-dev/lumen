@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BackLink } from '@/src/components/BackLink';
 
 export const metadata = {
   title: 'Privacy & your data — Lumen',
@@ -60,9 +61,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <Link href="/" className="block text-sm text-neutral-500 underline dark:text-neutral-400">
-        ← Back to Lumen
-      </Link>
+      <BackLink href="/">Back to Lumen</BackLink>
     </main>
   );
 }

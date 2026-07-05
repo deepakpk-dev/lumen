@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { BackLink } from '@/src/components/BackLink';
 import { useHealthData } from '@/src/state/useHealthData';
 import { ProgramCard } from '@/src/components/ProgramCard';
 
@@ -9,12 +9,8 @@ export default function ProgramsPage() {
   if (loading) return <main className="p-6">Loading…</main>;
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Programs</h1>
-        <Link href="/" className="text-sm text-neutral-500 underline dark:text-neutral-400">
-          Home
-        </Link>
-      </div>
+      <BackLink href="/">Home</BackLink>
+      <h1 className="text-xl font-semibold">Programs</h1>
       <p className="text-sm text-neutral-600 dark:text-neutral-300">
         Short, guided reading paths for where you are right now. Work through the
         steps at your own pace — your progress stays on this device.

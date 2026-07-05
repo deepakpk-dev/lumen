@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useHealthData } from '@/src/state/useHealthData';
 import { findArticle } from '@/src/content';
+import { BackLink } from '@/src/components/BackLink';
 
 export default function ProgramPage() {
   const params = useParams<{ slug: string }>();
@@ -12,15 +13,7 @@ export default function ProgramPage() {
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
-      <Link
-        href="/programs"
-        className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm font-medium text-neutral-500 transition hover:text-rose-600 dark:text-neutral-400 dark:hover:text-rose-300"
-      >
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m15 18-6-6 6-6" />
-        </svg>
-        Back to programs
-      </Link>
+      <BackLink href="/programs">Back to programs</BackLink>
 
       {status ? (
         <>

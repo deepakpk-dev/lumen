@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { BackLink } from '@/src/components/BackLink';
 import { format } from 'date-fns';
 import { useHealthData } from '@/src/state/useHealthData';
 import { parseISODate, daysBetween } from '@/src/domain/dates';
@@ -40,9 +40,7 @@ export default function ReportPage() {
   return (
     <main className="print-full mx-auto max-w-2xl space-y-6 p-6">
       <div className="no-print flex items-center justify-between">
-        <Link href="/settings" className="text-sm text-neutral-500 underline dark:text-neutral-400">
-          ← Settings
-        </Link>
+        <BackLink href="/settings">Settings</BackLink>
         <button
           type="button"
           onClick={() => window.print()}
