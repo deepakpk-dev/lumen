@@ -5,7 +5,7 @@ import { CONTENT_TOPICS } from '@/src/domain/content/types';
 import { SYMPTOM_OPTIONS, MOOD_OPTIONS } from '@/src/domain/log-options';
 
 const PHASES = ['menstrual', 'follicular', 'ovulation', 'luteal'];
-const LIFE_STAGES = ['cycle', 'ttc', 'pregnancy', 'menopause'];
+const LIFE_STAGES = ['cycle', 'ttc', 'pregnancy', 'postpartum', 'menopause'];
 const SYMPTOM_TAGS = new Set([...SYMPTOM_OPTIONS, ...MOOD_OPTIONS]);
 
 describe('content corpus integrity', () => {

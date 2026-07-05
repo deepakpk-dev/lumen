@@ -9,6 +9,8 @@ export const CONTENT_TOPICS = [
   'symptoms',
   'irregular-cycles',
   'wellbeing',
+  'pregnancy',
+  'postpartum',
 ] as const;
 
 export type ContentTopic = (typeof CONTENT_TOPICS)[number];

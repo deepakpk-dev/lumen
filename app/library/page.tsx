@@ -8,6 +8,11 @@ import { ARTICLES } from '@/src/content';
 export default function LibraryPage() {
   const { contentFeed, loading, lifeStage } = useHealthData();
   if (loading) return <main className="p-6">Loading…</main>;
+  // Browse the reads that belong to the current life stage (plus any universal
+  // ones). The "For you" feed is already stage-scoped by the content engine.
+  const stageArticles = ARTICLES.filter(
+    (a) => a.lifeStages.length === 0 || a.lifeStages.includes(lifeStage),
+  );
   return (
     <main className="mx-auto max-w-md space-y-4 p-6">
       <div className="flex items-center justify-between">
@@ -16,13 +21,12 @@ export default function LibraryPage() {
           Home
         </Link>
       </div>
-      {lifeStage === 'cycle' ? (
-        <ContentLibrary feed={contentFeed} all={ARTICLES} />
+      {stageArticles.length > 0 ? (
+        <ContentLibrary feed={contentFeed} all={stageArticles} />
       ) : (
         <p className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-          These reads cover cycle tracking and are available in cycle mode. While
-          you&apos;re in your current mode, look for guidance tailored to this
-          stage on its own screen.
+          Guidance for this stage is on its way. In the meantime, look for tips
+          tailored to where you are on its own screen.
         </p>
       )}
     </main>

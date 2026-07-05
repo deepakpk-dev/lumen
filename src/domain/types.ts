@@ -114,3 +114,13 @@ export interface EpdsEntry {
   total: number;
   band: 'low' | 'possible' | 'probable';
 }
+
+// Per-program progress (Phase 2C — courses/programs). One row per program the
+// user has engaged with; `completedSteps` holds the article slugs marked done.
+// Program *definitions* are bundled content, not persisted — only progress is.
+export interface ProgramProgress {
+  programSlug: string; // singleton key per program
+  completedSteps: string[]; // article slugs completed within this program
+  startedAt: ISOTimestamp;
+  updatedAt: ISOTimestamp;
+}

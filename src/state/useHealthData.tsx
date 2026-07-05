@@ -32,7 +32,17 @@ import {
   savePostpartumProfile,
   addEpdsEntry,
   getEpdsEntries,
+  getProgramProgress,
+  saveProgramProgress,
 } from '@/src/data/repository';
+import { PROGRAMS } from '@/src/content/programs';
+import {
+  programsForStage,
+  computeProgramStatus,
+  toggleStepComplete,
+} from '@/src/domain/content/programs/progress';
+import type { ProgramStatus } from '@/src/domain/content/programs/types';
+import type { ProgramProgress } from '@/src/domain/types';
 import {
   startPostpartum,
   setBreastfeeding,
@@ -93,6 +103,7 @@ function useHealthDataState() {
   const [contractionSessions, setContractionSessions] = useState<ContractionSession[]>([]);
   const [postpartumProfile, setPostpartumProfile] = useState<PostpartumProfile | null>(null);
   const [epdsEntries, setEpdsEntries] = useState<EpdsEntry[]>([]);
+  const [programProgress, setProgramProgress] = useState<ProgramProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
   const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
@@ -129,7 +140,7 @@ function useHealthDataState() {
   );
 
   const refresh = useCallback(async () => {
-    const [c, l, p, ks, cs, pp, ep] = await Promise.all([
+    const [c, l, p, ks, cs, pp, ep, prog] = await Promise.all([
       getCycles(),
       getAllDailyLogs(),
       getPregnancyProfile(),
@@ -137,6 +148,7 @@ function useHealthDataState() {
       getContractionSessions(),
       getPostpartumProfile(),
       getEpdsEntries(),
+      getProgramProgress(),
     ]);
     setCycles(c);
     setDailyLogs(l);
@@ -145,6 +157,7 @@ function useHealthDataState() {
     setContractionSessions(cs);
     setPostpartumProfile(pp ?? null);
     setEpdsEntries(ep);
+    setProgramProgress(prog);
     setLoading(false);
   }, []);
 
@@ -436,6 +449,48 @@ function useHealthDataState() {
     [contentFeed, today],
   );
 
+  const completedByProgram = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const p of programProgress) map.set(p.programSlug, p.completedSteps);
+    return map;
+  }, [programProgress]);
+
+  // Programs offered in the current life stage, each with derived progress.
+  const programs: ProgramStatus[] = useMemo(
+    () =>
+      programsForStage(PROGRAMS, lifeStage).map((p) =>
+        computeProgramStatus(p, completedByProgram.get(p.slug) ?? []),
+      ),
+    [lifeStage, completedByProgram],
+  );
+
+  // Status for any program by slug (used by the program detail page, which may
+  // render a program regardless of the active stage). Null for unknown slugs.
+  const getProgramStatus = useCallback(
+    (slug: string): ProgramStatus | null => {
+      const program = PROGRAMS.find((p) => p.slug === slug);
+      if (!program) return null;
+      return computeProgramStatus(program, completedByProgram.get(slug) ?? []);
+    },
+    [completedByProgram],
+  );
+
+  const setProgramStepDone = useCallback(
+    async (programSlug: string, stepSlug: string, done: boolean) => {
+      const current = completedByProgram.get(programSlug) ?? [];
+      const now = new Date().toISOString();
+      const existing = programProgress.find((p) => p.programSlug === programSlug);
+      await saveProgramProgress({
+        programSlug,
+        completedSteps: toggleStepComplete(current, stepSlug, done),
+        startedAt: existing?.startedAt ?? now,
+        updatedAt: now,
+      });
+      await refresh();
+    },
+    [completedByProgram, programProgress, refresh],
+  );
+
   return {
     cycles,
     dailyLogs,
@@ -444,6 +499,9 @@ function useHealthDataState() {
     insights,
     contentFeed,
     dailyContent,
+    programs,
+    getProgramStatus,
+    setProgramStepDone,
     loading,
     startPeriod,
     completeOnboarding,

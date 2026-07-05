@@ -36,16 +36,21 @@ describe('useHealthData TTC mode', () => {
     expect(result.current.lifeStage).toBe('cycle');
   });
 
-  it('scopes cycle daily content out once TTC mode is on', async () => {
+  it('swaps cycle daily content for TTC content once TTC mode is on', async () => {
     const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
     // In plain cycle mode a starter read is surfaced.
     expect(result.current.dailyContent).not.toBeNull();
+    expect(result.current.dailyContent?.lifeStages).toContain('cycle');
 
     await act(async () => {
       result.current.setTtcMode(true);
     });
-    expect(result.current.dailyContent).toBeNull();
+    // TTC mode surfaces TTC-scoped content, not cycle content and not nothing.
+    expect(result.current.dailyContent).not.toBeNull();
+    expect(result.current.dailyContent?.lifeStages).toContain('ttc');
+    expect(result.current.dailyContent?.lifeStages).not.toContain('cycle');
+    expect(result.current.contentFeed.every((s) => s.article.lifeStages.includes('ttc'))).toBe(true);
   });
 
   it('computes conception guidance in TTC mode', async () => {

@@ -10,9 +10,11 @@ describe('buildExportBlob', () => {
     });
     expect(filename).toMatch(/lumen-export-.*\.json/);
     const parsed = JSON.parse(json);
-    expect(parsed.version).toBe(3);
+    expect(parsed.version).toBe(4);
     expect(parsed.cycles).toHaveLength(1);
     expect(parsed.dailyLogs).toHaveLength(1);
+    // Optional tables default to empty arrays so restore is uniform.
+    expect(parsed.programProgress).toEqual([]);
   });
 
   it('includes pregnancy data and bumps the version', () => {
@@ -30,10 +32,29 @@ describe('buildExportBlob', () => {
       contractionSessions: [],
     });
     const parsed = JSON.parse(json);
-    expect(parsed.version).toBe(3);
+    expect(parsed.version).toBe(4);
     expect(parsed.pregnancyProfile.dueDate).toBe('2026-10-08');
     expect(parsed.kickSessions).toEqual([]);
     expect(parsed.contractionSessions).toEqual([]);
+  });
+
+  it('includes program progress at version 4', () => {
+    const { json } = buildExportBlob({
+      cycles: [],
+      dailyLogs: [],
+      programProgress: [
+        {
+          programSlug: 'understanding-your-cycle',
+          completedSteps: ['how-tracking-works'],
+          startedAt: '2026-07-05T10:00:00.000Z',
+          updatedAt: '2026-07-05T10:05:00.000Z',
+        },
+      ],
+    });
+    const parsed = JSON.parse(json);
+    expect(parsed.version).toBe(4);
+    expect(parsed.programProgress).toHaveLength(1);
+    expect(parsed.programProgress[0].completedSteps).toEqual(['how-tracking-works']);
   });
 });
 
@@ -46,7 +67,7 @@ it('includes postpartum profile and EPDS entries at version 3', () => {
   ];
   const { json } = buildExportBlob({ cycles: [], dailyLogs: [], postpartumProfile: profile, epdsEntries: epds });
   const parsed = JSON.parse(json);
-  expect(parsed.version).toBe(3);
+  expect(parsed.version).toBe(4);
   expect(parsed.postpartumProfile).toMatchObject({ birthDate: '2026-06-01' });
   expect(parsed.epdsEntries).toHaveLength(1);
 });

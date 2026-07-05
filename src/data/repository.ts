@@ -7,6 +7,7 @@ import type {
   ContractionSession,
   PostpartumProfile,
   EpdsEntry,
+  ProgramProgress,
 } from '@/src/domain/types';
 import { db } from './db';
 
@@ -73,6 +74,14 @@ export async function getContractionSessions(): Promise<ContractionSession[]> {
   return all.sort((a, b) => b.date.localeCompare(a.date));
 }
 
+export async function getProgramProgress(): Promise<ProgramProgress[]> {
+  return db.programProgress.toArray();
+}
+
+export async function saveProgramProgress(p: ProgramProgress): Promise<void> {
+  await db.programProgress.put(p);
+}
+
 export async function exportAll(): Promise<{
   cycles: Cycle[];
   dailyLogs: DailyLog[];
@@ -81,6 +90,7 @@ export async function exportAll(): Promise<{
   contractionSessions: ContractionSession[];
   postpartumProfile: PostpartumProfile | null;
   epdsEntries: EpdsEntry[];
+  programProgress: ProgramProgress[];
 }> {
   return {
     cycles: await getCycles(),
@@ -90,6 +100,7 @@ export async function exportAll(): Promise<{
     contractionSessions: await getContractionSessions(),
     postpartumProfile: (await getPostpartumProfile()) ?? null,
     epdsEntries: await getEpdsEntries(),
+    programProgress: await getProgramProgress(),
   };
 }
 
@@ -101,6 +112,7 @@ export async function deleteAll(): Promise<void> {
   await db.contractionSessions.clear();
   await db.postpartumProfile.clear();
   await db.epdsEntries.clear();
+  await db.programProgress.clear();
 }
 
 export async function getPostpartumProfile(): Promise<PostpartumProfile | undefined> {

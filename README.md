@@ -54,7 +54,7 @@ Lumen follows a person across every stage of reproductive life, switching modes 
 |---|---|---|
 | **Cycle tracking** | Daily logging, deterministic period/fertile/ovulation prediction with honest confidence, calendar, history & trends | ✅ Phase 1 |
 | **Insights** | Explainable patterns, trends, anomaly nudges, and phase guidance from your own data | ✅ Phase 2A |
-| **Content library** | 10-article, medically-cited corpus with a personalized, deterministic feed | ✅ Phase 2B |
+| **Content library** | Life-stage-spanning, medically-cited corpus (cycle, TTC, pregnancy, postpartum) with a personalized, deterministic feed scoped to the active stage | ✅ Phase 2B |
 | **Fertility / TTC** | Opt-in trying-to-conceive mode: BBT, LH, cervical mucus, ovulation confirmation, BBT chart | ✅ Phase 3 |
 | **Pregnancy** | Week-by-week, kick counter, contraction timer (5-1-1), compassionate birth/loss exit | ✅ Phase 4 |
 | **Postpartum** | Mother-focused recovery tracking + EPDS mental-health screening with crisis support | ✅ Phase 5 |
@@ -99,7 +99,7 @@ Deterministic, explainable insights derived entirely from your own logs:
 Each generator returns nothing when there isn't enough data, so you never see a weak or misleading insight.
 
 ### Content library
-A bundled, **medically-cited** article corpus (sources include NHS, ACOG, and the U.S. Office on Women's Health). A deterministic engine maps your current context → a personalized "For you" feed and a daily card on the home screen. Browse, search, and filter by topic and phase; read articles in-app.
+A bundled, **medically-cited** article corpus (sources include NHS, ACOG, and the U.S. Office on Women's Health) spanning every shipped life stage — cycle, trying-to-conceive, pregnancy, and postpartum. A deterministic engine maps your current context → a personalized "For you" feed and a daily card on the home screen, **scoped to your active life stage** so a pregnant user sees pregnancy reads rather than period/PMS material. Browse, search, and filter by topic and phase; read articles in-app.
 
 ### Fertility / TTC
 An **opt-in** trying-to-conceive mode. Log basal body temperature (°C/°F), LH tests, cervical mucus, and intercourse. Lumen detects the thermal shift (3-over-6 rule), **confirms ovulation** by combining BBT + LH + mucus, estimates your real luteal length, and gives qualitative conception guidance — rendered with an inline BBT chart and a non-medical disclaimer.
@@ -150,10 +150,11 @@ Each subsystem is a small set of independently testable pure functions:
 
 ### Data layer & persistence
 
-- **`src/data/db.ts`** — a Dexie database (`lumen-health`) at **schema version 3**, migrated additively:
+- **`src/data/db.ts`** — a Dexie database (`lumen-health`) at **schema version 4**, migrated additively:
   - **v1:** `cycles`, `dailyLogs`
   - **v2:** + `pregnancyProfile`, `kickSessions`, `contractionSessions`
   - **v3:** + `postpartumProfile`, `epdsEntries`
+  - **v4:** + `programProgress` (per-course step completion)
 - **`src/data/repository.ts`** — CRUD over those tables; the only place IndexedDB is touched.
 - **`src/data/export.ts`** — a single versioned JSON export blob covering every table, with matching hard-delete parity.
 - **`src/storage/persist.ts`** — wraps `navigator.storage.persist()` to reduce eviction risk.
@@ -213,7 +214,7 @@ scripts/                  # generate-icons.mjs (sharp)
 | Framework | [Next.js 16](https://nextjs.org/) (App Router) + React 19 |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS v4 |
-| Local storage | [Dexie](https://dexie.org/) over IndexedDB (schema v3) |
+| Local storage | [Dexie](https://dexie.org/) over IndexedDB (schema v4) |
 | Dates | [date-fns](https://date-fns.org/) with timezone-safe ISO date strings |
 | Markdown | `react-markdown` + `remark-gfm` (content library) |
 | Testing | [Vitest](https://vitest.dev/) + Testing Library + `fake-indexeddb` |
@@ -252,7 +253,7 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 - ✅ **Phase 4 — Pregnancy**: week-by-week, kick counter, contraction timer, compassionate loss flow.
 - ✅ **Phase 5 — Postpartum**: recovery tracking + EPDS mental-health screening.
 - 🚀 **v1.0.0 shipped** — privacy page, persistent storage, onboarding intro, MIT license.
-- ⬜ **Phase 2C — Courses / programs**.
+- ✅ **Phase 2C — Courses / programs**: ordered, stage-scoped guided reading paths over the article corpus, with local per-step progress (Dexie schema v4).
 - ⬜ **Phase 5b — Perimenopause & menopause**.
 - ⬜ **Phase 6 — AI health assistant** (RAG over a vetted corpus, strict guardrails).
 - ⬜ **Phase 7 — Community ("Circles")**, anonymous + moderated.

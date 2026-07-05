@@ -76,10 +76,10 @@ export default function HomePage() {
           hasCycleHistory={stats.cycleCount > 0}
         />
       )}
-      {/* The reading library and daily read are cycle-stage content; in TTC,
-          pregnancy, and postpartum modes each stage surfaces its own guidance,
-          so we scope these out to keep off-stage material from showing. */}
-      {lifeStage === 'cycle' && <DailyContentCard article={dailyContent} />}
+      {/* The daily read is now scoped to the active life stage by the content
+          engine (the feed filters by lifeStage), so each stage surfaces its own
+          guidance. Renders nothing when there is no article for today. */}
+      <DailyContentCard article={dailyContent} />
       <nav className="grid grid-cols-2 gap-3 text-center text-sm">
         <Link href="/log" className="rounded-md bg-rose-600 px-4 py-3 text-white">
           Log today
@@ -96,11 +96,12 @@ export default function HomePage() {
         <Link href="/insights" className="rounded-md border px-4 py-3">
           Insights
         </Link>
-        {lifeStage === 'cycle' && (
-          <Link href="/library" className="rounded-md border px-4 py-3">
-            Library
-          </Link>
-        )}
+        <Link href="/library" className="rounded-md border px-4 py-3">
+          Library
+        </Link>
+        <Link href="/programs" className="rounded-md border px-4 py-3">
+          Programs
+        </Link>
         {lifeStage === 'ttc' && (
           <Link href="/fertility" className="rounded-md border px-4 py-3">
             Fertility

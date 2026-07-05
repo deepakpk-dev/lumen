@@ -7,6 +7,7 @@ import type {
   ContractionSession,
   PostpartumProfile,
   EpdsEntry,
+  ProgramProgress,
 } from '@/src/domain/types';
 
 export class HealthDB extends Dexie {
@@ -17,6 +18,7 @@ export class HealthDB extends Dexie {
   contractionSessions!: Table<ContractionSession, string>;
   postpartumProfile!: Table<PostpartumProfile, string>;
   epdsEntries!: Table<EpdsEntry, string>;
+  programProgress!: Table<ProgramProgress, string>;
 
   constructor() {
     super('lumen-health');
@@ -39,6 +41,16 @@ export class HealthDB extends Dexie {
       contractionSessions: 'id, date',
       postpartumProfile: 'id',
       epdsEntries: 'id, date',
+    });
+    this.version(4).stores({
+      cycles: 'id, startDate',
+      dailyLogs: 'date',
+      pregnancyProfile: 'id',
+      kickSessions: 'id, date',
+      contractionSessions: 'id, date',
+      postpartumProfile: 'id',
+      epdsEntries: 'id, date',
+      programProgress: 'programSlug',
     });
   }
 }
