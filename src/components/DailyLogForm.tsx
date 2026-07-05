@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { FlowIntensity, ISODate, LHResult, MucusType } from '@/src/domain/types';
 import { useHealthData } from '@/src/state/useHealthData';
 import {
@@ -80,7 +81,11 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
-  const [saved, setSaved] = useState(false);
+  // Timestamp of last save; drives a transient confirmation. Using a value
+  // (not a bool) so each save re-triggers the auto-dismiss timer even when the
+  // banner is already showing.
+  const [savedAt, setSavedAt] = useState(0);
+  const saved = savedAt !== 0;
 
   // TTC fields
   const [bbt, setBbt] = useState('');
@@ -109,6 +114,12 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     }
   }, [existing, bbtUnit]);
 
+  useEffect(() => {
+    if (!savedAt) return;
+    const t = setTimeout(() => setSavedAt(0), 3000);
+    return () => clearTimeout(t);
+  }, [savedAt]);
+
   function toggle(list: string[], value: string): string[] {
     return list.includes(value)
       ? list.filter((v) => v !== value)
@@ -125,7 +136,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
         moods,
         notes: notes || undefined,
       });
-      setSaved(true);
+      setSavedAt(Date.now());
       return;
     }
     const parsedBbt = bbt.trim() === '' ? undefined : Number(bbt);
@@ -170,7 +181,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
         await startPeriod(date);
       }
     }
-    setSaved(true);
+    setSavedAt(Date.now());
   }
 
   return (
@@ -304,11 +315,23 @@ export function DailyLogForm({ date }: { date: ISODate }) {
       <button
         type="button"
         onClick={handleSave}
-        className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white"
+        className={`w-full rounded-md px-4 py-3 font-medium text-white ${
+          saved ? 'bg-green-600' : 'bg-rose-600'
+        }`}
       >
-        Save
+        {saved ? '✓ Saved' : 'Save'}
       </button>
-      {saved && <p className="text-center text-sm text-green-700">Saved</p>}
+      {saved && (
+        <p
+          role="status"
+          className="rounded-md bg-green-50 px-3 py-2 text-center text-sm text-green-800 dark:bg-green-950 dark:text-green-300"
+        >
+          Saved to your log.{' '}
+          <Link href="/history" className="underline">
+            View history
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

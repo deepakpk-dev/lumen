@@ -51,7 +51,7 @@ describe('DailyLogForm TTC section', () => {
     await user.click(saveButton);
 
     await waitFor(() =>
-      expect(screen.getByText(/Saved/i)).toBeTruthy(),
+      expect(screen.getByRole('status')).toBeTruthy(),
     );
 
     const savedLog = await getDailyLog('2026-06-15');

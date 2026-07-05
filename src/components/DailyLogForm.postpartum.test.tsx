@@ -33,7 +33,7 @@ describe('DailyLogForm postpartum', () => {
     render(<DailyLogForm date="2026-06-10" />);
     fireEvent.click(screen.getByRole('button', { name: 'medium' }));
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
-    await screen.findByText(/saved/i);
+    await screen.findByRole('status');
     expect(saveLog).toHaveBeenCalledWith(expect.objectContaining({ lochia: 'medium' }));
     expect(startPeriod).not.toHaveBeenCalled();
   });
