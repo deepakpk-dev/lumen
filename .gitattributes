@@ -1,0 +1,11 @@
+# Normalize line endings: store everything as LF in the repo, let Git handle
+# checkout on each platform. Keeps Windows CRLF working copies from producing
+# noisy diffs or "LF will be replaced by CRLF" warnings.
+* text=auto eol=lf
+
+# Binary assets Git must never touch.
+*.png binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
