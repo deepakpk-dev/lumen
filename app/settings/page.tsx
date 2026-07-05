@@ -72,6 +72,12 @@ export default function SettingsPage() {
           Because it lives only here, clearing your browser data, using private mode, or losing
           this device will erase it. Export regularly to keep a backup.
         </p>
+        <Link
+          href="/report"
+          className="block w-full rounded-md border px-4 py-3 text-center"
+        >
+          Doctor summary (print / PDF)
+        </Link>
         <DataControls
           onDeleted={async () => {
             // The provider outlives this navigation, so reset the live context

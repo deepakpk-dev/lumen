@@ -57,7 +57,7 @@ export default function RootLayout({
         <PasscodeGate>
           <HealthDataProvider>{children}</HealthDataProvider>
         </PasscodeGate>
-        <footer className="mt-auto border-t border-neutral-200 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-center text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+        <footer className="no-print mt-auto border-t border-neutral-200 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-center text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
           <Link href="/privacy" className="underline">
             Privacy &amp; your data
           </Link>

@@ -31,3 +31,24 @@ body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+
+/* Print / "Save as PDF" — used by the doctor-handoff report (/report).
+   Force plain black-on-white so a dark-mode browser prints a legible sheet,
+   drop screen chrome (.no-print), and let the report use the full page. */
+@media print {
+  * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  body {
+    background: #fff !important;
+    padding: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-full {
+    max-width: none !important;
+  }
+}
