@@ -251,21 +251,52 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
   const today = todayISO();
 
   return (
-    <form onSubmit={handleSubmit} className="lumen-setup mx-auto max-w-md space-y-6 p-6">
+    <div className="lumen-setup relative isolate">
       <style>{`
-        .lumen-setup { animation: lumen-setup-in .4s ease-out both; }
-        @keyframes lumen-setup-in {
-          from { opacity: 0; transform: translateY(10px); }
+        /* Ambient rose wash echoing the intro's gradient, so setup feels like
+           the welcome screen receding rather than a cold form. */
+        .lumen-aurora {
+          background:
+            radial-gradient(55% 75% at 15% 0%, rgba(244, 63, 94, 0.14), transparent 62%),
+            radial-gradient(45% 60% at 85% 4%, rgba(236, 72, 153, 0.10), transparent 60%),
+            radial-gradient(70% 55% at 50% -12%, rgba(255, 228, 230, 0.65), transparent 72%);
+        }
+        @media (prefers-color-scheme: dark) {
+          .lumen-aurora {
+            background:
+              radial-gradient(55% 75% at 15% 0%, rgba(244, 63, 94, 0.16), transparent 62%),
+              radial-gradient(45% 60% at 85% 4%, rgba(236, 72, 153, 0.12), transparent 60%);
+          }
+        }
+        /* Staggered entrance: each section rises in sequence. */
+        .lumen-setup .lumen-in {
+          opacity: 0;
+          animation: lumen-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .lumen-setup [data-in='1'] { animation-delay: 0.03s; }
+        .lumen-setup [data-in='2'] { animation-delay: 0.1s; }
+        .lumen-setup [data-in='3'] { animation-delay: 0.18s; }
+        .lumen-setup [data-in='4'] { animation-delay: 0.27s; }
+        .lumen-setup [data-in='5'] { animation-delay: 0.36s; }
+        @keyframes lumen-in {
+          from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: none; }
         }
+        .lumen-check-pop { animation: lumen-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        @keyframes lumen-pop {
+          from { transform: scale(0.4); opacity: 0; }
+        }
         @media (prefers-reduced-motion: reduce) {
-          .lumen-setup { animation: none; }
+          .lumen-setup .lumen-in, .lumen-setup .lumen-check-pop { animation: none; opacity: 1; }
         }
       `}</style>
 
+      <div aria-hidden="true" className="lumen-aurora pointer-events-none absolute inset-x-0 top-0 -z-10 h-96" />
+
+      <form onSubmit={handleSubmit} className="mx-auto max-w-md space-y-6 p-6">
       {/* Carry the intro's wordmark into setup so the two screens read as one
           flow; the back button returns to it rather than trapping the user. */}
-      <div className="flex items-center justify-between">
+      <div className="lumen-in flex items-center justify-between" data-in="1">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -287,35 +318,51 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
               <path d="M15 6l-6 6 6 6" />
             </svg>
           </button>
-          <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-rose-600" />
+          <span
+            aria-hidden="true"
+            className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 shadow-[0_0_10px_rgba(225,29,72,0.5)]"
+          />
           <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-300">
             Lumen
           </span>
         </div>
-        <span className="text-xs text-neutral-400 dark:text-neutral-500">Step 2 of 2</span>
+        <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
+          Step 2 of 2
+        </span>
       </div>
 
       {/* Two-segment progress bar mirroring the step label above. The second
           segment fills once the form is complete, so the bar doubles as live
           "ready to submit" feedback. */}
-      <div aria-hidden="true" className="flex gap-1.5">
-        <span className="h-1 flex-1 rounded-full bg-rose-600" />
+      <div aria-hidden="true" className="lumen-in flex gap-1.5" data-in="1">
+        <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-500" />
         <span
-          className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-            missingDate ? 'bg-rose-200 dark:bg-rose-950' : 'bg-rose-600'
+          className={`h-1 flex-1 rounded-full transition-colors duration-500 ${
+            missingDate
+              ? 'bg-rose-200/70 dark:bg-rose-950'
+              : 'bg-gradient-to-r from-pink-500 to-rose-500'
           }`}
         />
       </div>
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Let&apos;s set things up</h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+      <div className="lumen-in" data-in="2">
+        <h1 className="bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 bg-clip-text text-[28px] font-bold tracking-tight text-transparent dark:from-rose-300 dark:via-rose-300 dark:to-pink-300">
+          Let&apos;s set things up
+        </h1>
+        <p className="mt-2 text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-300">
           A few quick details, then you&apos;re in. You can change any of this later.
         </p>
       </div>
 
-      <fieldset role="radiogroup" onKeyDown={handleGoalKeyDown} className="space-y-2.5 text-sm">
-        <legend className="mb-2 block font-medium">What brings you to Lumen?</legend>
+      <fieldset
+        role="radiogroup"
+        onKeyDown={handleGoalKeyDown}
+        className="lumen-in space-y-2.5 text-sm"
+        data-in="3"
+      >
+        <legend className="mb-2.5 block font-semibold text-neutral-800 dark:text-neutral-100">
+          What brings you to Lumen?
+        </legend>
         {goalOptions.map((o) => {
           const selected = goal === o.value;
           return (
@@ -327,30 +374,30 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
               aria-checked={selected}
               tabIndex={selected ? 0 : -1}
               onClick={() => setGoal(o.value)}
-              className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
+              className={`group flex w-full items-center gap-3.5 rounded-2xl border px-4 py-3.5 text-left backdrop-blur transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950 ${
                 selected
-                  ? 'border-rose-600 bg-rose-50 dark:border-rose-500 dark:bg-rose-950/40'
-                  : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600'
+                  ? '-translate-y-0.5 border-rose-500/70 bg-gradient-to-br from-rose-50 to-pink-50/60 shadow-[0_10px_30px_-10px_rgba(225,29,72,0.35)] dark:border-rose-500/50 dark:from-rose-950/50 dark:to-pink-950/30'
+                  : 'border-neutral-200/80 bg-white/70 shadow-sm hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md dark:border-neutral-800 dark:bg-white/[0.04] dark:hover:border-rose-900'
               }`}
             >
               <span
                 aria-hidden="true"
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
                   selected
-                    ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/60 dark:text-rose-300'
-                    : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                    ? 'bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-[0_4px_14px_rgba(225,29,72,0.4)]'
+                    : 'bg-neutral-100 text-neutral-500 group-hover:bg-rose-50 group-hover:text-rose-500 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-rose-950/60 dark:group-hover:text-rose-300'
                 }`}
               >
                 {goalIcon[o.value]}
               </span>
               <span className="flex-1">
                 <span
-                  className={`block font-medium ${selected ? 'text-rose-900 dark:text-rose-100' : ''}`}
+                  className={`block font-semibold ${selected ? 'text-rose-900 dark:text-rose-100' : 'text-neutral-800 dark:text-neutral-100'}`}
                 >
                   {o.label}
                 </span>
                 <span
-                  className={`block text-xs ${selected ? 'text-rose-700/80 dark:text-rose-300/80' : 'text-neutral-500 dark:text-neutral-400'}`}
+                  className={`block text-xs leading-5 ${selected ? 'text-rose-700/80 dark:text-rose-300/80' : 'text-neutral-500 dark:text-neutral-400'}`}
                 >
                   {o.hint}
                 </span>
@@ -358,15 +405,15 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
               {selected && (
                 <svg
                   aria-hidden="true"
-                  width="20"
-                  height="20"
+                  width="22"
+                  height="22"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="shrink-0 text-rose-600 dark:text-rose-300"
+                  className="lumen-check-pop shrink-0 text-rose-600 dark:text-rose-300"
                 >
                   <circle cx="12" cy="12" r="9" />
                   <path d="m9 12 2 2 4-4" />
@@ -378,8 +425,11 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
       </fieldset>
 
       {askingForPeriod ? (
-        <div className="space-y-2">
-          <label htmlFor="last-period" className="block text-sm font-medium">
+        <div className="lumen-in space-y-2.5" data-in="4">
+          <label
+            htmlFor="last-period"
+            className="block text-sm font-semibold text-neutral-800 dark:text-neutral-100"
+          >
             When did your last period start?
           </label>
           <input
@@ -389,7 +439,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             value={date}
             max={today}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-700 dark:bg-transparent dark:[color-scheme:dark]"
+            className="w-full rounded-xl border border-neutral-200/80 bg-white/70 px-3.5 py-3 text-[15px] shadow-sm backdrop-blur transition-colors [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-800 dark:bg-white/[0.04] dark:[color-scheme:dark]"
           />
           <p className="flex items-start gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
             <LockIcon />
@@ -398,19 +448,38 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           {goal === 'pregnant' && (
             <>
               {derivedDueDate && (
-                <p className="text-xs font-medium text-rose-700 dark:text-rose-300">
-                  Estimated due date:{' '}
-                  {parseISODate(derivedDueDate).toLocaleDateString(undefined, {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                <p className="flex items-center gap-2 rounded-xl border border-rose-200/80 bg-gradient-to-r from-rose-50 to-pink-50 px-3.5 py-2.5 text-[13px] font-medium text-rose-800 dark:border-rose-900 dark:from-rose-950/60 dark:to-pink-950/40 dark:text-rose-200">
+                  <svg
+                    aria-hidden="true"
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                  >
+                    <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" />
+                    <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" />
+                  </svg>
+                  <span>
+                    Estimated due date:{' '}
+                    <strong className="font-semibold">
+                      {parseISODate(derivedDueDate).toLocaleDateString(undefined, {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </strong>
+                  </span>
                 </p>
               )}
               <button
                 type="button"
                 onClick={() => setLmpMode(false)}
-                className="text-xs text-rose-700 underline underline-offset-2 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
+                className="text-xs font-medium text-rose-700 underline underline-offset-2 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
               >
                 I know my due date
               </button>
@@ -418,8 +487,11 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           )}
         </div>
       ) : (
-        <div className="space-y-2">
-          <label htmlFor="due-date" className="block text-sm font-medium">
+        <div className="lumen-in space-y-2.5" data-in="4">
+          <label
+            htmlFor="due-date"
+            className="block text-sm font-semibold text-neutral-800 dark:text-neutral-100"
+          >
             What is your due date?
           </label>
           <input
@@ -430,7 +502,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             min={today}
             max={addDays(today, 301)}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-700 dark:bg-transparent dark:[color-scheme:dark]"
+            className="w-full rounded-xl border border-neutral-200/80 bg-white/70 px-3.5 py-3 text-[15px] shadow-sm backdrop-blur transition-colors [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-800 dark:bg-white/[0.04] dark:[color-scheme:dark]"
           />
           <p className="flex items-start gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
             <LockIcon />
@@ -439,24 +511,43 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           <button
             type="button"
             onClick={() => setLmpMode(true)}
-            className="text-xs text-rose-700 underline underline-offset-2 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
+            className="text-xs font-medium text-rose-700 underline underline-offset-2 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
           >
             Not sure? Enter your last period instead
           </button>
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="lumen-in space-y-3" data-in="5">
         <button
           type="submit"
           disabled={saving || missingDate}
-          className={`w-full rounded-xl px-4 py-3.5 font-semibold transition ${
+          className={`group w-full rounded-2xl px-4 py-4 font-semibold transition-all duration-200 ${
             saving || missingDate
               ? 'cursor-not-allowed bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
-              : 'bg-rose-600 text-white shadow-[0_8px_24px_rgba(225,29,72,0.25)] hover:bg-rose-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2'
+              : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-[0_12px_32px_-8px_rgba(225,29,72,0.55)] hover:shadow-[0_16px_40px_-8px_rgba(225,29,72,0.65)] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950'
           }`}
         >
-          {saving ? 'Setting up…' : 'Get started'}
+          <span className="flex items-center justify-center gap-2">
+            {saving ? 'Setting up…' : 'Get started'}
+            {!saving && !missingDate && (
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              >
+                <path d="M5 12h14" />
+                <path d="m13 6 6 6-6 6" />
+              </svg>
+            )}
+          </span>
         </button>
         {missingDate && (
           <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
@@ -465,7 +556,13 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
               : 'Pick your due date to continue'}
           </p>
         )}
+        {/* Restate the privacy promise at the moment of commitment. */}
+        <p className="flex items-center justify-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
+          <LockIcon />
+          <span>Private — your answers never leave this device</span>
+        </p>
       </div>
-    </form>
+      </form>
+    </div>
   );
 }
