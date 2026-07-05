@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
-import { todayISO } from '@/src/domain/dates';
+import { addDays, parseISODate, todayISO } from '@/src/domain/dates';
 
 export type Goal = 'cycle' | 'ttc' | 'pregnant';
 
@@ -68,19 +68,45 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
   const [goal, setGoal] = useState<Goal>('cycle');
   const [date, setDate] = useState('');
   const [dueDate, setDueDate] = useState('');
+  // Pregnant users often know their last period, not their due date; this
+  // toggles the due-date field to a last-period field and derives the due date.
+  const [lmpMode, setLmpMode] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Which date the goal needs: the due date, unless the user is entering their
+  // last period instead (always, for non-pregnant goals).
+  const askingForPeriod = goal !== 'pregnant' || lmpMode;
+  const missingDate = askingForPeriod ? !date : !dueDate;
+  // Naegele's rule: due date = last period + 280 days.
+  const derivedDueDate = goal === 'pregnant' && lmpMode && date ? addDays(date, 280) : '';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     // The required date depends on the goal; bail if it's missing so a stray
     // submit can't seed a cycle off an empty date or route onward without setup.
-    if (goal === 'pregnant' ? !dueDate : !date) return;
+    if (missingDate) return;
     setSaving(true);
     // One call seeds the goal's data, sets its life stage, and clears any prior
     // stage — so re-onboarding (or onboarding after a wipe) lands cleanly.
-    await completeOnboarding(goal, { date, dueDate });
+    await completeOnboarding(goal, { date, dueDate: derivedDueDate || dueDate });
     setSaving(false);
     onComplete(goal);
+  }
+
+  // Arrow-key navigation for the goal radiogroup: move selection and focus.
+  function handleGoalKeyDown(e: React.KeyboardEvent) {
+    const dir =
+      e.key === 'ArrowDown' || e.key === 'ArrowRight'
+        ? 1
+        : e.key === 'ArrowUp' || e.key === 'ArrowLeft'
+          ? -1
+          : 0;
+    if (!dir) return;
+    e.preventDefault();
+    const i = goalOptions.findIndex((o) => o.value === goal);
+    const next = goalOptions[(i + dir + goalOptions.length) % goalOptions.length].value;
+    setGoal(next);
+    document.getElementById(`goal-${next}`)?.focus();
   }
 
   const goalOptions: { value: Goal; label: string; hint: string }[] = [
@@ -220,17 +246,47 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
     );
   }
 
-  // The button stays disabled until the goal's required date is set; this same
-  // flag drives the visible reason below it, so an inactive button never reads
-  // as a broken one.
-  const missingDate = goal === 'pregnant' ? !dueDate : !date;
+  // Due dates live in a known window (today .. ~43 weeks out); constrain the
+  // picker so a typo can't set a past or absurd date.
+  const today = todayISO();
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-md space-y-6 p-6">
+    <form onSubmit={handleSubmit} className="lumen-setup mx-auto max-w-md space-y-6 p-6">
+      <style>{`
+        .lumen-setup { animation: lumen-setup-in .4s ease-out both; }
+        @keyframes lumen-setup-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lumen-setup { animation: none; }
+        }
+      `}</style>
+
       {/* Carry the intro's wordmark into setup so the two screens read as one
-          flow, and signal that setup is the last thing between them and the app. */}
+          flow; the back button returns to it rather than trapping the user. */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="Back"
+            onClick={() => setStep('intro')}
+            className="-ml-2 flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+          >
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
           <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-rose-600" />
           <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-300">
             Lumen
@@ -239,22 +295,37 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
         <span className="text-xs text-neutral-400 dark:text-neutral-500">Step 2 of 2</span>
       </div>
 
+      {/* Two-segment progress bar mirroring the step label above. The second
+          segment fills once the form is complete, so the bar doubles as live
+          "ready to submit" feedback. */}
+      <div aria-hidden="true" className="flex gap-1.5">
+        <span className="h-1 flex-1 rounded-full bg-rose-600" />
+        <span
+          className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+            missingDate ? 'bg-rose-200 dark:bg-rose-950' : 'bg-rose-600'
+          }`}
+        />
+      </div>
+
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Let&apos;s set things up</h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          A few quick details, then you&apos;re in.
+          A few quick details, then you&apos;re in. You can change any of this later.
         </p>
       </div>
 
-      <fieldset className="space-y-2.5 text-sm">
+      <fieldset role="radiogroup" onKeyDown={handleGoalKeyDown} className="space-y-2.5 text-sm">
         <legend className="mb-2 block font-medium">What brings you to Lumen?</legend>
         {goalOptions.map((o) => {
           const selected = goal === o.value;
           return (
             <button
               key={o.value}
+              id={`goal-${o.value}`}
               type="button"
-              aria-pressed={selected}
+              role="radio"
+              aria-checked={selected}
+              tabIndex={selected ? 0 : -1}
               onClick={() => setGoal(o.value)}
               className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                 selected
@@ -306,7 +377,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
         })}
       </fieldset>
 
-      {goal !== 'pregnant' ? (
+      {askingForPeriod ? (
         <div className="space-y-2">
           <label htmlFor="last-period" className="block text-sm font-medium">
             When did your last period start?
@@ -316,7 +387,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             aria-label="last period start"
             type="date"
             value={date}
-            max={todayISO()}
+            max={today}
             onChange={(e) => setDate(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-700 dark:bg-transparent dark:[color-scheme:dark]"
           />
@@ -324,6 +395,27 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             <LockIcon />
             <span>The first day of your most recent period. Not sure? Your best guess is fine.</span>
           </p>
+          {goal === 'pregnant' && (
+            <>
+              {derivedDueDate && (
+                <p className="text-xs font-medium text-rose-700 dark:text-rose-300">
+                  Estimated due date:{' '}
+                  {parseISODate(derivedDueDate).toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => setLmpMode(false)}
+                className="text-xs text-rose-700 underline underline-offset-2 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
+              >
+                I know my due date
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
@@ -335,6 +427,8 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             aria-label="due date"
             type="date"
             value={dueDate}
+            min={today}
+            max={addDays(today, 301)}
             onChange={(e) => setDueDate(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 [color-scheme:light] focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-neutral-700 dark:bg-transparent dark:[color-scheme:dark]"
           />
@@ -342,6 +436,13 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             <LockIcon />
             <span>Your estimated due date — you can adjust it anytime.</span>
           </p>
+          <button
+            type="button"
+            onClick={() => setLmpMode(true)}
+            className="text-xs text-rose-700 underline underline-offset-2 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:text-rose-200"
+          >
+            Not sure? Enter your last period instead
+          </button>
         </div>
       )}
 
@@ -355,13 +456,13 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
               : 'bg-rose-600 text-white shadow-[0_8px_24px_rgba(225,29,72,0.25)] hover:bg-rose-700 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2'
           }`}
         >
-          Get started
+          {saving ? 'Setting up…' : 'Get started'}
         </button>
         {missingDate && (
           <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
-            {goal === 'pregnant'
-              ? 'Pick your due date to continue'
-              : 'Pick your last period date to continue'}
+            {askingForPeriod
+              ? 'Pick your last period date to continue'
+              : 'Pick your due date to continue'}
           </p>
         )}
       </div>

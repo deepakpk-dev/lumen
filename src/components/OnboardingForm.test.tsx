@@ -38,7 +38,7 @@ describe('OnboardingForm', () => {
 
   it('onboards the conceiving goal as ttc when chosen', async () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /trying to conceive/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /trying to conceive/i }));
     fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
     fireEvent.click(screen.getByRole('button', { name: /get started/i }));
     await waitFor(() =>
@@ -59,7 +59,7 @@ describe('OnboardingForm', () => {
 
   it('onboards the pregnant goal when chosen', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
     fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
     fireEvent.click(screen.getByRole('button', { name: /get started/i }));
     expect(completeOnboarding).toHaveBeenCalledWith(
@@ -70,7 +70,7 @@ describe('OnboardingForm', () => {
 
   it('disables submit on the pregnant goal until a due date is entered', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
     expect(screen.getByRole('button', { name: /get started/i })).toHaveProperty('disabled', true);
   });
 
@@ -92,7 +92,7 @@ describe('OnboardingForm', () => {
   it('reports the chosen goal to onComplete so the caller can route accordingly', async () => {
     const onComplete = vi.fn();
     renderSetup(onComplete);
-    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
     fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
     fireEvent.click(screen.getByRole('button', { name: /get started/i }));
     await waitFor(() => expect(onComplete).toHaveBeenCalledWith('pregnant'));
@@ -123,9 +123,36 @@ describe('OnboardingForm', () => {
     expect(screen.queryByText(/last period date to continue/i)).not.toBeInTheDocument();
   });
 
+  it('derives the due date from the last period when the user does not know it', async () => {
+    renderSetup();
+    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
+    fireEvent.click(screen.getByRole('button', { name: /enter your last period instead/i }));
+    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
+    // Naegele's rule: LMP + 280 days.
+    expect(screen.getByText(/estimated due date/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
+    await waitFor(() =>
+      expect(completeOnboarding).toHaveBeenCalledWith(
+        'pregnant',
+        expect.objectContaining({ date: '2026-06-01', dueDate: '2027-03-08' }),
+      ),
+    );
+  });
+
+  it('moves goal selection with arrow keys (radiogroup semantics)', () => {
+    renderSetup();
+    const cycle = screen.getByRole('radio', { name: /track my cycle/i });
+    expect(cycle).toHaveAttribute('aria-checked', 'true');
+    fireEvent.keyDown(cycle, { key: 'ArrowDown' });
+    expect(screen.getByRole('radio', { name: /trying to conceive/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
   it('explains why submit is inactive until a due date is set on the pregnant goal', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /i'm pregnant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
     expect(screen.getByText(/due date to continue/i)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
     expect(screen.queryByText(/due date to continue/i)).not.toBeInTheDocument();
