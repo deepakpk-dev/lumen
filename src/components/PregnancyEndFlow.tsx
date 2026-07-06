@@ -8,6 +8,9 @@ type Screen = 'closed' | 'choose' | 'birth' | 'loss';
 
 // ponytail: DOM + Web Animations API confetti; swap for canvas-confetti if we ever want physics.
 function confettiBurst() {
+  // Decoration must never block the data write: skip where the Web Animations
+  // API / matchMedia don't exist (jsdom, old browsers) instead of throwing.
+  if (typeof Element.prototype.animate !== 'function') return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const colors = ['#f43f5e', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'];
   for (let i = 0; i < 80; i++) {
