@@ -11,6 +11,10 @@ export default defineConfig({
     // Playwright owns the e2e/ specs; Vitest's default include also matches
     // *.spec.ts, so exclude them here to keep the two runners separate.
     exclude: [...configDefaults.exclude, 'e2e/**'],
+    // Real 210k-iteration PBKDF2 runs in these tests; on a loaded machine the
+    // 5s default times a test out mid-derivation, and the abandoned async op
+    // then corrupts the next test's state. Generous timeout > flaky suite.
+    testTimeout: 30_000,
   },
   resolve: {
     alias: { '@': resolve(__dirname, '.') },
