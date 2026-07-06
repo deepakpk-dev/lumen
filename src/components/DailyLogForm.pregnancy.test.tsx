@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DailyLogForm } from './DailyLogForm';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+}));
+
 let isPregnant = false;
 const saveLog = vi.fn().mockResolvedValue(undefined);
 vi.mock('@/src/state/useHealthData', () => ({

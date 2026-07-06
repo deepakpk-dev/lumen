@@ -24,8 +24,8 @@ export default function SettingsPage() {
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Passcode lock</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Add an app-level passcode gate. Health records stay local on this
-          device; the local database is not encrypted.
+          Encrypt your on-device health records behind a passcode. Everything
+          still stays local to this device.
         </p>
         <PasscodeControls />
       </section>

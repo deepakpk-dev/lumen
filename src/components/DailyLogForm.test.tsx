@@ -1,7 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DailyLogForm } from './DailyLogForm';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+}));
 import { addCycle, deleteAll, getCycles, getDailyLog } from '@/src/data/repository';
 import { HealthDataProvider } from '@/src/state/useHealthData';
 
