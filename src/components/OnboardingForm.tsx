@@ -261,9 +261,21 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             </span>
           </button>
 
+          {/* Returning users: backups and sync restore both live in Settings.
+              Surfaced here so a new phone doesn't have to onboard from scratch
+              first (design doc §6). */}
+          <p className="lumen-fade mt-4 text-center" data-in="4">
+            <Link
+              href="/settings"
+              className="rounded text-[13px] text-white/80 underline underline-offset-2 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"
+            >
+              Already use Lumen? Restore your data
+            </Link>
+          </p>
+
           {/* Privacy link (in-gradient; replaces the global footer that this
               overlay covers) */}
-          <p className="lumen-fade mt-4 text-center" data-in="4">
+          <p className="lumen-fade mt-2 text-center" data-in="4">
             <Link
               href="/privacy"
               className="rounded text-[13px] text-white/80 underline underline-offset-2 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-rose-700"

@@ -1,7 +1,13 @@
 import { db, type SyncMetaRow } from './db';
 import { encryptRecord, decryptRecord, type SyncEnvelope } from '@/src/crypto/envelope';
 import { authHash, type DerivedKeys } from '@/src/crypto/keys';
-import { getAllRecords, putRecordRaw, deleteRecordRaw, setSyncTracking } from './storage';
+import {
+  getAllRecords,
+  putRecordRaw,
+  deleteRecordRaw,
+  setSyncTracking,
+  notifyOutboxChanged,
+} from './storage';
 import {
   exportPreferences,
   importPreferences,
@@ -84,6 +90,7 @@ async function queueRecord(
 ): Promise<void> {
   const env = await encryptRecord(keys, { store, key, value }, { updatedAt: new Date().toISOString() });
   await db.syncMeta.put({ ...env, dirty: true });
+  notifyOutboxChanged();
 }
 
 // Initial full push seed (enable-sync flow): queue every existing record and

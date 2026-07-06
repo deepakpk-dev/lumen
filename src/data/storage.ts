@@ -39,6 +39,18 @@ export function setSyncTracking(keys: DerivedKeys | null): void {
   tracking = keys;
 }
 
+// Fires after anything lands in the outbox, so the sync runner can push soon
+// after a write instead of waiting for the next app open. One listener.
+let outboxListener: (() => void) | null = null;
+
+export function onOutboxChanged(listener: (() => void) | null): void {
+  outboxListener = listener;
+}
+
+export function notifyOutboxChanged(): void {
+  outboxListener?.();
+}
+
 // Opaque index value for a whole store. Reserved '__store__' namespace can't
 // collide with a real record's `${store}:${key}` recordKey.
 function storeIndex(keys: DerivedKeys, store: string): Promise<string> {
@@ -76,6 +88,7 @@ async function trackWrite(store: string, key: string, value: unknown, deleted: b
     { updatedAt: new Date().toISOString(), deleted },
   );
   await db.syncMeta.put({ ...env, dirty: true });
+  notifyOutboxChanged();
 }
 
 export async function putRecord(store: string, key: string, value: unknown): Promise<void> {

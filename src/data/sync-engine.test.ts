@@ -177,12 +177,83 @@ describe('sync engine', () => {
     expect(await db.kickSessions.count()).toBe(0);
   });
 
+  it('a newer write resurrects a tombstoned record (update beats older delete)', async () => {
+    startSyncTracking(keys);
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await push(keys);
+    await tick();
+    const { deleteRecord } = await import('./storage');
+    await deleteRecord('cycles', 'c1'); // tracked delete → tombstone
+    await push(keys);
+    await tick();
+    await addCycle({ id: 'c1', startDate: '2026-05-05' }); // later re-add wins
+    await push(keys);
+
+    startSyncTracking(null);
+    await deleteAll();
+    startSyncTracking(keys);
+    await pull(keys);
+    expect((await getCycles()).map((c) => c.startDate)).toEqual(['2026-05-05']);
+  });
+
+  it('tolerates records from an unknown future store without dropping them', async () => {
+    startSyncTracking(keys);
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await push(keys);
+    // A newer app version elsewhere synced a store this version doesn't know.
+    const { encryptRecord } = await import('@/src/crypto/envelope');
+    const future = await encryptRecord(
+      keys,
+      { store: 'futureStore', key: 'f1', value: { shiny: true } },
+      { updatedAt: new Date().toISOString() },
+    );
+    serverRows.set(future.recordKey, { ...future, serverSeq: ++serverSeq });
+
+    startSyncTracking(null);
+    await deleteAll();
+    startSyncTracking(keys);
+    await pull(keys); // must not throw on the unknown store
+    expect((await getCycles()).map((c) => c.id)).toEqual(['c1']); // known records applied
+    // The unknown record's envelope and clock are kept, not silently dropped.
+    expect(await db.syncMeta.get(future.recordKey)).toMatchObject({ dirty: false });
+  });
+
+  it('a failed push keeps rows dirty so a retry delivers them', async () => {
+    startSyncTracking(keys);
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve(new Response('{"error":"boom"}', { status: 500 })),
+    );
+    await expect(push(keys)).rejects.toThrow();
+    expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(1);
+    expect(serverRows.size).toBe(0);
+
+    await push(keys); // retry succeeds
+    expect(serverRows.size).toBe(1);
+    expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(0);
+  });
+
   it('queues a prefs record when a preference changes', async () => {
     startSyncTracking(keys);
     setBbtUnit('F');
     await vi.waitFor(async () => {
       expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(1);
     });
+  });
+
+  it('notifies the outbox listener on tracked writes (drives the debounced push)', async () => {
+    const { onOutboxChanged } = await import('./storage');
+    const listener = vi.fn();
+    onOutboxChanged(listener);
+    try {
+      await addCycle({ id: 'c1', startDate: '2026-01-01' }); // tracking off → silent
+      expect(listener).not.toHaveBeenCalled();
+      startSyncTracking(keys);
+      await addCycle({ id: 'c2', startDate: '2026-02-01' });
+      expect(listener).toHaveBeenCalledTimes(1);
+    } finally {
+      onOutboxChanged(null);
+    }
   });
 
   it('enableSync on a second device pulls before seeding, so remote prefs survive', async () => {
