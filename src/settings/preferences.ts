@@ -11,6 +11,18 @@ function ls(): Storage | null {
   return typeof localStorage === 'undefined' ? null : localStorage;
 }
 
+// Sync hook (phase 3c): the sync engine registers here so preference changes
+// land in its outbox. One listener is all we need.
+let changeListener: (() => void) | null = null;
+
+export function onPreferencesChanged(listener: (() => void) | null): void {
+  changeListener = listener;
+}
+
+function notifyChanged(): void {
+  changeListener?.();
+}
+
 export function getLifeStage(): LifeStage {
   return (ls()?.getItem(LIFESTAGE_KEY) as LifeStage | null) ?? 'cycle';
 }
@@ -28,6 +40,7 @@ export function setLifeStage(stage: LifeStage, today: ISODate): void {
   } else {
     store.removeItem(TTCSTART_KEY);
   }
+  notifyChanged();
 }
 
 export function getBbtUnit(): BbtUnit {
@@ -36,6 +49,7 @@ export function getBbtUnit(): BbtUnit {
 
 export function setBbtUnit(unit: BbtUnit): void {
   ls()?.setItem(BBTUNIT_KEY, unit);
+  notifyChanged();
 }
 
 export interface ReminderPrefs {
@@ -67,6 +81,7 @@ export function getReminderPrefs(): ReminderPrefs {
 
 export function setReminderPrefs(prefs: ReminderPrefs): void {
   ls()?.setItem(REMINDERS_KEY, JSON.stringify(prefs));
+  notifyChanged();
 }
 
 // A serializable snapshot of all preferences, so a backup/restore carries the
@@ -89,15 +104,22 @@ export function exportPreferences(): PreferencesSnapshot {
   };
 }
 
-export function importPreferences(p: Partial<PreferencesSnapshot> | null | undefined): void {
+// `notify: false` is for the sync engine applying a REMOTE snapshot — notifying
+// there would re-dirty the outbox and ping-pong the same prefs between devices
+// forever. User-initiated restores keep the default so the import syncs out.
+export function importPreferences(
+  p: Partial<PreferencesSnapshot> | null | undefined,
+  notify = true,
+): void {
   const store = ls();
   if (!store || !p) return;
   // Write lifeStage and ttcStartDate directly (not via setLifeStage, whose
   // ttc side-effects would clobber the restored start date).
   if (p.lifeStage) store.setItem(LIFESTAGE_KEY, p.lifeStage);
   if (p.ttcStartDate) store.setItem(TTCSTART_KEY, p.ttcStartDate);
-  if (p.bbtUnit) setBbtUnit(p.bbtUnit);
-  if (p.reminders) setReminderPrefs(p.reminders);
+  if (p.bbtUnit) store.setItem(BBTUNIT_KEY, p.bbtUnit);
+  if (p.reminders) store.setItem(REMINDERS_KEY, JSON.stringify(p.reminders));
+  if (notify) notifyChanged();
 }
 
 export function clearPreferences(): void {

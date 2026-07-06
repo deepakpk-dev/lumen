@@ -22,6 +22,7 @@ import {
   setStorageKeys,
   storageIsEncrypted,
 } from './storage';
+import { clearSyncState } from './sync-engine';
 
 export async function addCycle(cycle: Cycle): Promise<void> {
   await putRecord('cycles', cycle.id, cycle);
@@ -202,8 +203,10 @@ export async function encryptExistingData(
 
 // Full wipe. Clears both the plaintext tables and the encrypted store outright
 // so it erases everything regardless of the current mode (used on delete-all
-// and re-onboarding after a reset).
+// and re-onboarding after a reset). Sync state goes too: a stale pull cursor
+// would silently skip old records if sync is ever re-enabled on this device.
 export async function deleteAll(): Promise<void> {
+  await clearSyncState();
   await Promise.all([
     db.cycles.clear(),
     db.dailyLogs.clear(),
