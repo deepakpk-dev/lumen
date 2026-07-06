@@ -1,8 +1,8 @@
 # Lumen — User Guide
 
-> **Lumen** is a private, offline‑first period, fertility, pregnancy, and postpartum tracker. Everything you log stays **on your device** — there's no account, no cloud, and no tracking. This guide walks you through every screen so you can get the most out of it.
+> **Lumen** is a private, offline‑first period, fertility, pregnancy, and postpartum tracker. Everything you log stays **on your device** — there's no account and no tracking. If you ever want your data on a second phone, you can turn on **end‑to‑end encrypted sync**, where even our server only ever holds scrambled data it can't read. This guide walks you through every screen so you can get the most out of it.
 
-<p align="center"><em>🌙 Track your cycle · 🤰 Plan or follow a pregnancy · 📚 Learn from cited, plain‑language articles — all in one place.</em></p>
+<p align="center"><em>🌙 Track your cycle · 🌱 Plan for a baby · 🤰 Follow a pregnancy · 🤱 Recover after birth — privately, in one place.</em></p>
 
 ---
 
@@ -16,15 +16,18 @@
 6. [Calendar](#calendar)
 7. [History & trends](#history--trends)
 8. [Insights](#insights)
-9. [Library](#library)
-10. [Understanding your cycle phases](#understanding-your-cycle-phases)
-11. [Trying‑to‑conceive (TTC) mode](#trying-to-conceive-ttc-mode)
-12. [Pregnancy mode](#pregnancy-mode)
-13. [Postpartum mode](#postpartum-mode)
-14. [Your privacy & your data](#your-privacy--your-data)
-15. [Install Lumen as an app](#install-lumen-as-an-app)
-16. [Troubleshooting & FAQ](#troubleshooting--faq)
-17. [Important: medical disclaimer](#important-medical-disclaimer)
+9. [Reminders](#reminders)
+10. [Library](#library)
+11. [Understanding your cycle phases](#understanding-your-cycle-phases)
+12. [Trying‑to‑conceive (TTC) mode](#trying-to-conceive-ttc-mode)
+13. [Pregnancy mode](#pregnancy-mode)
+14. [Postpartum mode](#postpartum-mode)
+15. [Doctor summary (print / PDF)](#doctor-summary-print--pdf)
+16. [Privacy, encryption & your data](#privacy-encryption--your-data)
+17. [Moving to a new phone](#moving-to-a-new-phone)
+18. [Install Lumen as an app](#install-lumen-as-an-app)
+19. [Troubleshooting & FAQ](#troubleshooting--faq)
+20. [Important: medical disclaimer](#important-medical-disclaimer)
 
 ---
 
@@ -32,10 +35,11 @@
 
 | Step | What you do | Where |
 |:----:|-------------|-------|
-| 1️⃣ | Open Lumen and pick **Track my cycle** (or **I'm pregnant**). | Welcome screen |
-| 2️⃣ | Enter the date your **last period started**, then tap **Get started**. | Welcome screen |
+| 1️⃣ | Open Lumen, tap **Continue**, then pick a goal — **Track my cycle**, **Trying to conceive**, or **I'm pregnant**. | Welcome screen |
+| 2️⃣ | Enter the date your **last period started** (or your **due date** if pregnant), then tap **Get started**. | Setup screen |
 | 3️⃣ | Each day, tap **Log today** and record your flow, symptoms, and mood. | Home → Log |
 | 4️⃣ | After a cycle or two, check **Calendar**, **Insights**, and **History** for predictions. | Home |
+| 5️⃣ | *(Optional)* Set a passcode to **encrypt** your data, and turn on **sync** to use Lumen on more than one device. | Settings |
 
 > 💡 **The golden rule:** the more days you log, the smarter and more confident Lumen's predictions become. A minute a day is plenty.
 
@@ -43,7 +47,7 @@
 
 ## How Lumen is organized
 
-Lumen has one **Home** hub. From there, tiles take you to each screen. Use your browser's **Back** button to return Home (the Library also has a **Home** link).
+Lumen has one **Home** hub. From there, tiles take you to each screen. Use your browser's **Back** button to return Home (most screens also have a **Home** link).
 
 ```mermaid
 flowchart TD
@@ -52,6 +56,7 @@ flowchart TD
     H --> Y["📊 History"]
     H --> I["💡 Insights"]
     H --> B["📚 Library"]
+    H --> PR["🎓 Programs"]
     H --> S["⚙️ Settings"]
     H -. "TTC mode on" .-> F["🌡️ Fertility"]
     H -. "Pregnancy mode on" .-> P["🤰 Pregnancy"]
@@ -59,58 +64,65 @@ flowchart TD
     P --> K["👣 Kick counter"]
     P --> T["⏱️ Contraction timer"]
     PP --> E["💗 Mood check-in"]
-    S --> M{{"Switch modes:<br/>Cycle · TTC · Pregnancy · Postpartum"}}
+    S --> M{{"Switch modes · Passcode · Sync · Export/Delete"}}
 
     style H fill:#e11d48,color:#fff
     style M fill:#fff,stroke:#e11d48
 ```
 
-Lumen works in **four modes**. You're always in one of them. You switch most modes in **Settings**, while **Postpartum** is entered automatically after a birth (see below):
+Lumen works in **four modes**. You're always in one of them. You choose most modes in **Settings** (or at onboarding), while **Postpartum** is entered automatically after a birth:
 
 | Mode | For | Turn it on in |
 |------|-----|---------------|
 | 🩸 **Cycle** (default) | Tracking periods, symptoms, and predictions | On by default |
-| 🌱 **TTC** (trying to conceive) | Pinpointing your fertile window with BBT, LH tests & mucus | Settings → *Trying to conceive* |
-| 🤰 **Pregnancy** | Week‑by‑week pregnancy, kick counts & contractions | Settings → *Pregnancy* |
+| 🌱 **TTC** (trying to conceive) | Pinpointing your fertile window with BBT, LH tests & mucus | Onboarding, or Settings → *Trying to conceive* |
+| 🤰 **Pregnancy** | Week‑by‑week pregnancy, kick counts & contractions | Onboarding, or Settings → *Pregnancy* |
 | 🤱 **Postpartum** | Recovery + mental‑health support after birth | Automatic when you confirm **Baby arrived** |
 
 ---
 
 ## First launch & onboarding
 
-The very first time you open Lumen, you'll see a **Welcome** screen. Tell Lumen what you're here for:
+The very first time you open Lumen, you'll see a **Welcome** screen explaining the two things that matter most: your data stays on your device, and Lumen is not medical advice. Tap **Continue** to set up (this is **Step 2 of 2** — quick).
 
 ```
 ┌──────────────────────────────────────┐
-│  Welcome                             │
-│  Let's set things up. This stays     │
-│  private on your device.             │
+│  Let's set things up      Step 2 of 2│
 │                                      │
-│  ┌───────────────┐ ┌───────────────┐ │
-│  │ Track my cycle│ │ I'm pregnant  │ │   ← pick one
-│  └───────────────┘ └───────────────┘ │
+│  What brings you to Lumen?           │
+│  ┌──────────────────────────────────┐│
+│  │ 💧 Track my cycle                ││  ← periods, symptoms, predictions
+│  ├──────────────────────────────────┤│
+│  │ 🌱 Trying to conceive            ││  ← fertile window, BBT, ovulation
+│  ├──────────────────────────────────┤│
+│  │ 💗 I'm pregnant                  ││  ← week-by-week, kicks, contractions
+│  └──────────────────────────────────┘│
 │                                      │
 │  When did your last period start?    │
 │  ┌──────────────────────────────────┐│
-│  │ 2026-06-18                  📅   ││   ← date picker
+│  │ 2026-06-18                  📅   ││  ← date picker
 │  └──────────────────────────────────┘│
-│                                      │
 │  ┌──────────────────────────────────┐│
 │  │            Get started           ││
 │  └──────────────────────────────────┘│
 └──────────────────────────────────────┘
 ```
 
-- **Track my cycle** → enter **when your last period started**. This anchors your first prediction.
-- **I'm pregnant** → enter your **due date**. Lumen opens straight into [Pregnancy mode](#pregnancy-mode).
+Pick the goal that fits:
 
-> 💡 Don't remember the exact date? An approximate one is fine — predictions sharpen automatically as you log real periods.
+- **Track my cycle** → enter **when your last period started**. This anchors your first prediction.
+- **Trying to conceive** → also enter **when your last period started**; Lumen opens in [TTC mode](#trying-to-conceive-ttc-mode) with fertility logging enabled.
+- **I'm pregnant** → enter your **due date**, or tap **"Not sure? Enter your last period instead"** and Lumen calculates it for you. Opens straight into [Pregnancy mode](#pregnancy-mode).
+
+> 💡 Don't remember the exact date? An approximate one is fine — predictions sharpen automatically as you log real periods. You can change your goal or dates anytime in Settings.
+
+> 🔁 **Already used Lumen on another device?** On the Welcome screen tap **"Already use Lumen? Restore your data"** to bring everything over with your recovery phrase or a backup file. See [Moving to a new phone](#moving-to-a-new-phone).
 
 ---
 
 ## The Home screen
 
-Home adapts to your mode and your most relevant information sits at the top.
+Home adapts to your mode, with your most relevant information at the top.
 
 ```
 ┌──────────────────────────────────────┐
@@ -128,6 +140,7 @@ Home adapts to your mode and your most relevant information sits at the top.
 │  │ History    │ │ Settings   │       │
 │  ├────────────┤ ├────────────┤       │
 │  │ Insights   │ │ Library    │       │
+│  │ Programs   │ │            │       │
 │  └────────────┘ └────────────┘       │
 └──────────────────────────────────────┘
 ```
@@ -139,16 +152,17 @@ Home adapts to your mode and your most relevant information sits at the top.
 | **History** | Averages and a list of every cycle. |
 | **Insights** | Personalized patterns and gentle flags. |
 | **Library** | Cited articles, picked for you. |
-| **Settings** | Switch modes, set a passcode, export or delete data. |
+| **Programs** | Short, guided reading paths for your stage. |
+| **Settings** | Switch modes, set a passcode, sync, export or delete data. |
 | **Fertility** | *Appears only in TTC mode* — your BBT chart and conception guidance. |
 | **Pregnancy** | *Appears only in Pregnancy mode* — your week‑by‑week hub. |
-| **Postpartum** | *Appears only in Postpartum mode* — your recovery hub and mood check-in. |
+| **Postpartum** | *Appears only in Postpartum mode* — your recovery hub and mood check‑in. |
 
 The card at the very top changes with your situation:
 - **Cycle mode** → current phase, cycle day, and your next‑period prediction with a **confidence** label.
 - **TTC mode** → a **conception guidance** card (today's chance: high / medium / low).
 - **Pregnancy mode** → your **week, trimester, and countdown to your due date**.
-- **Postpartum mode** → your **recovery week and stage**, plus the band of your most recent mood check-in.
+- **Postpartum mode** → your **recovery week and stage**, plus the band of your most recent mood check‑in.
 
 ---
 
@@ -195,7 +209,7 @@ Tap a chip to select it (it turns **pink**); tap again to deselect. You can pick
 
 > 💡 **The Log screen opens on today.** To log or edit **any past day**, open the **Calendar** and tap that day.
 
-In **TTC mode** and **Pregnancy mode**, this same screen grows extra fields — see those sections below.
+In **TTC mode**, **Pregnancy mode**, and **Postpartum mode**, this same screen grows extra fields — see those sections below.
 
 ---
 
@@ -225,7 +239,9 @@ A month‑at‑a‑glance view of your cycle. **Today** is marked with a pink ri
 
 - Use **←** / **→** to move between months and reach past cycles or future predictions.
 - Jumped away? Tap **Back to this month** to return to today.
-- **Tap any past day (or today)** to open its log — this is how you back-fill a day you missed or edit what you recorded. Future days aren't tappable.
+- **Tap any past day (or today)** to open its log — this is how you back‑fill a day you missed or edit what you recorded. Future days aren't tappable.
+
+> ♿ Calendar states are shown with **labels and shapes**, not color alone, so they're readable with any color vision.
 
 ---
 
@@ -275,12 +291,12 @@ Lumen can gently nudge you so you don't miss what matters — every reminder is 
 |---------|------------------|
 | **Show device notifications** | Whether reminders also appear as system notifications (needs browser permission) |
 | **Period is coming up** | The "period expected soon" reminder |
-| **Fertile window & ovulation** | The fertile-window / ovulation-day reminder |
+| **Fertile window & ovulation** | The fertile‑window / ovulation‑day reminder |
 | **Reminder to log today** | The nudge shown when you haven't logged today |
 
-> 🔒 **Because Lumen has no server, reminders appear when you open the app** — nothing in the cloud pushes messages to you. It's the honest trade-off for keeping everything on your device.
+> 🔒 **Because Lumen keeps everything on your device, reminders appear when you open the app** — nothing in the cloud pushes messages to you. It's the honest trade‑off for privacy.
 
-> 💡 The Home banner needs no permission and only shows when a reminder is actually relevant — no daily spam. Device notifications are entirely opt-in.
+> 💡 The Home banner needs no permission and only shows when a reminder is actually relevant — no daily spam. Device notifications are entirely opt‑in.
 
 ---
 
@@ -288,7 +304,7 @@ Lumen can gently nudge you so you don't miss what matters — every reminder is 
 
 A built‑in collection of **medically cited, plain‑language articles** (sources include the NHS, ACOG, and the Office on Women's Health).
 
-- **For you** — up to three articles picked for your current phase and what you've been logging, each with a short reason for the match.
+- **For you** — up to three articles picked for your current phase and life stage and what you've been logging, each with a short reason for the match.
 - **Browse** — every article, with tools to narrow them down:
 
 | Tool | Use |
@@ -298,6 +314,10 @@ A built‑in collection of **medically cited, plain‑language articles** (sourc
 | **All phases** ▾ | Filter by cycle phase (menstrual · follicular · ovulation · luteal) |
 
 Tap any article to open the full reader. Tap **Home** to go back.
+
+> 🎓 **Programs** (from the Home tile) bundle articles into short, ordered reading paths for your stage — e.g. understanding your cycle, or preparing for a baby. Tick off each step as you go; your progress is saved.
+
+The daily read on Home and the "For you" feed are always **scoped to your active life stage**, so a pregnant user sees pregnancy content, not period/PMS material.
 
 ---
 
@@ -330,7 +350,7 @@ Turn this on when you're trying for a baby and want to pinpoint your fertile win
 
 ### Turn it on
 
-1. Go to **Settings → Trying to conceive**.
+1. Go to **Settings → Trying to conceive** (or pick **Trying to conceive** at onboarding).
 2. Tap **Turn on TTC mode**.
 3. Choose your temperature unit: **°C** or **°F**.
 
@@ -357,7 +377,7 @@ flowchart TD
 ```
 
 - **BBT chart** — plots your morning temperatures so you can see the post‑ovulation rise.
-- **Ovulation status** — confirms ovulation once your logged signals (temperature shift, a positive LH test, egg‑white mucus) line up.
+- **Ovulation status** — confirms ovulation once your logged signals (temperature shift, a positive LH test, egg‑white mucus) line up. Confirmed ovulation also **sharpens your period prediction**.
 - **Conception guidance** — a simple read on today's chances.
 
 > 💡 After several cycles of tracking, Lumen may gently suggest talking to a healthcare provider — this is common and supportive, not a warning.
@@ -510,38 +530,100 @@ Exit is entirely **your choice** — Lumen never predicts when your cycle will r
 
 ---
 
-## Your privacy & your data
+## Doctor summary (print / PDF)
 
-Privacy is Lumen's headline promise.
+Need to share your history with a clinician? Go to **Settings → Your data → Doctor summary (print / PDF)**.
+
+- It opens a clean, printable page summarizing your cycles, averages, and recent logs.
+- Use your browser's **Print** (or *Save as PDF*) to save or print it.
+- It's generated **entirely on your device** — nothing is sent anywhere.
+
+> 💡 Great for a first appointment, a fertility work‑up, or a postpartum check‑in — it gives your provider your real history at a glance.
+
+---
+
+## Privacy, encryption & your data
+
+Privacy is Lumen's headline promise. There are three layers, and **you choose how many to use**:
 
 ```mermaid
-flowchart LR
-    U["👤 You"] -->|log data| D[("📱 This device only")]
-    D -.->|❌ never| Cloud["☁️ No cloud · No account · No tracking"]
+flowchart TD
+    U["👤 You"] -->|log data| D[("📱 On your device")]
+    D --> P{"Set a passcode?"}
+    P -->|No| Plain["Readable on this device<br/>(protect it with your screen lock)"]
+    P -->|Yes| Enc["🔒 Encrypted on this device<br/>(AES-256)"]
+    Enc --> SY{"Turn on sync?"}
+    SY -->|No| Local["Stays on this device only"]
+    SY -->|Yes| Cloud["☁️ End-to-end encrypted copy<br/>server can't read it"]
     style D fill:#e11d48,color:#fff
-    style Cloud stroke-dasharray: 5 5,color:#888
+    style Enc stroke:#e11d48
+    style Cloud stroke:#e11d48
 ```
 
-- **Local‑first.** Everything you log lives in your browser on this device. Lumen never uploads it.
+- **Local‑first, always.** Everything you log lives in your browser on this device. By default nothing is ever uploaded.
 - **No account, no ads, no tracking SDKs.** Nothing to sign up for.
 
-Manage everything under **Settings → Your data**:
+Everything below is managed under **Settings**.
+
+### 1. Passcode & encryption
+
+Under **Settings → Passcode lock**, tap **Turn on encryption** and choose a passcode.
+
+- Lumen encrypts your on‑device data with **AES‑256** and shows you a **12‑word recovery phrase**.
+- **Write the recovery phrase down and keep it safe.** It is the **only** way back in if you forget your passcode — Lumen can't reset it for you, because it never stores your passcode or phrase.
+- After that, you unlock Lumen with your passcode each time you open it. You can **Change passcode** later (your recovery phrase stays the same).
+
+> 🔒 This is **real encryption at rest**, not just a screen lock — without your passcode or recovery phrase, the stored data is unreadable, even to someone with full access to your device or browser storage.
+
+> ⚠️ **The recovery phrase is unrecoverable if lost.** Treat it like a house key: no phrase + forgotten passcode = no way back into encrypted data. Store it somewhere only you can reach.
+
+### 2. Backup & restore (a file you keep)
+
+Under **Settings → Your data**:
 
 | Action | What happens |
 |--------|--------------|
-| **Export my data** | Downloads a single JSON file with everything you've logged — your backup. |
-| **Delete all data** | Permanently erases everything on this device. You'll confirm with **Yes, delete**. This cannot be undone. |
+| **Export my data** | Downloads a single JSON file with everything you've logged — your personal backup. |
+| **Restore from a backup** | Loads a previously exported JSON file back into Lumen (e.g. on a new device or after clearing your browser). |
 
-### Optional passcode lock
+> 💡 Backups are simple and portable. Keep the file somewhere safe — it contains your health data in plain form, so store it like any private document.
 
-Under **Settings → Passcode lock**, set a **numeric passcode** to gate the app on this device.
+### 3. Sync across devices (end‑to‑end encrypted)
 
-- Tap into the field, enter digits, and tap **Set passcode**.
-- To remove it later, tap **Remove passcode**.
+Want Lumen on your phone *and* laptop, kept in step automatically? Under **Settings → Sync across devices**:
 
-> ⚠️ The passcode is an **app‑level gate**, not encryption. The local database itself is not encrypted, so it's one layer of privacy — not a vault. Keep your device secured too.
+1. **Turn on encryption first** (step 1 above) — sync uses the same recovery phrase as its key.
+2. Tap **Turn on sync**. From now on, changes are encrypted **on your device** and an encrypted copy is kept on Lumen's server.
+3. **Sync now** forces an immediate sync; otherwise it happens automatically when you open Lumen.
 
-> 💡 Because your data is device‑local, it doesn't sync across phones or browsers. Use **Export my data** before switching devices or clearing your browser.
+**On your second device:** on the Welcome screen tap **"Already use Lumen? Restore your data"** (or **Settings → Sync → Restore from another device**), enter your **12‑word recovery phrase**, and choose a passcode for that device. Your data flows in, and both devices stay in sync from then on.
+
+> 🔐 **Zero‑knowledge by design.** Your data is encrypted before it leaves your device. The server only ever stores scrambled data and can't read your dates, symptoms, or life stage — it can't even tell what kind of data you have. Only your recovery phrase can unlock it.
+
+> ⚠️ Lose the recovery phrase and you lose the synced copy — there is no password‑reset back door. That's the price of true end‑to‑end encryption.
+
+**Turning sync off:** tap **Turn off sync**. Your data on this device is untouched. You'll also be offered **Turn off and delete server copy** to wipe the encrypted copy from the server.
+
+### 4. Delete everything
+
+Under **Settings → Your data → Delete all data** (confirm with **Yes, delete**):
+
+- Permanently erases everything on this device — logs, passcode, and preferences.
+- If sync is on, it **also deletes your encrypted copy from the server** first. (If the server can't be reached, Lumen stops and keeps your data so you can retry — it never leaves a stranded copy behind.)
+- This **cannot be undone**.
+
+---
+
+## Moving to a new phone
+
+You have two easy paths — pick whichever suits you:
+
+| Method | Best when | How |
+|--------|-----------|-----|
+| **Sync** (automatic) | You want both devices kept in step going forward | Turn on encryption + sync on the old device, then **Restore your data** with your recovery phrase on the new one. |
+| **Backup file** (one‑off) | You just want a clean copy moved once | **Export my data** on the old device, transfer the file, then **Restore from a backup** on the new one. |
+
+> ⚠️ Because Lumen is private and device‑local, **your data does not appear on a new device by itself**. Set up sync, or keep a recent backup file, *before* you switch phones or clear your browser — otherwise device‑only data can't be recovered.
 
 ---
 
@@ -580,27 +662,45 @@ Open the **Calendar** and tap the day you missed — that opens its log so you c
 </details>
 
 <details>
+<summary><strong>How do I move my data to a new phone?</strong></summary>
+
+Two ways: turn on **encryption + sync** and use **Restore your data** with your recovery phrase on the new device, or **Export my data** to a file and **Restore from a backup** on the new device. See [Moving to a new phone](#moving-to-a-new-phone). Do this *before* clearing your old browser.
+</details>
+
+<details>
 <summary><strong>I switched phones / cleared my browser and my data is gone.</strong></summary>
 
-Data is stored only on the device where you logged it and isn't backed up to any cloud. Always **Export my data** first, then keep that JSON file safe.
+Data is stored on the device where you logged it. If you had **sync** on, restore it on the new device with your recovery phrase. If you kept an **exported backup file**, use *Restore from a backup*. If you had neither, device‑only data can't be recovered — set up sync or keep backups going forward.
+</details>
+
+<details>
+<summary><strong>What is the recovery phrase, and what if I lose it?</strong></summary>
+
+It's a **12‑word key** created when you turn on encryption. It unlocks your encrypted data and restores your synced copy on a new device. Lumen never stores it, so **it can't be reset** — if you forget your passcode *and* lose the phrase, encrypted/synced data can't be recovered. Write it down and keep it safe.
+</details>
+
+<details>
+<summary><strong>Is my data safe if I lose my phone?</strong></summary>
+
+Turn on a **passcode** (Settings → Passcode lock) to **encrypt** your data with AES‑256 — without your passcode or recovery phrase it's unreadable, even to someone with your device. Also rely on your device's own lock screen as a first line of defense.
+</details>
+
+<details>
+<summary><strong>Can Lumen (or anyone) read my synced data?</strong></summary>
+
+No. Sync is **end‑to‑end encrypted**: your data is scrambled on your device before upload, and the server only ever holds ciphertext it cannot read. Only your recovery phrase can decrypt it.
 </details>
 
 <details>
 <summary><strong>How do I switch between cycle, TTC, pregnancy, and postpartum modes?</strong></summary>
 
-*Trying to conceive* and *Pregnancy* each have a toggle/start button in **Settings**; turning a mode off returns you to standard cycle tracking. **Postpartum** mode is the exception — it isn't a manual toggle. It starts automatically when you confirm **Baby arrived** in the pregnancy end flow, and you leave it from *Settings → Postpartum* (back to cycle, or into TTC).
+*Trying to conceive* and *Pregnancy* each have a toggle/start button in **Settings** (and can be chosen at onboarding); turning a mode off returns you to standard cycle tracking. **Postpartum** mode is the exception — it isn't a manual toggle. It starts automatically when you confirm **Baby arrived** in the pregnancy end flow, and you leave it from *Settings → Postpartum* (back to cycle, or into TTC).
 </details>
 
 <details>
 <summary><strong>Is the postpartum mood check‑in a diagnosis?</strong></summary>
 
 No. It's a **screening tool** (the Edinburgh Postnatal Depression Scale) that gives you a score and a supportive summary. It is not a diagnosis — always share your result with your healthcare provider, and use the on‑screen support resources if you're struggling.
-</details>
-
-<details>
-<summary><strong>Is my data safe if I lose my phone?</strong></summary>
-
-Set a **passcode** (Settings → Passcode lock) for an app‑level gate, and rely on your device's own lock screen. Remember the local database isn't encrypted, so device security matters.
 </details>
 
 ---
