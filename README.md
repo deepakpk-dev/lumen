@@ -2,11 +2,11 @@
 
 **A private, offline-first companion for the whole reproductive life cycle.**
 
-Lumen is a women's-health app (in the spirit of [Flo](https://flo.health/)) built around a simple promise: track your cycle, fertility, pregnancy, and postpartum recovery with accurate, *explainable* guidance — without your body ever becoming a data product. It runs as an installable Progressive Web App, stores **all** health data **on your device**, and ships with **no ads, no paywall, and no third-party tracking**.
+Lumen is a women's-health app (in the spirit of [Flo](https://flo.health/)) built around a simple promise: track your cycle, fertility, pregnancy, and postpartum recovery with accurate, *explainable* guidance — without your body ever becoming a data product. It runs as an installable Progressive Web App, stores **all** health data **on your device**, and ships with **no ads, no paywall, and no third-party tracking**. When you choose to sync across devices, it is **end-to-end encrypted** — the server only ever holds ciphertext it cannot read.
 
 > ⚕️ **Not medical advice.** Lumen's predictions and insights are estimates derived from your own logged data. They are not a diagnosis, not a contraceptive method, and not a substitute for a clinician. In an emergency, contact your local emergency services.
 
-**Status:** `v1.0.0` — shipped. 270 tests passing · `build` + `lint` green.
+**Status:** `v1.x` — shipped and in active development. 400+ tests passing · `build` + `lint` + typecheck green in CI.
 
 ---
 
@@ -21,6 +21,7 @@ Lumen is a women's-health app (in the spirit of [Flo](https://flo.health/)) buil
   - [The domain core](#the-domain-core-the-ip)
   - [Data layer & persistence](#data-layer--persistence)
   - [Privacy as an architecture, not a setting](#privacy-as-an-architecture-not-a-setting)
+  - [End-to-end encrypted sync](#end-to-end-encrypted-sync)
   - [Testing strategy](#testing-strategy)
   - [Project layout](#project-layout)
 - [Tech stack](#tech-stack)
@@ -37,32 +38,37 @@ Lumen is a women's-health app (in the spirit of [Flo](https://flo.health/)) buil
 
 Cycle and pregnancy data is one of the most sensitive categories of personal data — and, post-*Dobbs*, potentially legally sensitive. Most trackers monetize it. Lumen takes the opposite stance and makes privacy **structural** rather than a marketing line:
 
-- **Local-first.** Health data lives in your browser's IndexedDB. There is no backend in the current build — nothing to upload, leak, or subpoena.
-- **No tracking SDKs.** The client bundle ships zero analytics, ad, or tracking code (enforced in review). There is no production telemetry by design.
-- **You own your data.** One-tap full export (versioned JSON) and a real, irreversible delete.
-- **Deterministic & explainable.** Every prediction and insight is computed from your own logs and cites the data it came from. No black-box model decides your forecast.
-- **Optional passcode lock.** App-level gate storing only a salted PBKDF2 hash of your passcode, never the passcode itself.
+- **Local-first.** Health data lives in your browser's IndexedDB. Nothing is uploaded, leaked, or subpoenable unless *you* turn on sync.
+- **Encrypted at rest (optional).** Set a passcode and your on-device records are stored as **AES-256-GCM ciphertext**, keyed by a recovery phrase the passcode unwraps. The passcode itself is never stored.
+- **End-to-end encrypted sync (optional).** Turn on cross-device sync and your data is encrypted on-device *before* it leaves. The server is **blind** — it stores only ciphertext and opaque keys and can never read your health data or even tell which dates or life stages you have data for.
+- **No tracking SDKs.** The client bundle ships zero analytics, ad, or tracking code. There is no production telemetry by design.
+- **You own your data.** One-tap full export (versioned JSON), and a real, irreversible delete that wipes the local store *and* the server copy.
+- **Deterministic & explainable.** Every prediction and insight is computed from your own logs and cites the data it came from. No black-box model decides your forecast — there is no LLM anywhere in the product.
 - **Compassion by design.** Pregnancy-loss and postpartum mental-health paths are first-class, not afterthoughts — no celebratory copy on a loss path, crisis-aware screening that surfaces support.
 
 ---
 
 ## Features
 
-Lumen follows a person across every stage of reproductive life, switching modes as their needs change. Every stage shares the same logging surface, the same on-device store, and the same export/delete guarantees.
+Lumen follows a person across every stage of reproductive life, switching modes as their needs change. Every stage shares the same logging surface, the same on-device store, and the same encryption / export / delete guarantees.
 
 | Stage | What it does | Status |
 |---|---|---|
 | **Cycle tracking** | Daily logging, deterministic period/fertile/ovulation prediction with honest confidence, calendar, history & trends | ✅ Phase 1 |
 | **Insights** | Explainable patterns, trends, anomaly nudges, and phase guidance from your own data | ✅ Phase 2A |
 | **Content library** | Life-stage-spanning, medically-cited corpus (cycle, TTC, pregnancy, postpartum) with a personalized, deterministic feed scoped to the active stage | ✅ Phase 2B |
+| **Courses / programs** | Ordered, stage-scoped guided reading paths over the article corpus, with local per-step progress | ✅ Phase 2C |
 | **Fertility / TTC** | Opt-in trying-to-conceive mode: BBT, LH, cervical mucus, ovulation confirmation, BBT chart | ✅ Phase 3 |
 | **Pregnancy** | Week-by-week, kick counter, contraction timer (5-1-1), compassionate birth/loss exit | ✅ Phase 4 |
 | **Postpartum** | Mother-focused recovery tracking + EPDS mental-health screening with crisis support | ✅ Phase 5 |
+| **Encryption & sync** | Passcode-encrypted local vault + opt-in, end-to-end-encrypted, zero-knowledge cross-device sync | ✅ Phase 3 (sync) |
 
 ### Cross-cutting (all stages)
 - Installable **PWA** with an offline app shell (service worker) and web manifest, real PNG/maskable icons.
 - **Persistent storage** requested on bootstrap (`navigator.storage.persist()`) so the browser is less likely to evict your data, plus an in-app data-loss backup warning.
-- Local data **export** (versioned JSON) and **hard delete** that also clears passcode and preferences.
+- Local data **export** (versioned JSON) and **hard delete** that also clears passcode, preferences, and any server-side sync copy.
+- **Doctor summary** — a printable/PDF report generated locally for a clinician, no server round-trip.
+- Configurable **reminders** (period, fertile window, daily logging) — in-app by default, with optional OS notifications you explicitly grant.
 - First-run **onboarding intro** explaining what Lumen is, what it isn't, and that data stays on the device.
 - A dedicated **/privacy** page and global footer link.
 
@@ -80,7 +86,7 @@ npm run build        # production build
 npm start            # serve the production build
 ```
 
-The app is **local-first**: open it, complete onboarding, and start logging. No accounts, no configuration, **no environment variables**, no backend.
+The app is **local-first**: open it, complete onboarding, and start logging. No accounts, no configuration, **no environment variables**, no backend required. (A `DATABASE_URL` is needed *only* if you want to run the optional sync server — see [Deployment](#deployment).)
 
 ---
 
@@ -98,8 +104,8 @@ Deterministic, explainable insights derived entirely from your own logs:
 
 Each generator returns nothing when there isn't enough data, so you never see a weak or misleading insight.
 
-### Content library
-A bundled, **medically-cited** article corpus (sources include NHS, ACOG, and the U.S. Office on Women's Health) spanning every shipped life stage — cycle, trying-to-conceive, pregnancy, and postpartum. A deterministic engine maps your current context → a personalized "For you" feed and a daily card on the home screen, **scoped to your active life stage** so a pregnant user sees pregnancy reads rather than period/PMS material. Browse, search, and filter by topic and phase; read articles in-app.
+### Content library & programs
+A bundled, **medically-cited** article corpus (sources include NHS, ACOG, and the U.S. Office on Women's Health) spanning every shipped life stage — cycle, trying-to-conceive, pregnancy, and postpartum. A deterministic engine maps your current context → a personalized "For you" feed and a daily card on the home screen, **scoped to your active life stage** so a pregnant user sees pregnancy reads rather than period/PMS material. Browse, search, and filter by topic and phase; read articles in-app. **Programs** stitch articles into ordered, guided reading paths and track which steps you've completed.
 
 ### Fertility / TTC
 An **opt-in** trying-to-conceive mode. Log basal body temperature (°C/°F), LH tests, cervical mucus, and intercourse. Lumen detects the thermal shift (3-over-6 rule), **confirms ovulation** by combining BBT + LH + mucus, estimates your real luteal length, and gives qualitative conception guidance — rendered with an inline BBT chart and a non-medical disclaimer.
@@ -110,13 +116,18 @@ Switch to pregnancy mode from a positive result or onboarding goal. Track gestat
 ### Postpartum
 Mother-focused **recovery** tracking (not baby tracking): day/week/stage of recovery, lochia logging kept entirely separate from cycle stats, and the **Edinburgh Postnatal Depression Scale (EPDS)** check-in. Scoring is crisis-aware — a high-risk band (total ≥ 13) **or** any self-harm response surfaces a non-diagnostic crisis-support block. Returning to cycle/TTC is user-driven; Lumen makes no dishonest "cycle will return on X" prediction while breastfeeding.
 
+### Encryption & cross-device sync
+Two independent, opt-in privacy upgrades, both rooted in a single **12-word recovery phrase**:
+- **Passcode lock** encrypts your on-device records at rest and gates the app behind a screen lock. Forget the passcode? Recover with your phrase.
+- **Sync across devices** carries your full health record to another device (or restores it after clearing data). Everything is encrypted with your recovery phrase *before* it leaves the device; the server only ever stores ciphertext. Set it up on one device, then use "Restore from a backup" and your phrase on the next.
+
 ---
 
 ## For engineers — how it's built
 
 ### Architecture
 
-Lumen is layered so the logic that matters most — the prediction, fertility, pregnancy, postpartum, insights, and content engines — is **pure, dependency-free TypeScript** that can be reasoned about and tested in isolation, with no React or IO in the way.
+Lumen is layered so the logic that matters most — the prediction, fertility, pregnancy, postpartum, insights, and content engines — is **pure, dependency-free TypeScript** that can be reasoned about and tested in isolation, with no React or IO in the way. Cryptography and sync are isolated in their own layers so the domain never touches keys or the network.
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -125,17 +136,18 @@ Lumen is layered so the logic that matters most — the prediction, fertility, p
 │  State   src/state/useHealthData.ts                          │  one hook: store ↔ domain, memoized derived state
 ├────────────────────────────────────────────────────────────┤
 │  Domain   src/domain/* — PURE TS, the core IP                │
-│    prediction.ts      cycle-stats.ts     calendar.ts          │
-│    insights/          content/                                │
-│    fertility/         pregnancy/         postpartum/          │
+│    prediction.ts   cycle-stats.ts   calendar.ts   reminders   │
+│    insights/       content/                                   │
+│    fertility/      pregnancy/       postpartum/               │
 │    dates.ts (timezone-safe ISODate)      types.ts             │
 ├────────────────────────────────────────────────────────────┤
-│  Data   src/data/* (Dexie v3 / IndexedDB) · src/storage/*    │  local-first, offline source of truth
-│  Security   src/security/* (salted PBKDF2 passcode)          │
+│  Data   src/data/* (Dexie v6 / IndexedDB) + sync-engine      │  local-first, offline source of truth
+│  Crypto src/crypto/* (keys · envelope · vault, WebCrypto)    │  at-rest + E2E encryption
+│  Server src/server/* + app/api/sync/* (blind Postgres)       │  stores ciphertext only, opt-in
 └────────────────────────────────────────────────────────────┘
 ```
 
-The dependency rule points **inward**: UI depends on state, state depends on the domain, the domain depends on nothing. The domain layer imports no React and performs no IO, which is what makes it cheap to test exhaustively and safe to evolve.
+The dependency rule points **inward**: UI depends on state, state depends on the domain, the domain depends on nothing. The domain layer imports no React, no crypto, and performs no IO, which is what makes it cheap to test exhaustively and safe to evolve.
 
 ### The domain core (the IP)
 
@@ -143,40 +155,68 @@ Each subsystem is a small set of independently testable pure functions:
 
 - **`prediction.ts`** — a rolling statistical model. Computes average cycle length and variance from history, projects the next period, derives ovulation (≈14 days before the next period) and the fertile window, and attaches a `high` / `medium` / `low` confidence plus a human-readable explanation. Optionally accepts `ObservedFertility` (real luteal length + confirmed-ovulation override) from TTC mode; the default path is unchanged. No ML, no network.
 - **`insights/`** — four generators (patterns, trends, anomalies, guidance) feed an aggregator that ranks results (attention-worthy first) and picks the single most relevant for the home screen.
-- **`content/`** — `context → feed → daily`: turns the user's current context into a ranked article feed and one daily pick, over a bundled cited corpus.
+- **`content/`** — `context → feed → daily`: turns the user's current context into a ranked article feed and one daily pick, over a bundled cited corpus; `content/programs/` tracks guided-path progress.
 - **`fertility/`** — `units` (°C/°F), `bbt` (3-over-6 thermal shift), `confirmation` (BBT + LH + mucus → `OvulationConfirmation`), `luteal` (clamped 9–17 days), `guidance`, `journey` (TTC-cycle counting).
 - **`pregnancy/`** — `gestation` (EDD↔LMP, age/trimester/countdown/progress), `weeks` (weekly content), `kicks`, `contractions` (duration/frequency + 5-1-1), `lifecycle` transitions.
 - **`postpartum/`** — `recovery` (day/week/stage), **`epds`** (EPDS instrument + crisis-aware `scoreEpds` → total/band/`riskFlag`), `weeks` (1–12 recovery content), `lifecycle`.
+- **`reminders.ts`** — decides which nudges (period / fertile / log-today) are actually due, so reminders only surface when relevant.
 
 ### Data layer & persistence
 
-- **`src/data/db.ts`** — a Dexie database (`lumen-health`) at **schema version 4**, migrated additively:
+- **`src/data/db.ts`** — a Dexie database (`lumen-health`) at **schema version 6**, migrated additively:
   - **v1:** `cycles`, `dailyLogs`
   - **v2:** + `pregnancyProfile`, `kickSessions`, `contractionSessions`
   - **v3:** + `postpartumProfile`, `epdsEntries`
   - **v4:** + `programProgress` (per-course step completion)
-- **`src/data/repository.ts`** — CRUD over those tables; the only place IndexedDB is touched.
-- **`src/data/export.ts`** — a single versioned JSON export blob covering every table, with matching hard-delete parity.
-- **`src/storage/persist.ts`** — wraps `navigator.storage.persist()` to reduce eviction risk.
+  - **v5:** + `records` (encrypted envelope store, used when a passcode/vault is active)
+  - **v6:** + `syncMeta` (dirty outbox + tombstones + last-write-wins clocks for sync)
+- **`src/data/repository.ts`** — CRUD over those tables; the only place IndexedDB is touched. Writes also feed the sync outbox when tracking is on.
+- **`src/data/storage.ts`** — the storage seam that reads/writes either the plaintext typed tables or the encrypted `records` store, depending on whether a vault is active.
+- **`src/data/export.ts`** — a single **version-5** JSON export blob covering every table plus preferences, with matching hard-delete parity.
 - **Notable model decision:** `DailyLog` carries optional fields per stage (`bbt`/`lh`/`mucus`/`intercourse`, and `lochia`). **Lochia is deliberately separate from `flow`** — postpartum bleeding never feeds cycle statistics or predictions and never creates a `Cycle`.
 
 ### Privacy as an architecture, not a setting
 
-- **No backend, no network egress of health data.** The absence of a server is the privacy model — there is nothing to breach server-side.
-- **No analytics or error monitoring in production** — an intentional v1 tradeoff (see below) that keeps the zero-tracking guarantee literal.
-- **Passcode** (`src/security/passcode.ts`) is a salted **PBKDF2** hash; verification derives with the *stored* iteration count and transparently upgrades legacy hashes and stale parameters on success. It is an app-level gate — the local DB itself is not encrypted, and the UI says so.
+Privacy is enforced by the shape of the system, not by a promise:
+
+- **Local-first by default.** With no passcode and no sync, health data lives only in this browser's IndexedDB — there is nothing to breach server-side because nothing leaves the device.
+- **At-rest encryption via a vault** (`src/crypto/vault.ts`, `src/security/vault-store.ts`). Setting a passcode creates a **BIP-39 12-word recovery phrase** and wraps it with **PBKDF2-SHA256 (210,000 iterations)** under the passcode; the wrapped blob is inert without the passcode, which is never stored (a wrong passcode fails AES-GCM authentication rather than yielding garbage keys). With a vault active, records are stored as **AES-256-GCM ciphertext** in the `records` table — even at rest, the on-device store reveals nothing about which stores or dates hold data. The app is gated behind a passcode screen (`PasscodeGate`) with auto-lock.
+- **No analytics or error monitoring in production** — an intentional tradeoff (see below) that keeps the zero-tracking guarantee literal.
+- **One root secret.** The same recovery phrase that unlocks the vault is the sync credential — there is no second place a root secret could live.
+
+### End-to-end encrypted sync
+
+Sync is **opt-in** and layered on top of the local-first store. The design is a **blind server**: it can order and locate records but never read them.
+
+**Key derivation** (`src/crypto/keys.ts`) — HKDF-SHA256 over the BIP-39 seed derives a full hierarchy:
+
+| Value | Role | Leaves device? |
+|---|---|---|
+| `accountId` | Opaque public locator | Yes (opaque) |
+| `authSecret` | Bearer secret proving ownership | Yes — but the server stores only its **SHA-256 hash** |
+| `encKey` | AES-256-GCM, encrypts record contents | **Never** (non-extractable `CryptoKey`) |
+| `keyMacKey` | HMAC-SHA-256, produces opaque record keys | **Never** (non-extractable `CryptoKey`) |
+
+**Envelopes** (`src/crypto/envelope.ts`) — each record becomes `{ recordKey: HMAC(keyMacKey, "store:key"), iv, ciphertext: AES-GCM(payload), updatedAt, deleted }`. The real store, key, and value live *inside* the ciphertext; tombstones carry no value. The server never learns which dates or life stages a user has data for.
+
+**Client engine** (`src/data/sync-engine.ts`) — a dirty **outbox** and tombstones live in the `syncMeta` sidecar. `push` drains the outbox in server-cap-sized chunks; `pull` pages through everything after a per-account `lastSeq` high-water mark and applies each envelope under **last-write-wins** on `updatedAt`. Enable/restore/disable/delete flows are all handled here, and preferences (life stage, units, reminders) sync as one snapshot pseudo-record so a restore lands in the right mode.
+
+**Server** (`app/api/sync/*`, `src/server/*`) — four Route Handlers: `register`, `push`, `pull`, `delete-account`. Auth is a `Bearer accountId:authSecret` header verified against the stored hash. Storage is two Postgres tables (`sync_accounts`, `sync_records`); the schema self-applies lazily and idempotently on first query. `push` upserts with an LWW guard and bumps a `server_seq` so other devices see the change on incremental pull.
+
+**Enforced, not just claimed.** `src/data/sync-privacy.test.ts` runs in CI and **fails the build** if any plaintext health field is ever found in a request body — the enforcement half of the zero-knowledge guarantee.
 
 ### Testing strategy
 
-The domain core is developed **test-first** (TDD). The suite (**270 tests**, Vitest) covers date utilities, cycle statistics, the full prediction engine (including the TTC-observed path), every insights/content/fertility/pregnancy/postpartum module, the EPDS scoring bands and crisis flag, the repository (against `fake-indexeddb`), export/delete, the `useHealthData` hook per stage, and UI components.
+The domain core is developed **test-first** (TDD). The suite (**400+ tests**, Vitest) covers date utilities, cycle statistics, the full prediction engine (including the TTC-observed path), every insights/content/fertility/pregnancy/postpartum module, the EPDS scoring bands and crisis flag, the **crypto layer** (key derivation, envelope round-trips, vault wrap/unlock), the **sync engine and blind-server API** (LWW, tombstones, incremental pull, the zero-knowledge wire check), the repository (against `fake-indexeddb`), export/delete, the `useHealthData` hook per stage, and UI components. **Playwright** covers full user flows in a real browser.
 
 ```bash
-npm test                 # all tests
+npm test                 # all unit tests
 npm test -- prediction   # focused file/pattern
 npm run test:watch       # watch mode
+npm run test:e2e         # Playwright end-to-end
 ```
 
-> ⚠️ **Repo convention:** this project pins **Next.js 16**, which has breaking changes versus older mental models. Per [`AGENTS.md`](AGENTS.md), read the bundled guides in `node_modules/next/dist/docs/` before writing Next.js code, and heed deprecation notices.
+> ⚠️ **Repo convention:** this project pins **Next.js 16**, which has breaking changes versus older mental models. Per [`AGENTS.md`](AGENTS.md), read the bundled guides in `node_modules/next/dist/docs/` before writing Next.js code, and heed deprecation notices. (Dynamic routes here use `generateStaticParams`, and `params` is a Promise.)
 
 ### Project layout
 
@@ -185,21 +225,25 @@ app/                      # Next.js App Router routes
   page.tsx                #   home dashboard (stage-aware)
   onboarding/  log/  calendar/  history/  insights/
   library/  library/[slug]/                 # content reader
+  programs/  programs/[slug]/                # guided reading paths
   fertility/                                 # TTC + BBT chart
   pregnancy/  pregnancy/kicks/  pregnancy/contractions/
   postpartum/  postpartum/checkin/           # recovery + EPDS
-  settings/  privacy/
+  settings/  privacy/  report/               # doctor summary
+  api/sync/               #   register · push · pull · delete-account (blind server)
 src/
-  domain/                 # pure logic — no React/IO (the IP)
-    dates.ts  cycle-stats.ts  prediction.ts  calendar.ts  log-options.ts  types.ts
+  domain/                 # pure logic — no React/IO/crypto (the IP)
+    dates.ts  cycle-stats.ts  prediction.ts  calendar.ts  reminders.ts  log-options.ts  types.ts
     insights/  content/  fertility/  pregnancy/  postpartum/
-  data/                   # Dexie schema (v3), repository, export
+  data/                   # Dexie schema (v6), repository, storage seam, export, sync-engine
+  crypto/                 # keys (HKDF) · envelope (AES-GCM/HMAC) · vault (PBKDF2) · encoding
+  server/                 # sync-db (schema) · sync-auth — server-only
+  security/               # passcode gate · vault-store (persisted wrapped vault)
   storage/                # persistent-storage request
   state/                  # useHealthData hook (store ↔ domain)
   components/             # presentational React components
-  security/               # passcode (salted PBKDF2)
-  content/                # bundled cited article corpus (Markdown)
-  settings/               # local preferences
+  content/                # bundled cited article + program corpus
+  settings/               # local preferences (+ sync snapshot)
 docs/superpowers/         # PRD, design specs, implementation plans
 public/                   # service worker, icons, manifest assets
 scripts/                  # generate-icons.mjs (sharp)
@@ -214,10 +258,12 @@ scripts/                  # generate-icons.mjs (sharp)
 | Framework | [Next.js 16](https://nextjs.org/) (App Router) + React 19 |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS v4 |
-| Local storage | [Dexie](https://dexie.org/) over IndexedDB (schema v4) |
+| Local storage | [Dexie](https://dexie.org/) over IndexedDB (schema v6) |
+| Cryptography | Web Crypto (`crypto.subtle`): AES-256-GCM, PBKDF2, HKDF, HMAC · [`@scure/bip39`](https://github.com/paulmillr/scure-bip39) recovery phrases |
+| Sync backend | Next.js Route Handlers + [`pg`](https://node-postgres.com/) → **Postgres** (target host: [Neon](https://neon.tech/)) |
 | Dates | [date-fns](https://date-fns.org/) with timezone-safe ISO date strings |
 | Markdown | `react-markdown` + `remark-gfm` (content library) |
-| Testing | [Vitest](https://vitest.dev/) + Testing Library + `fake-indexeddb` |
+| Testing | [Vitest](https://vitest.dev/) + Testing Library + `fake-indexeddb` + `pglite`; [Playwright](https://playwright.dev/) e2e |
 | Runtime | Node.js 24 |
 | Hosting | [Vercel](https://vercel.com/) |
 
@@ -232,13 +278,24 @@ scripts/                  # generate-icons.mjs (sharp)
 | `npm start` | Serve the production build |
 | `npm test` | Run the full Vitest suite once |
 | `npm run test:watch` | Vitest in watch mode |
+| `npm run test:e2e` | Playwright end-to-end tests |
+| `npm run test:e2e:ui` | Playwright interactive UI mode |
+| `npm run test:e2e:report` | Open the last Playwright HTML report |
 | `npm run lint` | ESLint |
 
 ---
 
 ## Deployment
 
-Lumen is a standard Next.js App Router app and deploys to **Vercel** with zero configuration — import the GitHub repo and deploy. **No environment variables or backend services are required**, since all data is stored client-side. Vercel deploys from `main`.
+Lumen is a standard Next.js App Router app and deploys to **Vercel**. The app itself needs **zero configuration** — import the GitHub repo and deploy; all health data is stored client-side and works with no backend.
+
+**Optional: enabling sync.** Cross-device, end-to-end-encrypted sync requires a Postgres database. Provision one (Neon via the Vercel Marketplace is the intended host) and set a single environment variable:
+
+```
+DATABASE_URL=postgres://…
+```
+
+No migration step is required — the schema self-applies on first query. With no `DATABASE_URL`, the `/api/sync/*` endpoints are simply unused and the app remains fully functional local-first. Because the server is blind, provisioning it grants **no** access to any user's health data.
 
 ---
 
@@ -249,16 +306,16 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 - ✅ **Phase 1 — Cycle tracking MVP**: logging, prediction engine, calendar, history, export/delete, PWA, passcode.
 - ✅ **Phase 2A — Insights engine**: patterns, trends, anomalies, guidance.
 - ✅ **Phase 2B — Content library**: cited article corpus + personalized deterministic feed.
+- ✅ **Phase 2C — Courses / programs**: ordered, stage-scoped guided reading paths with local per-step progress.
 - ✅ **Phase 3 — Fertility / TTC**: BBT, LH, cervical mucus, ovulation confirmation, BBT chart.
+- ✅ **Phase 3 (sync) — E2E-encrypted sync**: passcode-encrypted vault, blind Postgres server, client sync engine (outbox, tombstones, LWW), settings UI, zero-knowledge CI check. *Code-complete; goes live once a `DATABASE_URL` is provisioned.*
 - ✅ **Phase 4 — Pregnancy**: week-by-week, kick counter, contraction timer, compassionate loss flow.
 - ✅ **Phase 5 — Postpartum**: recovery tracking + EPDS mental-health screening.
-- 🚀 **v1.0.0 shipped** — privacy page, persistent storage, onboarding intro, MIT license.
-- ✅ **Phase 2C — Courses / programs**: ordered, stage-scoped guided reading paths over the article corpus, with local per-step progress (Dexie schema v4).
-- ⬜ **Phase 5b — Perimenopause & menopause**.
+- ⬜ **Phase 5b — Perimenopause & menopause** (a life-stage value today, benefits from irregular-cycle handling, but no dedicated mode UI yet).
 - ⬜ **Phase 6 — AI health assistant** (RAG over a vetted corpus, strict guardrails).
 - ⬜ **Phase 7 — Community ("Circles")**, anonymous + moderated.
-- ⬜ **Phase 8 — Native mobile + E2E-encrypted sync** (+ TTC partner sharing).
-- Possible **v1.x**: region-aware crisis resources, restore-from-export UI.
+- ⬜ **Phase 8 — Native mobile** + TTC partner sharing (reusing the API + prediction core).
+- Possible **v1.x**: region-aware crisis resources.
 
 ---
 
@@ -267,9 +324,10 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 These are shipped *knowingly* and documented so reviewers don't mistake them for oversights:
 
 - **No analytics or error monitoring in production.** This is the price of the zero-tracking guarantee — there is intentionally no production error visibility. Revisit only with a privacy-preserving approach.
-- **EPDS crisis guidance is region-agnostic.** No hardcoded helpline numbers or "find help in your country" link in v1; revisit when localizing.
-- **The local DB is not encrypted.** The passcode is an app-level gate, not at-rest encryption; the Settings copy states this plainly.
-- **No cross-device sync.** End-to-end encrypted sync is a deliberate future step (Phase 8). Today the guarantee is simply that data never leaves the device.
+- **EPDS crisis guidance is region-agnostic.** No hardcoded helpline numbers or "find help in your country" link yet; revisit when localizing.
+- **The local DB is only encrypted with a passcode.** Without a passcode, the on-device store is plaintext IndexedDB (the app-lock and at-rest encryption are the same opt-in). The Settings copy states this plainly.
+- **Sync uses whole-snapshot LWW for preferences** — two devices editing different preferences within the same window can lose one side. Split into per-preference records if it ever bites.
+- **Data that existed on a device *before* a fresh-device restore stays local-only** until re-saved; the restore flow is built for the empty-new-device case. See the `ponytail:` notes in `src/data/sync-engine.ts`.
 
 ---
 
