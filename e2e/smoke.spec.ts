@@ -44,6 +44,23 @@ test('settings page renders its sections', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Passcode lock' })).toBeVisible();
 });
 
+test('library article opens from the list and renders its content', async ({ page }) => {
+  await page.goto('/library');
+  // "How period tracking works" is a universal article, so it's always listed
+  // regardless of life stage; it may appear in both "For you" and "Browse".
+  await page.getByRole('link', { name: /How period tracking works/ }).first().click();
+
+  await expect(page).toHaveURL(/\/library\/how-tracking-works$/);
+  await expect(
+    page.getByRole('heading', { name: 'How period tracking works', level: 1 }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sources' })).toBeVisible();
+
+  // Back link returns to the library list.
+  await page.getByRole('link', { name: 'Library' }).click();
+  await expect(page.getByRole('heading', { name: 'Library' })).toBeVisible();
+});
+
 test('home has no uncaught page errors after onboarding', async ({ page }) => {
   const errors: string[] = [];
   // Ignore WebKit's benign reports of cancelled RSC prefetches (see ttc-flow).
