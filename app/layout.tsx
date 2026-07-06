@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistrar } from '@/src/components/ServiceWorkerRegistrar';
 import { PasscodeGate } from '@/src/components/PasscodeGate';
+import { SyncRunner } from '@/src/components/SyncRunner';
 import { HealthDataProvider } from '@/src/state/useHealthData';
 
 const geistSans = Geist({
@@ -90,7 +91,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegistrar />
         <PasscodeGate>
-          <HealthDataProvider>{children}</HealthDataProvider>
+          <HealthDataProvider>
+            <SyncRunner />
+            {children}
+          </HealthDataProvider>
         </PasscodeGate>
         <footer className="no-print mt-auto border-t border-neutral-200 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-center text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
           <Link href="/privacy" className="underline">

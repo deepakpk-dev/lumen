@@ -1,7 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { db } from './db';
 import { deleteAll, addCycle, getCycles, getDailyLog, upsertDailyLog, clearPregnancyProfile, savePregnancyProfile, addKickSession } from './repository';
-import { startSyncTracking, seedOutbox, push, pull, syncNow, registerAccount } from './sync-engine';
+import {
+  startSyncTracking,
+  seedOutbox,
+  push,
+  pull,
+  syncNow,
+  registerAccount,
+  enableSync,
+  restoreSync,
+  disableSync,
+  isSyncEnabled,
+} from './sync-engine';
 import { deriveKeys, newRecoveryPhrase, authHash, type DerivedKeys } from '@/src/crypto/keys';
 import type { SyncEnvelope } from '@/src/crypto/envelope';
 import { clearPreferences, exportPreferences, setBbtUnit } from '@/src/settings/preferences';
@@ -27,6 +38,11 @@ function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
       const cur = serverRows.get(r.recordKey);
       if (!cur || r.updatedAt > cur.updatedAt) serverRows.set(r.recordKey, { ...r, serverSeq: ++serverSeq });
     }
+    return Promise.resolve(json({ ok: true }));
+  }
+  if (url.endsWith('/delete-account')) {
+    serverRows = new Map();
+    registered = null;
     return Promise.resolve(json({ ok: true }));
   }
   if (url.endsWith('/pull')) {
@@ -167,6 +183,61 @@ describe('sync engine', () => {
     await vi.waitFor(async () => {
       expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(1);
     });
+  });
+
+  it('enableSync on a second device pulls before seeding, so remote prefs survive', async () => {
+    // Device A: sync on with non-default prefs and a cycle.
+    setBbtUnit('F');
+    startSyncTracking(keys);
+    await seedOutbox(keys);
+    await push(keys);
+
+    // Device B: fresh, default prefs, enables sync with the same phrase.
+    startSyncTracking(null);
+    await deleteAll();
+    clearPreferences();
+    await tick();
+    await enableSync(keys);
+
+    expect(isSyncEnabled()).toBe(true);
+    expect(exportPreferences().bbtUnit).toBe('F'); // remote prefs won, not clobbered
+    const serverPayloads = await Promise.all(
+      [...serverRows.values()].map(async (r) => (await import('@/src/crypto/envelope')).decryptRecord(keys, r)),
+    );
+    const prefRows = serverPayloads.filter((p) => p.store === 'prefs');
+    expect(prefRows).toHaveLength(1);
+    expect((prefRows[0].value as { bbtUnit: string }).bbtUnit).toBe('F');
+  });
+
+  it('restoreSync pulls the account onto a fresh device and enables tracking', async () => {
+    startSyncTracking(keys);
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await push(keys);
+
+    startSyncTracking(null);
+    await deleteAll();
+    const applied = await restoreSync(keys);
+    expect(applied).toBe(1);
+    expect(isSyncEnabled()).toBe(true);
+    expect((await getCycles()).map((c) => c.id)).toEqual(['c1']);
+    // Tracking is live: a new write queues for the next push.
+    await upsertDailyLog({ date: '2026-01-05', symptoms: [], moods: [] });
+    expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(1);
+  });
+
+  it('disableSync with deleteServerCopy wipes the server and stops tracking', async () => {
+    await enableSync(keys);
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await push(keys);
+    expect(serverRows.size).toBeGreaterThan(0);
+
+    await disableSync(keys, { deleteServerCopy: true });
+    expect(serverRows.size).toBe(0);
+    expect(isSyncEnabled()).toBe(false);
+    expect(await db.syncMeta.count()).toBe(0);
+    // Writes no longer queue.
+    await addCycle({ id: 'c2', startDate: '2026-02-01' });
+    expect(await db.syncMeta.count()).toBe(0);
   });
 
   it('a mid-push write stays dirty for the next round', async () => {

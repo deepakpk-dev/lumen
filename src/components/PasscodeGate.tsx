@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { hasVault, loadVault, saveVault } from '@/src/security/vault-store';
 import { unlockVault, restoreVault } from '@/src/crypto/vault';
 import { setStorageKeys } from '@/src/data/storage';
+import { isSyncEnabled, startSyncTracking } from '@/src/data/sync-engine';
 import { hasPasscode, verifyPasscode } from '@/src/security/passcode';
 
 // 'loading' until we know which lock (if any) applies; 'open' renders the app.
@@ -37,8 +38,10 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
     try {
       const { keys } = await unlockVault(code, vault);
       // Install the key BEFORE children (the data provider) mount, so the first
-      // hydration reads the encrypted store.
+      // hydration reads the encrypted store. Same keys drive sync tracking, so
+      // writes queue for push from the very first edit of the session.
       setStorageKeys(keys);
+      if (isSyncEnabled()) startSyncTracking(keys);
       setCode('');
       setMode('open');
     } catch {
@@ -59,6 +62,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
       );
       saveVault(vault); // re-wrap under the new passcode
       setStorageKeys(unlocked.keys);
+      if (isSyncEnabled()) startSyncTracking(unlocked.keys);
       setMode('open');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not restore');

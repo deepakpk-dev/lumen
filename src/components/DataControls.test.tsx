@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DataControls } from './DataControls';
+import { setStorageKeys } from '@/src/data/storage';
+import { deriveKeys, newRecoveryPhrase } from '@/src/crypto/keys';
 import {
   getBbtUnit,
   getLifeStage,
@@ -47,6 +49,54 @@ describe('DataControls', () => {
 
     await waitFor(() => {
       expect(hasPasscode()).toBe(false);
+    });
+  });
+
+  describe('with sync on', () => {
+    afterEach(() => {
+      setStorageKeys(null);
+      vi.unstubAllGlobals();
+    });
+
+    it('deletes the server copy before wiping locally', async () => {
+      const keys = await deriveKeys(newRecoveryPhrase());
+      setStorageKeys(keys);
+      localStorage.setItem('lumen.sync.enabled', '1');
+      await addCycle({ id: 'c1', startDate: '2026-06-01' });
+      const calls: string[] = [];
+      vi.stubGlobal(
+        'fetch',
+        vi.fn((url: string) => {
+          calls.push(url);
+          return Promise.resolve(new Response('{"ok":true}', { status: 200 }));
+        }),
+      );
+
+      render(<DataControls />);
+      await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
+      await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+
+      await waitFor(async () => {
+        expect(calls).toEqual(['/api/sync/delete-account']);
+        expect(await getCycles()).toEqual([]);
+        expect(localStorage.getItem('lumen.sync.enabled')).toBeNull();
+      });
+    });
+
+    it('keeps all data when the server delete fails, so ciphertext is never stranded', async () => {
+      const keys = await deriveKeys(newRecoveryPhrase());
+      setStorageKeys(keys);
+      localStorage.setItem('lumen.sync.enabled', '1');
+      await addCycle({ id: 'c1', startDate: '2026-06-01' });
+      vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('offline'))));
+
+      render(<DataControls />);
+      await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
+      await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+
+      await screen.findByText(/nothing was deleted/i);
+      expect(await getCycles()).toHaveLength(1);
+      expect(localStorage.getItem('lumen.sync.enabled')).toBe('1');
     });
   });
 });

@@ -8,6 +8,7 @@ import { DataControls } from '@/src/components/DataControls';
 import { NotificationControls } from '@/src/components/NotificationControls';
 import { PasscodeControls } from '@/src/components/PasscodeControls';
 import { PostpartumControls } from '@/src/components/PostpartumControls';
+import { SyncControls } from '@/src/components/SyncControls';
 import { PregnancyControls } from '@/src/components/PregnancyControls';
 import { TtcControls } from '@/src/components/TtcControls';
 
@@ -28,6 +29,26 @@ export default function SettingsPage() {
           still stays local to this device.
         </p>
         <PasscodeControls />
+      </section>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Sync across devices</h2>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          Optional. Your data is encrypted with your recovery phrase before it leaves this device —
+          the server stores only ciphertext it can never read.
+        </p>
+        <SyncControls
+          onSynced={async () => {
+            refreshSettings();
+            await refresh();
+          }}
+          onRestored={async () => {
+            // Restore installs keys and pulls a whole health record — rehydrate
+            // the live context, then land on Home like onboarding does.
+            refreshSettings();
+            await refresh();
+            router.push('/');
+          }}
+        />
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Reminders</h2>
@@ -71,7 +92,8 @@ export default function SettingsPage() {
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Your data</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Your health data is stored only on this device. We never upload it.
+          Your health data lives on this device. Unless you turn on encrypted sync above, nothing
+          ever leaves it — and even then the server can only hold ciphertext.
         </p>
         <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           Because it lives only here, clearing your browser data, using private mode, or losing

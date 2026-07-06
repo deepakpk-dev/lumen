@@ -6,7 +6,8 @@ import { buildExportBlob, parseImport } from '@/src/data/export';
 import { clearPreferences } from '@/src/settings/preferences';
 import { clearPasscode } from '@/src/security/passcode';
 import { clearVault } from '@/src/security/vault-store';
-import { setStorageKeys } from '@/src/data/storage';
+import { getStorageKeys, setStorageKeys } from '@/src/data/storage';
+import { deleteAccount, isSyncEnabled, startSyncTracking } from '@/src/data/sync-engine';
 
 export function DataControls({
   onDeleted,
@@ -46,11 +47,29 @@ export function DataControls({
   }
 
   async function handleDelete() {
+    // Server copy first: after the local wipe the keys are gone and nothing
+    // could ever delete it. If the server is unreachable, keep local data and
+    // let the user retry — a half-delete that strands ciphertext breaks the
+    // hard-delete promise.
+    if (isSyncEnabled()) {
+      const keys = getStorageKeys();
+      try {
+        if (keys) await deleteAccount(keys);
+      } catch {
+        setStatus({
+          ok: false,
+          msg: 'Could not delete your synced copy from the server — check your connection and try again. Nothing was deleted.',
+        });
+        setConfirming(false);
+        return;
+      }
+    }
     await deleteAll();
     clearPreferences();
     clearPasscode();
     clearVault();
     setStorageKeys(null);
+    startSyncTracking(null);
     setConfirming(false);
     onDeleted?.();
   }

@@ -35,6 +35,21 @@ const STORE_KEYS: Record<string, string> = {
 const PREFS_STORE = 'prefs';
 const PREFS_KEY = 'v1';
 
+// Sync is opt-in and coupled to the passcode vault: the vault's recovery
+// phrase IS the sync credential, so there is no second place a root secret
+// could live. The flag just says "this device syncs"; the keys come from the
+// unlocked vault session each app open.
+const ENABLED_KEY = 'lumen.sync.enabled';
+const SYNCED_AT_KEY = 'lumen.sync.lastSyncedAt';
+
+export function isSyncEnabled(): boolean {
+  return typeof localStorage !== 'undefined' && localStorage.getItem(ENABLED_KEY) === '1';
+}
+
+export function lastSyncedAt(): string | null {
+  return typeof localStorage === 'undefined' ? null : localStorage.getItem(SYNCED_AT_KEY);
+}
+
 function lastSeqKey(keys: DerivedKeys): string {
   // Per-account so restoring a different phrase can't skip its history.
   return `lumen.sync.lastSeq.${keys.accountId}`;
@@ -165,17 +180,67 @@ export async function pull(keys: DerivedKeys): Promise<number> {
 }
 
 // One full reconciliation: push local changes, then pull the merged state.
-// Runs on app open, after writes (debounced by the caller), and on "Sync now".
+// Runs on app open / tab focus (SyncRunner) and on "Sync now".
 export async function syncNow(keys: DerivedKeys): Promise<{ applied: number }> {
   await push(keys);
-  return { applied: await pull(keys) };
+  const applied = await pull(keys);
+  localStorage.setItem(SYNCED_AT_KEY, new Date().toISOString());
+  return { applied };
 }
 
-// Forget all client-side sync state (outbox + pull cursors). Part of the local
-// wipe; the server-side delete-account call is wired in the phase 3d UI.
+// Enable on this device (first device or an additional one). Pull BEFORE
+// seeding: on a second device the remote state lands locally first, so the
+// seed pushes the merged result instead of clobbering remote prefs/records
+// with this device's fresh-clock copies.
+export async function enableSync(keys: DerivedKeys): Promise<void> {
+  await registerAccount(keys);
+  startSyncTracking(keys);
+  await pull(keys);
+  await seedOutbox(keys);
+  await push(keys);
+  localStorage.setItem(ENABLED_KEY, '1');
+  localStorage.setItem(SYNCED_AT_KEY, new Date().toISOString());
+}
+
+// Restore flow (fresh device, phrase just entered): no seed — there is nothing
+// local worth pushing yet, and tracking picks up everything from here on.
+// ponytail: data that existed on this device BEFORE the restore stays
+// local-only; sync it by re-saving it. Fine for the fresh-device case this
+// flow is for.
+export async function restoreSync(keys: DerivedKeys): Promise<number> {
+  await registerAccount(keys);
+  startSyncTracking(keys);
+  const applied = await pull(keys);
+  localStorage.setItem(ENABLED_KEY, '1');
+  localStorage.setItem(SYNCED_AT_KEY, new Date().toISOString());
+  return applied;
+}
+
+// Server half of "Delete all data" and of "turn off sync + forget me".
+export async function deleteAccount(keys: DerivedKeys): Promise<void> {
+  await post('/api/sync/delete-account', keys, {});
+}
+
+// Stop syncing on this device. Local data is untouched; optionally wipe the
+// server copy too (the caller confirms that with the user).
+export async function disableSync(
+  keys: DerivedKeys | null,
+  opts: { deleteServerCopy: boolean },
+): Promise<void> {
+  if (opts.deleteServerCopy && keys) await deleteAccount(keys);
+  startSyncTracking(null);
+  localStorage.removeItem(ENABLED_KEY);
+  localStorage.removeItem(SYNCED_AT_KEY);
+  await db.syncMeta.clear();
+}
+
+// Forget all client-side sync state (enabled flag, outbox, pull cursors).
+// Part of the local wipe; DataControls calls delete-account first when needed.
 export async function clearSyncState(): Promise<void> {
   await db.syncMeta.clear();
   if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem(ENABLED_KEY);
+    localStorage.removeItem(SYNCED_AT_KEY);
     for (const key of Object.keys(localStorage)) {
       if (key.startsWith('lumen.sync.lastSeq.')) localStorage.removeItem(key);
     }

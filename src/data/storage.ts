@@ -29,6 +29,12 @@ export function storageIsEncrypted(): boolean {
   return session !== null;
 }
 
+// The unlocked session keys, for the sync engine (same phrase roots both the
+// vault and sync). Still memory-only — nothing here persists them.
+export function getStorageKeys(): DerivedKeys | null {
+  return session;
+}
+
 export function setSyncTracking(keys: DerivedKeys | null): void {
   tracking = keys;
 }
