@@ -11,7 +11,12 @@ const lastPeriod = new Date(Date.now() - 16 * 86400e3).toISOString().slice(0, 10
 
 test('TTC journey: onboard, log signals, see fertility guidance react', async ({ page }) => {
   const errors: string[] = [];
-  page.on('pageerror', (err) => errors.push(err.message));
+  // WebKit reports Next.js's cancelled RSC prefetches ("?_rsc=... due to
+  // access control checks") as page errors; they're benign engine noise, not
+  // app failures, so keep them out of the strict no-errors assertion.
+  page.on('pageerror', (err) => {
+    if (!err.message.includes('_rsc=')) errors.push(err.message);
+  });
 
   // Onboarding: pick the TTC goal.
   await page.goto('/');

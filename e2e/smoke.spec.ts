@@ -46,7 +46,10 @@ test('settings page renders its sections', async ({ page }) => {
 
 test('home has no uncaught page errors after onboarding', async ({ page }) => {
   const errors: string[] = [];
-  page.on('pageerror', (err) => errors.push(err.message));
+  // Ignore WebKit's benign reports of cancelled RSC prefetches (see ttc-flow).
+  page.on('pageerror', (err) => {
+    if (!err.message.includes('_rsc=')) errors.push(err.message);
+  });
 
   await page.goto('/');
   await page.getByRole('button', { name: 'Continue' }).click();
