@@ -333,6 +333,7 @@ These are shipped *knowingly* and documented so reviewers don't mistake them for
 
 ## Documentation
 
+- **Engineering design doc** — [`docs/ENGINEERING.md`](docs/ENGINEERING.md) — architecture, invariants, prediction math, and the sync/crypto design for engineers
 - **Product Requirements (PRD)** — [`docs/superpowers/specs/2026-06-17-womens-health-app-prd.md`](docs/superpowers/specs/2026-06-17-womens-health-app-prd.md)
 - **Insights engine design** — [`docs/superpowers/specs/2026-06-17-insights-engine-design.md`](docs/superpowers/specs/2026-06-17-insights-engine-design.md)
 - **Pregnancy mode design** — [`docs/superpowers/specs/2026-06-21-pregnancy-mode-design.md`](docs/superpowers/specs/2026-06-21-pregnancy-mode-design.md)
