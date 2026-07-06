@@ -11,7 +11,7 @@ export function PostpartumView() {
   const router = useRouter();
   const {
     loading, isPostpartum, postpartumWeekNumber, recoveryStageToday,
-    postpartumContentToday, latestEpds,
+    postpartumContentToday, latestEpds, postpartumProfile,
   } = useHealthData();
 
   useEffect(() => {
@@ -42,8 +42,12 @@ export function PostpartumView() {
 
       <section className="space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">When your cycle returns</h2>
+        {/* Educational copy only, tuned by the breastfeeding flag from Settings —
+            never a prediction input. */}
         <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Your periods may take weeks or many months to return, and breastfeeding can delay them.
+          {postpartumProfile?.breastfeeding
+            ? 'While you are breastfeeding, your periods may pause for many months and can return gradually as feeds space out.'
+            : 'Your periods often return within about 6–12 weeks, but your own timeline may differ — and breastfeeding, if you start, can delay them.'}{' '}
           Lumen will not guess a date. When your period comes back, you can switch back to cycle
           tracking from Settings.
         </p>
