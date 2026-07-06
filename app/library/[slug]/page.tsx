@@ -1,13 +1,20 @@
-'use client';
-
-import { useParams } from 'next/navigation';
-import { findArticle } from '@/src/content';
+import { ARTICLES, findArticle } from '@/src/content';
 import { ArticleReader } from '@/src/components/ArticleReader';
 import { PageShell } from '@/src/components/PageShell';
 
-export default function ArticlePage() {
-  const params = useParams<{ slug: string }>();
-  const article = findArticle(params.slug);
+// All article content ships in the bundle, so prerender every slug. This makes
+// the route static, which lets <Link> fully prefetch it — without this, dynamic
+// routes skip prefetching and every tap waits on a server round trip.
+export function generateStaticParams() {
+  return ARTICLES.map((a) => ({ slug: a.slug }));
+}
+
+export default async function ArticlePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const article = findArticle((await params).slug);
 
   return (
     <PageShell backHref="/library" backLabel="Library">
