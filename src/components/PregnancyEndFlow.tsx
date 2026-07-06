@@ -6,6 +6,44 @@ import { todayISO } from '@/src/domain/dates';
 
 type Screen = 'closed' | 'choose' | 'birth' | 'loss';
 
+// ponytail: DOM + Web Animations API confetti; swap for canvas-confetti if we ever want physics.
+function confettiBurst() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#f43f5e', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'];
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    const size = 6 + Math.random() * 6;
+    Object.assign(piece.style, {
+      position: 'fixed',
+      left: '50%',
+      top: '40%',
+      width: `${size}px`,
+      height: `${size * 0.6}px`,
+      background: colors[i % colors.length],
+      borderRadius: '1px',
+      pointerEvents: 'none',
+      zIndex: '9999',
+    });
+    document.body.appendChild(piece);
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = 120 + Math.random() * 260;
+    piece
+      .animate(
+        [
+          { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+          {
+            transform: `translate(${Math.cos(angle) * distance}px, ${
+              Math.sin(angle) * distance + 300
+            }px) rotate(${Math.random() * 720 - 360}deg)`,
+            opacity: 0,
+          },
+        ],
+        { duration: 1800 + Math.random() * 1200, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' },
+      )
+      .finished.finally(() => piece.remove());
+  }
+}
+
 export function PregnancyEndFlow({ onEnded }: { onEnded?: () => void }) {
   const { endPregnancyBirth, endPregnancyLoss } = useHealthData();
   const [screen, setScreen] = useState<Screen>('closed');
@@ -48,7 +86,7 @@ export function PregnancyEndFlow({ onEnded }: { onEnded?: () => void }) {
         </p>
         <button
           type="button"
-          onClick={async () => { await endPregnancyBirth(todayISO()); onEnded?.(); }}
+          onClick={async () => { confettiBurst(); await endPregnancyBirth(todayISO()); onEnded?.(); }}
           className="w-full rounded-md bg-rose-600 px-4 py-2 text-sm text-white"
         >
           Confirm
