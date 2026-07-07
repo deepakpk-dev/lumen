@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
 import { BbtChart } from '@/src/components/BbtChart';
+import { BbtImport } from '@/src/components/BbtImport';
 import { ConceptionCard } from '@/src/components/ConceptionCard';
 import { PageShell } from '@/src/components/PageShell';
 import { shouldShowResourceNote } from '@/src/domain/fertility/journey';
@@ -82,6 +83,7 @@ export function FertilityView() {
           ovulationDate={ovulationConfirmation?.ovulationDate}
           unit={bbtUnit}
         />
+        <BbtImport />
       </section>
 
       <section className="space-y-1">
