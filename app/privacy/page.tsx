@@ -41,10 +41,23 @@ export default function PrivacyPage() {
         <p className="text-sm text-neutral-600 dark:text-neutral-300">
           Sync is off unless you turn it on. When you do, your data is encrypted on this device with
           a key derived from your recovery phrase <em>before</em> it is uploaded. The server stores
-          only ciphertext it can never read, under an opaque identifier — there is no account, no
-          email, and nothing linking the data to you. Only a device holding your recovery phrase can
-          decrypt it. The server can still see when and how often you sync and roughly how many
-          records you have, but never their contents.
+          only ciphertext, under an opaque identifier — there is no account, no email, and nothing
+          linking the data to you. The key never leaves your device, so a stolen copy of the
+          server&apos;s database is just unreadable ciphertext. The server can still see when you
+          sync and roughly how many records you have, but never their contents.
+        </p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">The honest caveat</h2>
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+          One thing we won&apos;t overstate: Lumen runs in your browser, and the code that does the
+          encrypting is served by us each time you load it. So the guarantees above hold against
+          anyone who steals the server&apos;s stored data — but they still rely on us, and our
+          hosting, to serve honest app code that we haven&apos;t tampered with. We don&apos;t have
+          your recovery phrase and never will, so we can&apos;t decrypt what&apos;s already stored;
+          an installed app, which we plan to offer, would remove even this last bit of trust in the
+          browser delivery.
         </p>
       </section>
 

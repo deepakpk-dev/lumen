@@ -122,6 +122,29 @@ describe('record encryption', () => {
     expect(back.key).toBe('2026-07-01'); // identity still recoverable
   });
 
+  it('pads ciphertext to size buckets so length does not fingerprint content', async () => {
+    const keys = await deriveKeys(PHRASE);
+    // A 1-char value and a much larger one whose padded plaintext lands in the
+    // same 256-byte bucket must produce identical ciphertext length.
+    const tiny = { store: 's', key: 'k', value: 'x' };
+    const bigger = { store: 's', key: 'k', value: 'x'.repeat(100) };
+    const a = await encryptRecord(keys, tiny, { updatedAt: '2026-07-01T10:00:00.000Z' });
+    const b = await encryptRecord(keys, bigger, { updatedAt: '2026-07-01T10:00:00.000Z' });
+    expect(a.ciphertext.length).toBe(b.ciphertext.length);
+    // And padding must round-trip cleanly (trailing whitespace stripped).
+    expect(await decryptRecord(keys, b)).toEqual(bigger);
+  });
+
+  it('crosses into a larger bucket only when the payload actually grows past it', async () => {
+    const keys = await deriveKeys(PHRASE);
+    const small = { store: 's', key: 'k', value: 'x' };
+    const huge = { store: 's', key: 'k', value: 'x'.repeat(1000) };
+    const a = await encryptRecord(keys, small, { updatedAt: '2026-07-01T10:00:00.000Z' });
+    const b = await encryptRecord(keys, huge, { updatedAt: '2026-07-01T10:00:00.000Z' });
+    expect(b.ciphertext.length).toBeGreaterThan(a.ciphertext.length);
+    expect(await decryptRecord(keys, a)).toEqual(small);
+  });
+
   it('opaqueRecordKey is stable per record and differs across records', async () => {
     const keys = await deriveKeys(PHRASE);
     const k1 = await opaqueRecordKey(keys, 'dailyLogs', '2026-07-01');

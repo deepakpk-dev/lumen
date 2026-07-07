@@ -33,8 +33,8 @@ export default function SettingsPage() {
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Sync across devices</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Optional. Your data is encrypted with your recovery phrase before it leaves this device —
-          the server stores only ciphertext it can never read.
+          Optional. Your data is encrypted with your recovery phrase before it leaves this device,
+          and the key never reaches the server — so it only ever holds ciphertext.
         </p>
         <SyncControls
           onSynced={async () => {

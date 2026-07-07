@@ -598,7 +598,7 @@ Want Lumen on your phone *and* laptop, kept in step automatically? Under **Setti
 
 **On your second device:** on the Welcome screen tap **"Already use Lumen? Restore your data"** (or **Settings → Sync → Restore from another device**), enter your **12‑word recovery phrase**, and choose a passcode for that device. Your data flows in, and both devices stay in sync from then on.
 
-> 🔐 **Zero‑knowledge by design.** Your data is encrypted before it leaves your device. The server only ever stores scrambled data and can't read your dates, symptoms, or life stage — it can't even tell what kind of data you have. Only your recovery phrase can unlock it.
+> 🔐 **Zero‑knowledge by design.** Your data is encrypted before it leaves your device, and the key stays on your devices — it never reaches the server. So the server only ever holds scrambled data it has no key for, and it can't tell your dates, symptoms, life stage, or even what kind of data you have. Only your recovery phrase can unlock it. *(One honest caveat — see the FAQ "Can Lumen (or anyone) read my synced data?" below.)*
 
 > ⚠️ Lose the recovery phrase and you lose the synced copy — there is no password‑reset back door. That's the price of true end‑to‑end encryption.
 
@@ -688,7 +688,9 @@ Turn on a **passcode** (Settings → Passcode lock) to **encrypt** your data wit
 <details>
 <summary><strong>Can Lumen (or anyone) read my synced data?</strong></summary>
 
-No. Sync is **end‑to‑end encrypted**: your data is scrambled on your device before upload, and the server only ever holds ciphertext it cannot read. Only your recovery phrase can decrypt it.
+Here's the honest version. Your data is encrypted on your device before upload, and the key that unlocks it **never leaves your devices** — so the server only ever holds scrambled data it has no key for. If someone stole the server's database, they'd get nothing readable, and Lumen has no password‑reset back door into it.
+
+The one caveat worth stating plainly: Lumen runs in your browser and loads its code from our servers each time you open it, so you are trusting us to keep that code honest. We've built it so we never receive your key or your unencrypted data, and a future installed app will remove even that last bit of trust in the browser. So: safe against a stolen database or a nosy operator — and we've deliberately kept ourselves *unable* to read what you've synced.
 </details>
 
 <details>

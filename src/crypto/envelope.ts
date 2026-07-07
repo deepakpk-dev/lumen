@@ -21,6 +21,30 @@ export interface PlainRecord {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
+// AES-GCM preserves plaintext length 1:1, so raw ciphertext size fingerprints
+// the record — a full pregnancy profile vs a one-line cycle log are trivially
+// told apart on the server. Pad the JSON to exponential size buckets so the
+// only thing length leaks is log2(size). ponytail: trailing spaces are valid
+// JSON insignificant-whitespace, so JSON.parse strips them on decrypt with zero
+// framing/length-header. Spaces are 1 byte in UTF-8, so byte math is exact.
+const MIN_BUCKET = 256;
+
+function padBucket(n: number): number {
+  let b = MIN_BUCKET;
+  while (b < n) b *= 2;
+  return b;
+}
+
+function padded(payload: PlainRecord): Uint8Array {
+  const body = encoder.encode(JSON.stringify(payload));
+  const target = padBucket(body.length);
+  if (target === body.length) return body;
+  const out = new Uint8Array(target);
+  out.set(body);
+  out.fill(0x20, body.length); // 0x20 = ' '
+  return out;
+}
+
 // Stable, opaque server-side key for a record. Deterministic for a given phrase
 // so writes to the same record land on the same row across devices.
 export async function opaqueRecordKey(
@@ -45,7 +69,7 @@ export async function encryptRecord(
   const ciphertext = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     keys.encKey,
-    encoder.encode(JSON.stringify(payload)),
+    padded(payload),
   );
   return {
     recordKey,

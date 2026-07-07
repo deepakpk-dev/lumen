@@ -40,7 +40,7 @@ Cycle and pregnancy data is one of the most sensitive categories of personal dat
 
 - **Local-first.** Health data lives in your browser's IndexedDB. Nothing is uploaded, leaked, or subpoenable unless *you* turn on sync.
 - **Encrypted at rest (optional).** Set a passcode and your on-device records are stored as **AES-256-GCM ciphertext**, keyed by a recovery phrase the passcode unwraps. The passcode itself is never stored.
-- **End-to-end encrypted sync (optional).** Turn on cross-device sync and your data is encrypted on-device *before* it leaves. The server is **blind** — it stores only ciphertext and opaque keys and can never read your health data or even tell which dates or life stages you have data for.
+- **End-to-end encrypted sync (optional).** Turn on cross-device sync and your data is encrypted on-device *before* it leaves. The server is **blind** — your encryption key never reaches it, so it holds only ciphertext and opaque keys and can't tell which dates or life stages you have data for. (One honest caveat: the browser fetches that encryption code from the server each load — see [Trust boundary](#trust-boundary).)
 - **No tracking SDKs.** The client bundle ships zero analytics, ad, or tracking code. There is no production telemetry by design.
 - **You own your data.** One-tap full export (versioned JSON), and a real, irreversible delete that wipes the local store *and* the server copy.
 - **Deterministic & explainable.** Every prediction and insight is computed from your own logs and cites the data it came from. No black-box model decides your forecast — there is no LLM anywhere in the product.
@@ -186,7 +186,7 @@ Privacy is enforced by the shape of the system, not by a promise:
 
 ### End-to-end encrypted sync
 
-Sync is **opt-in** and layered on top of the local-first store. The design is a **blind server**: it can order and locate records but never read them.
+Sync is **opt-in** and layered on top of the local-first store. The design is a **blind server**: it can order and locate records but never holds the key to read them.
 
 **Key derivation** (`src/crypto/keys.ts`) — HKDF-SHA256 over the BIP-39 seed derives a full hierarchy:
 
@@ -197,13 +197,17 @@ Sync is **opt-in** and layered on top of the local-first store. The design is a 
 | `encKey` | AES-256-GCM, encrypts record contents | **Never** (non-extractable `CryptoKey`) |
 | `keyMacKey` | HMAC-SHA-256, produces opaque record keys | **Never** (non-extractable `CryptoKey`) |
 
-**Envelopes** (`src/crypto/envelope.ts`) — each record becomes `{ recordKey: HMAC(keyMacKey, "store:key"), iv, ciphertext: AES-GCM(payload), updatedAt, deleted }`. The real store, key, and value live *inside* the ciphertext; tombstones carry no value. The server never learns which dates or life stages a user has data for.
+**Envelopes** (`src/crypto/envelope.ts`) — each record becomes `{ recordKey: HMAC(keyMacKey, "store:key"), iv, ciphertext: AES-GCM(payload), updatedAt, deleted }`. The real store, key, and value live *inside* the ciphertext; tombstones carry no value. Plaintext is padded to exponential size buckets before encryption, so ciphertext length leaks only `log2(size)` — a full pregnancy profile and a one-line log don't fingerprint by size. The server never learns which dates or life stages a user has data for.
 
 **Client engine** (`src/data/sync-engine.ts`) — a dirty **outbox** and tombstones live in the `syncMeta` sidecar. `push` drains the outbox in server-cap-sized chunks; `pull` pages through everything after a per-account `lastSeq` high-water mark and applies each envelope under **last-write-wins** on `updatedAt`. Enable/restore/disable/delete flows are all handled here, and preferences (life stage, units, reminders) sync as one snapshot pseudo-record so a restore lands in the right mode.
 
 **Server** (`app/api/sync/*`, `src/server/*`) — four Route Handlers: `register`, `push`, `pull`, `delete-account`. Auth is a `Bearer accountId:authSecret` header verified against the stored hash. Storage is two Postgres tables (`sync_accounts`, `sync_records`); the schema self-applies lazily and idempotently on first query. `push` upserts with an LWW guard and bumps a `server_seq` so other devices see the change on incremental pull.
 
 **Enforced, not just claimed.** `src/data/sync-privacy.test.ts` runs in CI and **fails the build** if any plaintext health field is ever found in a request body — the enforcement half of the zero-knowledge guarantee.
+
+#### Trust boundary
+
+The blind-server guarantee holds against a **stolen database** and a **passive or subpoenaed operator**: the key is never uploaded, so stored ciphertext is unreadable. It does **not** by itself defend against a **malicious or compromised server**, because Lumen is a web app — the browser fetches the encryption code from the server on each load, and backdoored code could capture plaintext before it's encrypted. Non-extractable `CryptoKey`s don't close this: first-party code still handles the raw recovery phrase and can use the keys as an oracle. Closing it requires moving the crypto path off per-load server delivery — a store-distributed installed app (Capacitor/Tauri wrap of this build) is the planned path; a code-transparency log is the web-only alternative (detection rather than prevention). Until then, the honest claim is "encrypted against DB theft and a curious operator," not "even we can't read it."
 
 ### Testing strategy
 

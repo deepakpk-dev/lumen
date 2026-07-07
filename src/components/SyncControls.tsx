@@ -105,7 +105,7 @@ export function SyncControls({
       <div className="space-y-3">
         <p className="text-sm text-neutral-700 dark:text-neutral-300">
           Sync needs encryption: turn on a passcode above first. Your recovery phrase becomes the
-          only key to your synced data — we can never read it.
+          only key to your synced data, and it never reaches our servers.
         </p>
         <button
           type="button"
@@ -209,8 +209,8 @@ export function SyncControls({
     return (
       <div className="space-y-3">
         <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Sync is <span className="font-medium text-green-700 dark:text-green-400">on</span>. The
-          server only ever holds encrypted data it cannot read.
+          Sync is <span className="font-medium text-green-700 dark:text-green-400">on</span>. Your
+          key stays on your devices, so the server only ever holds encrypted data.
           {synced && (
             <span className="block text-xs text-neutral-500 dark:text-neutral-400">
               Last synced {new Date(synced).toLocaleString()}

@@ -3,10 +3,11 @@ import { authenticate, isHex } from '@/src/server/sync-auth';
 import type { SyncEnvelope } from '@/src/crypto/envelope';
 
 // Caps sized to the domain: the largest real record (a full pregnancy profile)
-// is a few KB of JSON; 64k base64 chars ≈ 48 KB plaintext leaves huge headroom.
-// The sync engine (Phase 3c) chunks its outbox to stay under MAX_RECORDS.
+// is a few KB of JSON. envelope.ts pads plaintext to exponential size buckets,
+// so the ceiling is the 64 KB bucket → ~87k base64 chars + GCM tag; 90k leaves
+// headroom. The sync engine (Phase 3c) chunks its outbox to stay under MAX_RECORDS.
 const MAX_RECORDS = 500;
-const MAX_CIPHERTEXT_CHARS = 64_000;
+const MAX_CIPHERTEXT_CHARS = 90_000;
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 
 function isEnvelope(r: unknown): r is SyncEnvelope {
