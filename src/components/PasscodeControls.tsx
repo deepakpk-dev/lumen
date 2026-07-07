@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { createVault, unlockVault, rewrapVault } from '@/src/crypto/vault';
-import { hasVault, loadVault, saveVault } from '@/src/security/vault-store';
-import { encryptExistingData } from '@/src/data/repository';
+import { hasVault, loadVault, saveVault, clearVault } from '@/src/security/vault-store';
+import { encryptExistingData, decryptExistingData } from '@/src/data/repository';
+import { isSyncEnabled } from '@/src/data/sync-engine';
+import { hasPasscode, verifyPasscode, clearPasscode } from '@/src/security/passcode';
 
-type View = 'loading' | 'off' | 'phrase' | 'on' | 'change';
+type View =
+  | 'loading'
+  | 'off'
+  | 'phrase'
+  | 'on'
+  | 'change'
+  | 'confirm-off'
+  | 'legacy'
+  | 'legacy-remove';
 
 export function PasscodeControls() {
   const [view, setView] = useState<View>('loading');
@@ -17,7 +27,7 @@ export function PasscodeControls() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the loading gate
-    setView(hasVault() ? 'on' : 'off');
+    setView(hasVault() ? 'on' : hasPasscode() ? 'legacy' : 'off');
   }, []);
 
   async function handleEnable(e: React.FormEvent) {
@@ -31,6 +41,10 @@ export function PasscodeControls() {
       // this callback) after the encrypted copy is verified but BEFORE the
       // plaintext is cleared, so a failed key write can't lose data.
       await encryptExistingData(unlocked.keys, () => saveVault(vault));
+      // A stale pre-encryption screen-lock passcode would resurface (and shadow
+      // the vault) if the vault were ever removed — drop it now that the vault
+      // supersedes it.
+      clearPasscode();
       setCode('');
       setPhrase(unlocked.mnemonic);
       setView('phrase');
@@ -61,7 +75,162 @@ export function PasscodeControls() {
     }
   }
 
+  async function handleTurnOff(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const vault = loadVault();
+      if (!vault) throw new Error('No vault found.');
+      // Re-verify the passcode even though the session is already unlocked, so
+      // someone at an unlocked device can't silently strip encryption.
+      await unlockVault(current, vault);
+      await decryptExistingData(() => clearVault());
+      // Belt-and-braces: a leftover legacy hash must not re-lock a now-plaintext
+      // device.
+      clearPasscode();
+      setCurrent('');
+      setView('off');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not turn off encryption.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRemoveLegacy(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      if (!(await verifyPasscode(current))) {
+        setError('Current passcode is incorrect.');
+        return;
+      }
+      clearPasscode();
+      setCurrent('');
+      setView('off');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (view === 'loading') return null;
+
+  if (view === 'legacy') {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+          You have an old screen-lock passcode. It locks the screen but does{' '}
+          <span className="font-medium">not</span> encrypt your data on this device.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setView('off');
+            setError('');
+          }}
+          className="w-full rounded-md bg-rose-600 px-4 py-3 text-white"
+        >
+          Upgrade to encryption
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setView('legacy-remove');
+            setError('');
+          }}
+          className="w-full rounded-md border px-4 py-3"
+        >
+          Remove old passcode
+        </button>
+      </div>
+    );
+  }
+
+  if (view === 'legacy-remove') {
+    return (
+      <form onSubmit={handleRemoveLegacy} className="space-y-3">
+        <input
+          aria-label="current passcode"
+          type="password"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+          placeholder="Current passcode"
+          className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+        />
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={busy}
+            className="flex-1 rounded-md bg-rose-600 px-4 py-3 text-white disabled:opacity-60"
+          >
+            Remove passcode
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setView('legacy');
+              setError('');
+            }}
+            className="flex-1 rounded-md border px-4 py-3"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  if (view === 'confirm-off') {
+    const syncOn = isSyncEnabled();
+    return (
+      <form onSubmit={handleTurnOff} className="space-y-3">
+        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+          Your records will be stored <span className="font-medium">unencrypted</span> on this
+          device, readable by anyone with access to it.
+        </p>
+        {syncOn && (
+          <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+            Turn off sync first (in the Sync section below) — sync uses your recovery phrase, so it
+            can&apos;t stay on without encryption.
+          </p>
+        )}
+        {!syncOn && (
+          <input
+            aria-label="current passcode"
+            type="password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            placeholder="Current passcode"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          />
+        )}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={busy || syncOn}
+            className="flex-1 rounded-md bg-red-600 px-4 py-3 text-white disabled:opacity-60"
+          >
+            Decrypt and turn off
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setView('on');
+              setCurrent('');
+              setError('');
+            }}
+            className="flex-1 rounded-md border px-4 py-3"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    );
+  }
 
   if (view === 'phrase') {
     return (
@@ -150,6 +319,16 @@ export function PasscodeControls() {
           className="w-full rounded-md border px-4 py-3"
         >
           Change passcode
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setView('confirm-off');
+            setError('');
+          }}
+          className="w-full rounded-md border px-4 py-3 text-red-700 dark:text-red-400"
+        >
+          Turn off encryption
         </button>
       </div>
     );
