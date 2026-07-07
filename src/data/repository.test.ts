@@ -15,6 +15,7 @@ import {
   getKickSessions,
   addContractionSession,
   getContractionSessions,
+  importBbtReadings,
 } from './repository';
 import { setStorageKeys } from './storage';
 import { db } from './db';
@@ -102,6 +103,37 @@ describe('repository', () => {
     const empty = await exportAll();
     expect(empty.cycles).toHaveLength(0);
     expect(empty.dailyLogs).toHaveLength(0);
+  });
+});
+
+describe('importBbtReadings', () => {
+  it('imports into empty days and merges into existing logs without clobbering', async () => {
+    await upsertDailyLog({ date: '2026-07-02', symptoms: ['Cramps'], moods: [] });
+    const res = await importBbtReadings([
+      { date: '2026-07-01', bbt: 36.5 },
+      { date: '2026-07-02', bbt: 36.6 },
+    ]);
+    expect(res).toEqual({ imported: 2, skippedExisting: 0 });
+    expect((await getDailyLog('2026-07-01'))?.bbt).toBe(36.5);
+    const merged = await getDailyLog('2026-07-02');
+    expect(merged?.bbt).toBe(36.6);
+    expect(merged?.symptoms).toEqual(['Cramps']); // untouched
+  });
+
+  it('never overwrites a manually logged bbt', async () => {
+    await upsertDailyLog({ date: '2026-07-01', symptoms: [], moods: [], bbt: 36.8 });
+    const res = await importBbtReadings([{ date: '2026-07-01', bbt: 36.1 }]);
+    expect(res).toEqual({ imported: 0, skippedExisting: 1 });
+    expect((await getDailyLog('2026-07-01'))?.bbt).toBe(36.8);
+  });
+
+  it('lands imported rows in the encrypted store when a vault is active', async () => {
+    const keys = (await createVault('1234')).unlocked.keys;
+    setStorageKeys(keys);
+    await importBbtReadings([{ date: '2026-07-01', bbt: 36.5 }]);
+    expect((await getDailyLog('2026-07-01'))?.bbt).toBe(36.5);
+    expect(await db.records.count()).toBeGreaterThan(0);
+    expect(await db.dailyLogs.count()).toBe(0); // never written plaintext
   });
 });
 

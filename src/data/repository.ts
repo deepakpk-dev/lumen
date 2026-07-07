@@ -11,6 +11,7 @@ import type {
 } from '@/src/domain/types';
 import { db } from './db';
 import type { ImportedData } from './export';
+import type { BbtReading } from '@/src/domain/fertility/bbt';
 import type { DerivedKeys } from '@/src/crypto/keys';
 import { exportPreferences, importPreferences } from '@/src/settings/preferences';
 import {
@@ -218,6 +219,27 @@ export async function deleteAll(): Promise<void> {
     db.programProgress.clear(),
     db.records.clear(),
   ]);
+}
+
+// Bulk-merge imported temperatures. Existing bbt values win: a typed-in waking
+// temp is ground truth; an import should fill gaps, not rewrite history. Writes
+// route through upsertDailyLog → putRecord, so encryption-at-rest and sync
+// tracking apply automatically.
+export async function importBbtReadings(
+  readings: BbtReading[],
+): Promise<{ imported: number; skippedExisting: number }> {
+  let imported = 0;
+  let skippedExisting = 0;
+  for (const r of readings) {
+    const existing = await getDailyLog(r.date);
+    if (existing?.bbt !== undefined) {
+      skippedExisting++;
+      continue;
+    }
+    await upsertDailyLog({ ...(existing ?? { date: r.date, symptoms: [], moods: [] }), bbt: r.bbt });
+    imported++;
+  }
+  return { imported, skippedExisting };
 }
 
 export async function getPostpartumProfile(): Promise<PostpartumProfile | undefined> {
