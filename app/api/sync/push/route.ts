@@ -10,6 +10,16 @@ const MAX_RECORDS = 500;
 const MAX_CIPHERTEXT_CHARS = 90_000;
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 
+// Per-account storage ceiling. A real user across all 8 stores (daily logs are
+// one row/day) stays well under 20k rows over decades; 50k is generous headroom
+// while bounding an authenticated attacker who mints unlimited distinct
+// recordKeys to exhaust storage. Worst case per account is capped at
+// MAX_RECORDS_PER_ACCOUNT × MAX_CIPHERTEXT_CHARS. Abusive account *creation* is
+// unauthenticated and belongs at the platform edge (Vercel/Cloudflare IP rate
+// limiting) — a serverless in-app limiter has no shared state to enforce it.
+// ponytail: bump if a power user ever legitimately nears it.
+const MAX_RECORDS_PER_ACCOUNT = 50_000;
+
 function isEnvelope(r: unknown): r is SyncEnvelope {
   if (typeof r !== 'object' || r === null) return false;
   const e = r as Record<string, unknown>;
@@ -40,6 +50,19 @@ export async function POST(req: Request) {
   const records = (body as Record<string, unknown> | null)?.records;
   if (!Array.isArray(records) || records.length > MAX_RECORDS || !records.every(isEnvelope)) {
     return Response.json({ error: 'invalid request' }, { status: 400 });
+  }
+
+  // Quota guard: reject the push if it could grow the account past the ceiling.
+  // Counts incoming records as growth even when some are updates to existing
+  // rows — conservative by design, and the cap sits far above real usage so a
+  // legitimate client never hits it. Returning 413 (not 200) leaves the client's
+  // rows dirty so nothing is silently dropped.
+  const { rows: countRows } = await query(
+    'select count(*)::int as n from sync_records where account_id = $1',
+    [accountId],
+  );
+  if (Number(countRows[0].n) + records.length > MAX_RECORDS_PER_ACCOUNT) {
+    return Response.json({ error: 'account storage limit reached' }, { status: 413 });
   }
 
   // ponytail: one statement per record, no transaction — LWW upserts are
