@@ -312,7 +312,7 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 - ✅ **Phase 2B — Content library**: cited article corpus + personalized deterministic feed.
 - ✅ **Phase 2C — Courses / programs**: ordered, stage-scoped guided reading paths with local per-step progress.
 - ✅ **Phase 3 — Fertility / TTC**: BBT, LH, cervical mucus, ovulation confirmation, BBT chart.
-- ✅ **Phase 3 (sync) — E2E-encrypted sync**: passcode-encrypted vault, blind Postgres server, client sync engine (outbox, tombstones, LWW), settings UI, zero-knowledge CI check. *Code-complete; goes live once a `DATABASE_URL` is provisioned.*
+- ✅ **Phase 3 (sync) — E2E-encrypted sync**: passcode-encrypted vault, blind Postgres server, client sync engine (outbox, tombstones, LWW), settings UI, zero-knowledge CI check. *Live in production (Neon Postgres).*
 - ✅ **Phase 4 — Pregnancy**: week-by-week, kick counter, contraction timer, compassionate loss flow.
 - ✅ **Phase 5 — Postpartum**: recovery tracking + EPDS mental-health screening.
 - ⬜ **Phase 5b — Perimenopause & menopause** (a life-stage value today, benefits from irregular-cycle handling, but no dedicated mode UI yet).
