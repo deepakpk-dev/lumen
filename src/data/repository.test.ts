@@ -11,7 +11,7 @@ import {
   upsertDailyLog,
   getPregnancyProfile,
   savePregnancyProfile,
-  deletePregnancyProfile,
+  clearPregnancyProfile,
   addKickSession,
   getKickSessions,
   addContractionSession,
@@ -201,7 +201,7 @@ describe('pregnancy repository', () => {
   it('stores and reads the singleton pregnancy profile', async () => {
     await savePregnancyProfile(profile);
     expect((await getPregnancyProfile())?.dueDate).toBe('2026-10-08');
-    await deletePregnancyProfile();
+    await clearPregnancyProfile();
     expect(await getPregnancyProfile()).toBeUndefined();
   });
 

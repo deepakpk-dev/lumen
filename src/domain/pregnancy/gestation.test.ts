@@ -6,7 +6,6 @@ import {
   gestationalAge,
   trimester,
   daysUntilDue,
-  progressFraction,
 } from './gestation';
 
 describe('eddFromLmp', () => {
@@ -69,14 +68,5 @@ describe('daysUntilDue', () => {
   it('is positive before the due date and negative after', () => {
     expect(daysUntilDue('2026-10-08', '2026-10-01')).toBe(7);
     expect(daysUntilDue('2026-10-08', '2026-10-15')).toBe(-7);
-  });
-});
-
-describe('progressFraction', () => {
-  it('is 0 at LMP, ~0.5 mid, 1 at due date, clamped', () => {
-    expect(progressFraction('2026-10-08', '2026-01-01')).toBe(0);
-    expect(progressFraction('2026-10-08', '2026-10-08')).toBe(1);
-    expect(progressFraction('2026-10-08', '2027-01-01')).toBe(1); // post-term clamp
-    expect(progressFraction('2026-10-08', '2025-01-01')).toBe(0); // pre-LMP clamp
   });
 });

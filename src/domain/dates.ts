@@ -1,25 +1,33 @@
-import {
-  format,
-  parseISO,
-  addDays as fnsAddDays,
-  differenceInCalendarDays,
-} from 'date-fns';
 import type { ISODate } from './types';
 
+// Local-time date helpers (no dep): dates are YYYY-MM-DD in the user's zone.
+
 export function toISODate(d: Date): ISODate {
-  return format(d, 'yyyy-MM-dd');
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// Parse as LOCAL midnight (new Date('yyyy-mm-dd') would parse as UTC and
+// shift the calendar day west of Greenwich).
 export function parseISODate(s: ISODate): Date {
-  return parseISO(s);
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
 }
 
 export function addDays(s: ISODate, n: number): ISODate {
-  return toISODate(fnsAddDays(parseISODate(s), n));
+  const d = parseISODate(s);
+  d.setDate(d.getDate() + n);
+  return toISODate(d);
 }
 
+// Calendar-day difference, DST-proof: compare the dates as UTC midnights so a
+// 23/25-hour day still counts as exactly one.
 export function daysBetween(a: ISODate, b: ISODate): number {
-  return differenceInCalendarDays(parseISODate(b), parseISODate(a));
+  const utc = (s: ISODate) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((utc(b) - utc(a)) / 86_400_000);
 }
 
 export function todayISO(): ISODate {

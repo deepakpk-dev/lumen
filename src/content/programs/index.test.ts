@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PROGRAMS, findProgram } from './index';
+import { PROGRAMS } from './index';
 import { ARTICLES } from '@/src/content';
 import { CONTENT_TOPICS } from '@/src/domain/content/types';
 
@@ -14,11 +14,6 @@ describe('program corpus integrity', () => {
   it('has unique slugs', () => {
     const slugs = PROGRAMS.map((p) => p.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
-  });
-
-  it('findProgram resolves by slug', () => {
-    expect(findProgram('understanding-your-cycle')?.title).toBe('Understanding your cycle');
-    expect(findProgram('does-not-exist')).toBeUndefined();
   });
 
   it('every program is well-formed and its steps reference real articles', () => {

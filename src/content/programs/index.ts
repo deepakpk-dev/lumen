@@ -10,7 +10,3 @@ export const PROGRAMS: ContentProgram[] = [
   yourPregnancyJourney,
   theFourthTrimester,
 ];
-
-export function findProgram(slug: string): ContentProgram | undefined {
-  return PROGRAMS.find((p) => p.slug === slug);
-}

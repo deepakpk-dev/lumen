@@ -18,7 +18,6 @@ import {
   putRecord,
   getRecord,
   getAllRecords,
-  deleteRecord,
   clearStore,
   setStorageKeys,
   storageIsEncrypted,
@@ -31,9 +30,8 @@ export async function addCycle(cycle: Cycle): Promise<void> {
   await putRecord('cycles', cycle.id, cycle);
 }
 
-export async function updateCycle(cycle: Cycle): Promise<void> {
-  await putRecord('cycles', cycle.id, cycle);
-}
+// Same upsert; the name keeps call sites honest about intent.
+export const updateCycle = addCycle;
 
 export async function getCycles(): Promise<Cycle[]> {
   const all = await getAllRecords<Cycle>('cycles');
@@ -66,10 +64,6 @@ export async function clearPregnancyProfile(): Promise<void> {
   await clearStore('pregnancyProfile');
   await clearStore('kickSessions');
   await clearStore('contractionSessions');
-}
-
-export async function deletePregnancyProfile(): Promise<void> {
-  await deleteRecord('pregnancyProfile', 'current');
 }
 
 export async function addKickSession(s: KickSession): Promise<void> {
@@ -157,6 +151,20 @@ function storeCounts(d: Awaited<ReturnType<typeof exportAll>>): number[] {
   ];
 }
 
+// Clear every plaintext typed table (not the encrypted `records` store).
+function clearTypedTables(): Promise<unknown> {
+  return Promise.all([
+    db.cycles.clear(),
+    db.dailyLogs.clear(),
+    db.pregnancyProfile.clear(),
+    db.kickSessions.clear(),
+    db.contractionSessions.clear(),
+    db.postpartumProfile.clear(),
+    db.epdsEntries.clear(),
+    db.programProgress.clear(),
+  ]);
+}
+
 // Turn on encryption for an existing (plaintext) device: copy every record
 // into the encrypted store under `keys`, then drop the plaintext tables. Reads
 // happen while the session is still plaintext; writes after the key is
@@ -192,16 +200,7 @@ export async function encryptExistingData(
     setStorageKeys(null); // stay in plaintext mode; plaintext tables are intact
     throw err;
   }
-  await Promise.all([
-    db.cycles.clear(),
-    db.dailyLogs.clear(),
-    db.pregnancyProfile.clear(),
-    db.kickSessions.clear(),
-    db.contractionSessions.clear(),
-    db.postpartumProfile.clear(),
-    db.epdsEntries.clear(),
-    db.programProgress.clear(),
-  ]);
+  await clearTypedTables();
 }
 
 // Turn encryption OFF: copy every record out of the encrypted store into the
@@ -233,16 +232,7 @@ export async function decryptExistingData(clearVaultPersisted: () => void): Prom
     clearVaultPersisted();
   } catch (err) {
     // Roll back: wipe the partial plaintext copy, restore the session key.
-    await Promise.all([
-      db.cycles.clear(),
-      db.dailyLogs.clear(),
-      db.pregnancyProfile.clear(),
-      db.kickSessions.clear(),
-      db.contractionSessions.clear(),
-      db.postpartumProfile.clear(),
-      db.epdsEntries.clear(),
-      db.programProgress.clear(),
-    ]);
+    await clearTypedTables();
     setStorageKeys(keys);
     throw err;
   }
@@ -255,17 +245,7 @@ export async function decryptExistingData(clearVaultPersisted: () => void): Prom
 // would silently skip old records if sync is ever re-enabled on this device.
 export async function deleteAll(): Promise<void> {
   await clearSyncState();
-  await Promise.all([
-    db.cycles.clear(),
-    db.dailyLogs.clear(),
-    db.pregnancyProfile.clear(),
-    db.kickSessions.clear(),
-    db.contractionSessions.clear(),
-    db.postpartumProfile.clear(),
-    db.epdsEntries.clear(),
-    db.programProgress.clear(),
-    db.records.clear(),
-  ]);
+  await Promise.all([clearTypedTables(), db.records.clear()]);
 }
 
 // Bulk-merge imported temperatures. Existing bbt values win: a typed-in waking
@@ -302,10 +282,6 @@ export async function savePostpartumProfile(p: PostpartumProfile): Promise<void>
 export async function clearPostpartumProfile(): Promise<void> {
   await clearStore('postpartumProfile');
   await clearStore('epdsEntries');
-}
-
-export async function deletePostpartumProfile(): Promise<void> {
-  await deleteRecord('postpartumProfile', 'current');
 }
 
 export async function addEpdsEntry(e: EpdsEntry): Promise<void> {

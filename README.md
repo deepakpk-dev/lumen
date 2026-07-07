@@ -265,7 +265,7 @@ scripts/                  # generate-icons.mjs (sharp)
 | Local storage | [Dexie](https://dexie.org/) over IndexedDB (schema v6) |
 | Cryptography | Web Crypto (`crypto.subtle`): AES-256-GCM, PBKDF2, HKDF, HMAC · [`@scure/bip39`](https://github.com/paulmillr/scure-bip39) recovery phrases |
 | Sync backend | Next.js Route Handlers + [`pg`](https://node-postgres.com/) → **Postgres** (target host: [Neon](https://neon.tech/)) |
-| Dates | [date-fns](https://date-fns.org/) with timezone-safe ISO date strings |
+| Dates | native `Date` helpers (`src/domain/dates.ts`) with timezone-safe ISO date strings |
 | Markdown | `react-markdown` + `remark-gfm` (content library) |
 | Testing | [Vitest](https://vitest.dev/) + Testing Library + `fake-indexeddb` + `pglite`; [Playwright](https://playwright.dev/) e2e |
 | Runtime | Node.js 24 |
