@@ -44,14 +44,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Lumen",
-    title: "Lumen — Private Cycle & Health Tracker",
+    title: "A private, offline-first companion for your whole reproductive life",
     description:
       "Offline-first cycle and health tracking that keeps your data on your device.",
     locale: "en_US",
   },
   twitter: {
     card: "summary",
-    title: "Lumen — Private Cycle & Health Tracker",
+    title: "A private, offline-first companion for your whole reproductive life",
     description:
       "Offline-first cycle and health tracking that keeps your data on your device.",
   },
