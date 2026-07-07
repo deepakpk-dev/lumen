@@ -150,6 +150,33 @@ describe('push + pull', () => {
     expect(again.since).toBe(since);
   });
 
+  it('rejects a push that would exceed the per-account storage cap', async () => {
+    // The route counts current rows + incoming length against a 50k cap. Prove
+    // the guard fires without inserting 50k rows: seed the count table directly,
+    // then a single-record push must be rejected with 413 and stay unstored.
+    const cap = await deriveKeys(
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+    );
+    await register(req({ accountId: cap.accountId, authHash: await authHash(cap.authSecret) }, ));
+    const { query } = await import('@/src/server/sync-db');
+    await query(
+      `insert into sync_records (account_id, record_key, iv, ciphertext, updated_at, deleted)
+       select $1, lpad(to_hex(g), 64, '0'), 'AAAAAAAAAAAAAAAA', 'AAAA', now(), false
+       from generate_series(1, 50000) g`,
+      [cap.accountId],
+    );
+    const env = await encryptRecord(
+      cap,
+      { store: 'dailyLogs', key: '2026-08-01', value: { flow: 'light' } },
+      { updatedAt: '2026-08-01T00:00:00.000Z' },
+    );
+    const res = await push(req({ records: [env] }, bearer(cap)));
+    expect(res.status).toBe(413);
+    // The record was not stored — the client's row stays dirty for retry.
+    const { records } = await pullAll(cap);
+    expect(records.find((r) => r.recordKey === env.recordKey)).toBeUndefined();
+  });
+
   it('rejects malformed envelopes and bad since values', async () => {
     const bad = { recordKey: 'zz', iv: 'AAAAAAAAAAAAAAAA', ciphertext: 'AAAA', updatedAt: 'now', deleted: false };
     expect((await push(req({ records: [bad] }, bearer(keys)))).status).toBe(400);
