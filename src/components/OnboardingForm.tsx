@@ -368,7 +368,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             Lumen
           </span>
         </div>
-        <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
+        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
           Step 2 of 2
         </span>
       </div>
@@ -388,7 +388,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
       </div>
 
       <div className="lumen-in" data-in="2">
-        <h1 className="bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 bg-clip-text text-[28px] font-bold tracking-tight text-transparent dark:from-rose-300 dark:via-rose-300 dark:to-pink-300">
+        <h1 className="text-[28px] font-bold tracking-tight text-rose-600 dark:text-rose-300">
           Let&apos;s set things up
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-300">
@@ -599,7 +599,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           </p>
         )}
         {/* Restate the privacy promise at the moment of commitment. */}
-        <p className="flex items-center justify-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
+        <p className="flex items-center justify-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
           <LockIcon />
           <span>Private — your answers never leave this device</span>
         </p>

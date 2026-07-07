@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 // Shared scaffold for the elevated visual language, so every screen reads as
-// one product: brand row (back link + wordmark), gradient title, staggered
+// one product: brand row (back link + wordmark), solid rose title, staggered
 // entrance — on a clean white background (ambient washes stay on onboarding
 // only). Hero cards and CTAs remain per-screen; content sections stay flat.
 export function PageShell({
@@ -74,7 +74,7 @@ export function PageShell({
 
         {title && (
           <div className="lumen-in" data-in="1">
-            <h1 className="bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 bg-clip-text text-[28px] font-bold tracking-tight text-transparent dark:from-rose-300 dark:via-rose-300 dark:to-pink-300">
+            <h1 className="text-[28px] font-bold tracking-tight text-rose-600 dark:text-rose-300">
               {title}
             </h1>
             {subtitle && (

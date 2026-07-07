@@ -24,7 +24,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
   /* Keep content clear of the notch / rounded corners on installed PWAs.
      Bottom inset is handled on the footer so it stays anchored to the edge. */
   padding-top: env(safe-area-inset-top);

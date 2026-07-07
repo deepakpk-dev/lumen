@@ -4,7 +4,9 @@ const CATEGORY_STYLE: Record<Insight['category'], string> = {
   pattern: 'border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/40',
   trend: 'border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900',
   anomaly: 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40',
-  guidance: 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40',
+  // Neutral, not green: green is reserved for the calendar's fertile/ovulation
+  // meaning, so a guidance card must not read as a fertility signal.
+  guidance: 'border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900',
 };
 
 export function InsightCard({ insight }: { insight: Insight }) {

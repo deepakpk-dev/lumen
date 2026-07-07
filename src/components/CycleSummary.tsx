@@ -51,7 +51,7 @@ export function CycleSummary({
         </p>
       </div>
       <p className="text-sm text-neutral-600 dark:text-neutral-400">{prediction.explanation}</p>
-      <p className="text-xs text-neutral-400 dark:text-neutral-500">
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
         These predictions are estimates and not medical advice. Consult a
         clinician with health concerns.
       </p>

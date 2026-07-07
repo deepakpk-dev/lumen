@@ -22,20 +22,26 @@ function Chip({
   label,
   active,
   onClick,
+  // 'neutral' shows the active state in gray instead of period-red — used for
+  // "none" flow so selecting it doesn't look like a logged bleeding value.
+  tone = 'brand',
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  tone?: 'brand' | 'neutral';
 }) {
+  const activeStyle =
+    tone === 'neutral'
+      ? 'border-neutral-600 bg-neutral-600 text-white'
+      : 'border-rose-600 bg-rose-600 text-white';
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
       className={`inline-flex min-h-[44px] items-center rounded-full border px-4 text-sm ${
-        active
-          ? 'border-rose-600 bg-rose-600 text-white'
-          : 'border-neutral-300 dark:border-neutral-700'
+        active ? activeStyle : 'border-neutral-300 dark:border-neutral-700'
       }`}
     >
       {label}
@@ -195,7 +201,13 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           <h2 className="mb-2 text-sm font-medium">Lochia (bleeding)</h2>
           <div className="flex flex-wrap gap-2">
             {FLOW_OPTIONS.map((f) => (
-              <Chip key={f} label={f} active={lochia === f} onClick={() => setLochia(f)} />
+              <Chip
+                key={f}
+                label={f}
+                active={lochia === f}
+                onClick={() => setLochia(f)}
+                tone={f === 'none' ? 'neutral' : 'brand'}
+              />
             ))}
           </div>
         </section>
@@ -204,7 +216,13 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           <h2 className="mb-2 text-sm font-medium">Flow</h2>
           <div className="flex flex-wrap gap-2">
             {FLOW_OPTIONS.map((f) => (
-              <Chip key={f} label={f} active={flow === f} onClick={() => setFlow(f)} />
+              <Chip
+                key={f}
+                label={f}
+                active={flow === f}
+                onClick={() => setFlow(f)}
+                tone={f === 'none' ? 'neutral' : 'brand'}
+              />
             ))}
           </div>
         </section>

@@ -5,7 +5,10 @@ import { parseISODate, toISODate } from '@/src/domain/dates';
 
 const MARKER_STYLE: Record<DayMarker, string> = {
   period: 'bg-rose-600 text-white',
-  'predicted-period': 'bg-rose-200 text-rose-900',
+  // Dashed outline (not a paler fill) so a forecast day is unmistakable from a
+  // logged period day — the two pinks were near-identical at a glance.
+  'predicted-period':
+    'border border-dashed border-rose-500 bg-rose-50 text-rose-700 dark:border-rose-400 dark:bg-rose-950/40 dark:text-rose-200',
   fertile: 'bg-emerald-100 text-emerald-900',
   ovulation: 'bg-emerald-500 text-white',
   none: '',
