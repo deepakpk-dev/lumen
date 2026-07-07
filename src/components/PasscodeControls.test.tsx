@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PasscodeControls } from './PasscodeControls';
-import { hasVault } from '@/src/security/vault-store';
+import { hasVault, saveVault } from '@/src/security/vault-store';
+import { createVault } from '@/src/crypto/vault';
 import { setStorageKeys, storageIsEncrypted } from '@/src/data/storage';
 import { deleteAll } from '@/src/data/repository';
 import { setPasscode, hasPasscode } from '@/src/security/passcode';
@@ -94,5 +95,13 @@ describe('PasscodeControls', () => {
 
     await waitFor(() => expect(hasPasscode()).toBe(false));
     await screen.findByRole('button', { name: /turn on encryption/i });
+  });
+
+  it('reflects a vault created elsewhere on the same page', async () => {
+    render(<PasscodeControls />);
+    await screen.findByRole('button', { name: /turn on encryption/i }); // enable form
+    const { vault } = await createVault('1234');
+    act(() => saveVault(vault)); // e.g. the Sync section's restore flow
+    await screen.findByRole('button', { name: /change passcode/i }); // now 'on'
   });
 });

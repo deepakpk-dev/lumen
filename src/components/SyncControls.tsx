@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { hasVault, saveVault } from '@/src/security/vault-store';
+import { hasVault, saveVault, VAULT_CHANGED_EVENT } from '@/src/security/vault-store';
 import { restoreVault } from '@/src/crypto/vault';
 import { encryptExistingData } from '@/src/data/repository';
 import { getStorageKeys } from '@/src/data/storage';
@@ -35,8 +35,22 @@ export function SyncControls({
   const [newCode, setNewCode] = useState('');
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the loading gate
-    setView(!hasVault() ? 'novault' : isSyncEnabled() ? 'on' : 'off');
+    // Re-derive on mount and whenever a vault is created/cleared elsewhere (the
+    // Passcode section on the same page), without stomping the transient views
+    // the user is actively in.
+    const sync = () =>
+      setView((v) =>
+        v === 'restore' || v === 'confirm-off'
+          ? v
+          : !hasVault()
+            ? 'novault'
+            : isSyncEnabled()
+              ? 'on'
+              : 'off',
+      );
+    sync();
+    window.addEventListener(VAULT_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(VAULT_CHANGED_EVENT, sync);
   }, []);
 
   async function run(action: () => Promise<void>, failMsg: string) {

@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { createVault, unlockVault, rewrapVault } from '@/src/crypto/vault';
-import { hasVault, loadVault, saveVault, clearVault } from '@/src/security/vault-store';
+import {
+  hasVault,
+  loadVault,
+  saveVault,
+  clearVault,
+  VAULT_CHANGED_EVENT,
+} from '@/src/security/vault-store';
 import { encryptExistingData, decryptExistingData } from '@/src/data/repository';
 import { isSyncEnabled } from '@/src/data/sync-engine';
 import { hasPasscode, verifyPasscode, clearPasscode } from '@/src/security/passcode';
@@ -26,8 +32,22 @@ export function PasscodeControls() {
   const [phrase, setPhrase] = useState('');
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time hydration from localStorage; SSR-safe via the loading gate
-    setView(hasVault() ? 'on' : hasPasscode() ? 'legacy' : 'off');
+    // Re-derive on mount and whenever a vault is created/cleared elsewhere (e.g.
+    // the Sync section's restore flow on the same page). Don't stomp the
+    // transient in-flow views the user is actively in.
+    const sync = () =>
+      setView((v) =>
+        v === 'phrase' || v === 'change' || v === 'confirm-off' || v === 'legacy-remove'
+          ? v
+          : hasVault()
+            ? 'on'
+            : hasPasscode()
+              ? 'legacy'
+              : 'off',
+      );
+    sync();
+    window.addEventListener(VAULT_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(VAULT_CHANGED_EVENT, sync);
   }, []);
 
   async function handleEnable(e: React.FormEvent) {

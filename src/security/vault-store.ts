@@ -18,10 +18,20 @@ export function loadVault(): WrappedVault | null {
   }
 }
 
+// Same-tab localStorage writes don't fire 'storage', so settings sections that
+// gate on hasVault() listen for this instead.
+export const VAULT_CHANGED_EVENT = 'lumen:vault-changed';
+
+function emitChanged(): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(VAULT_CHANGED_EVENT));
+}
+
 export function saveVault(vault: WrappedVault): void {
   localStorage.setItem(KEY, JSON.stringify(vault));
+  emitChanged();
 }
 
 export function clearVault(): void {
   localStorage.removeItem(KEY);
+  emitChanged();
 }

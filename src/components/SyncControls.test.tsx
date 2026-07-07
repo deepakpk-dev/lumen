@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SyncControls } from './SyncControls';
+import { saveVault } from '@/src/security/vault-store';
+import type { WrappedVault } from '@/src/crypto/vault';
 import { db } from '@/src/data/db';
 import { addCycle, deleteAll, getCycles } from '@/src/data/repository';
 import { setStorageKeys } from '@/src/data/storage';
@@ -132,5 +134,12 @@ describe('SyncControls', () => {
     expect(serverRows.size).toBe(0);
     // Local data untouched.
     expect(await getCycles()).toHaveLength(1);
+  });
+
+  it('reflects a vault created elsewhere on the same page', async () => {
+    render(<SyncControls />);
+    await screen.findByText(/sync needs encryption/i); // 'novault'
+    act(() => saveVault({} as WrappedVault)); // e.g. the Passcode section enabling
+    await screen.findByRole('button', { name: /turn on sync/i }); // now 'off'
   });
 });
