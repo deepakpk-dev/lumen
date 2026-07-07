@@ -35,8 +35,9 @@ function padBucket(n: number): number {
   return b;
 }
 
-function padded(payload: PlainRecord): Uint8Array {
-  const body = encoder.encode(JSON.stringify(payload));
+function padded(payload: PlainRecord): Uint8Array<ArrayBuffer> {
+  // Copy into an ArrayBuffer-backed view so it satisfies WebCrypto's BufferSource.
+  const body = new Uint8Array(encoder.encode(JSON.stringify(payload)));
   const target = padBucket(body.length);
   if (target === body.length) return body;
   const out = new Uint8Array(target);
