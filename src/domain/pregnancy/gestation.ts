@@ -45,8 +45,3 @@ export function trimester(weeks: number): Trimester {
 export function daysUntilDue(dueDate: ISODate, onDate: ISODate): number {
   return daysBetween(onDate, dueDate);
 }
-
-export function progressFraction(dueDate: ISODate, onDate: ISODate): number {
-  const { totalDays } = gestationalAge(dueDate, onDate);
-  return Math.min(1, Math.max(0, totalDays / GESTATION_DAYS));
-}

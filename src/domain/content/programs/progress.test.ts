@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   programsForStage,
-  isStepComplete,
   toggleStepComplete,
   computeProgramStatus,
 } from './progress';
@@ -46,13 +45,6 @@ describe('toggleStepComplete', () => {
   it('removes when done is false', () => {
     expect(toggleStepComplete(['a', 'b'], 'a', false)).toEqual(['b']);
     expect(toggleStepComplete(['b'], 'a', false)).toEqual(['b']); // no-op when absent
-  });
-});
-
-describe('isStepComplete', () => {
-  it('reflects membership', () => {
-    expect(isStepComplete(['a'], 'a')).toBe(true);
-    expect(isStepComplete(['a'], 'z')).toBe(false);
   });
 });
 

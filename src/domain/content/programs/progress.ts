@@ -11,14 +11,6 @@ export function programsForStage(
   );
 }
 
-/** True when `stepSlug` is in the completed set. */
-export function isStepComplete(
-  completedSteps: string[],
-  stepSlug: string,
-): boolean {
-  return completedSteps.includes(stepSlug);
-}
-
 /**
  * Pure toggle: returns a new completed-set with `stepSlug` added when `done`,
  * removed otherwise. Never mutates the input and never duplicates.

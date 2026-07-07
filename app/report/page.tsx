@@ -1,13 +1,17 @@
 'use client';
 
 import { BackLink } from '@/src/components/BackLink';
-import { format } from 'date-fns';
 import { useHealthData } from '@/src/state/useHealthData';
 import { parseISODate, daysBetween } from '@/src/domain/dates';
 import type { DailyLog } from '@/src/domain/types';
 
+// "7 Jul 2026" — en-GB gives day-first without a custom formatter.
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function fmt(iso: string): string {
-  return format(parseISODate(iso), 'd MMM yyyy');
+  return fmtDate(parseISODate(iso));
 }
 
 // A logged day is worth showing the clinician only if it carries a symptom,
@@ -27,7 +31,7 @@ export default function ReportPage() {
 
   const sorted = [...cycles].sort((a, b) => a.startDate.localeCompare(b.startDate));
   const rangeStart = sorted[0]?.startDate;
-  const rangeEnd = format(new Date(), 'd MMM yyyy');
+  const rangeEnd = fmtDate(new Date());
 
   // ponytail: cap the symptom log at 60 most-recent entries; a doctor-visit
   // summary spans a few months, and an unbounded table wastes paper. Raise the

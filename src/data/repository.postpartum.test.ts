@@ -4,7 +4,7 @@ import { db } from './db';
 import {
   savePostpartumProfile,
   getPostpartumProfile,
-  deletePostpartumProfile,
+  clearPostpartumProfile,
   addEpdsEntry,
   getEpdsEntries,
   deleteAll,
@@ -28,7 +28,7 @@ describe('postpartum profile repo', () => {
   it('saves, reads, and deletes the singleton', async () => {
     await savePostpartumProfile(profile);
     expect(await getPostpartumProfile()).toMatchObject({ birthDate: '2026-06-01' });
-    await deletePostpartumProfile();
+    await clearPostpartumProfile();
     expect(await getPostpartumProfile()).toBeUndefined();
   });
 });

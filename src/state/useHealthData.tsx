@@ -403,21 +403,15 @@ function useHealthDataState() {
 
   const isTtc = lifeStage === 'ttc';
 
-  const sortedCycles = useMemo(
-    () => [...cycles].sort((a, b) => a.startDate.localeCompare(b.startDate)),
-    [cycles],
-  );
-
+  // `cycles` arrives sorted by startDate (getCycles sorts).
   const confirmations: OvulationConfirmation[] = useMemo(() => {
     if (!isTtc) return [];
-    return sortedCycles
-      .map((c, i) =>
-        confirmOvulation(dailyLogs, c, sortedCycles[i + 1]?.startDate),
-      )
+    return cycles
+      .map((c, i) => confirmOvulation(dailyLogs, c, cycles[i + 1]?.startDate))
       .filter((x): x is OvulationConfirmation => x !== null);
-  }, [isTtc, sortedCycles, dailyLogs]);
+  }, [isTtc, cycles, dailyLogs]);
 
-  const currentCycle = sortedCycles.at(-1) ?? null;
+  const currentCycle = cycles.at(-1) ?? null;
   const ovulationConfirmation: OvulationConfirmation | null = useMemo(() => {
     if (!isTtc || !currentCycle) return null;
     return confirmOvulation(dailyLogs, currentCycle);
