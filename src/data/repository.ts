@@ -21,8 +21,10 @@ import {
   clearStore,
   setStorageKeys,
   storageIsEncrypted,
+  getStorageKeys,
+  setSyncTracking,
 } from './storage';
-import { clearSyncState } from './sync-engine';
+import { clearSyncState, isSyncEnabled } from './sync-engine';
 
 export async function addCycle(cycle: Cycle): Promise<void> {
   await putRecord('cycles', cycle.id, cycle);
@@ -199,6 +201,51 @@ export async function encryptExistingData(
     db.epdsEntries.clear(),
     db.programProgress.clear(),
   ]);
+}
+
+// Turn encryption OFF: copy every record out of the encrypted store into the
+// plaintext typed tables, then drop the ciphertext. Mirrors encryptExistingData
+// with the verify-before-destructive-step order inverted: the plaintext copy is
+// verified, the vault blob is removed (via `clearVaultPersisted`), and only
+// then is `records` cleared — so a failure can never leave a vault that
+// unlocks onto an empty store while the data sits in plaintext.
+// On failure it rolls back to encrypted mode AND clears the typed tables,
+// because a half-written plaintext copy is a privacy leak, not a convenience.
+export async function decryptExistingData(clearVaultPersisted: () => void): Promise<void> {
+  if (!storageIsEncrypted()) throw new Error('Encryption is already off.');
+  // Sync's outbox envelopes and credentials are rooted in the vault phrase —
+  // stripping the vault while sync runs would corrupt the outbox. UI enforces
+  // this too; the guard makes it impossible, not just hidden.
+  if (isSyncEnabled()) throw new Error('Turn off sync before turning off encryption.');
+  setSyncTracking(null);
+  const keys = getStorageKeys();
+  const encrypted = await exportAll(); // session set → reads the encrypted store
+  setStorageKeys(null);
+  try {
+    await importAll(encrypted); // session null → writes the typed tables
+    const check = await exportAll(); // reads back from typed tables
+    const before = storeCounts(encrypted);
+    const after = storeCounts(check);
+    if (before.some((n, i) => n !== after[i])) {
+      throw new Error('Turning off encryption did not complete — your data is unchanged.');
+    }
+    clearVaultPersisted();
+  } catch (err) {
+    // Roll back: wipe the partial plaintext copy, restore the session key.
+    await Promise.all([
+      db.cycles.clear(),
+      db.dailyLogs.clear(),
+      db.pregnancyProfile.clear(),
+      db.kickSessions.clear(),
+      db.contractionSessions.clear(),
+      db.postpartumProfile.clear(),
+      db.epdsEntries.clear(),
+      db.programProgress.clear(),
+    ]);
+    setStorageKeys(keys);
+    throw err;
+  }
+  await db.records.clear();
 }
 
 // Full wipe. Clears both the plaintext tables and the encrypted store outright

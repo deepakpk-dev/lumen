@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   addCycle,
   deleteAll,
+  decryptExistingData,
   encryptExistingData,
   exportAll,
   importAll,
@@ -16,9 +17,10 @@ import {
   addContractionSession,
   getContractionSessions,
 } from './repository';
-import { setStorageKeys } from './storage';
+import { setStorageKeys, storageIsEncrypted } from './storage';
 import { db } from './db';
 import { createVault } from '@/src/crypto/vault';
+import type { DerivedKeys } from '@/src/crypto/keys';
 import type { PregnancyProfile } from '@/src/domain/types';
 
 beforeEach(async () => {
@@ -102,6 +104,55 @@ describe('repository', () => {
     const empty = await exportAll();
     expect(empty.cycles).toHaveLength(0);
     expect(empty.dailyLogs).toHaveLength(0);
+  });
+});
+
+describe('decryptExistingData', () => {
+  let keys: DerivedKeys;
+  beforeEach(async () => {
+    keys = (await createVault('1234')).unlocked.keys;
+  });
+
+  it('round-trips: encrypted records land back in plaintext tables and ciphertext is gone', async () => {
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await encryptExistingData(keys, () => {});
+    expect(storageIsEncrypted()).toBe(true);
+
+    let vaultCleared = false;
+    await decryptExistingData(() => {
+      vaultCleared = true;
+    });
+
+    expect(storageIsEncrypted()).toBe(false);
+    expect(vaultCleared).toBe(true);
+    expect((await getCycles()).map((c) => c.id)).toEqual(['c1']);
+    expect(await db.records.count()).toBe(0);
+  });
+
+  it('throws if encryption is already off', async () => {
+    await expect(decryptExistingData(() => {})).rejects.toThrow(/already off/i);
+  });
+
+  it('refuses while sync is enabled', async () => {
+    await encryptExistingData(keys, () => {});
+    localStorage.setItem('lumen.sync.enabled', '1');
+    await expect(decryptExistingData(() => {})).rejects.toThrow(/sync/i);
+    expect(storageIsEncrypted()).toBe(true); // untouched
+    localStorage.removeItem('lumen.sync.enabled');
+  });
+
+  it('rolls back to encrypted mode and clears plaintext residue on failure', async () => {
+    await addCycle({ id: 'c1', startDate: '2026-01-01' });
+    await encryptExistingData(keys, () => {});
+    await expect(
+      decryptExistingData(() => {
+        throw new Error('quota');
+      }),
+    ).rejects.toThrow('quota');
+    // still encrypted, ciphertext intact, and no plaintext copy left behind
+    expect(storageIsEncrypted()).toBe(true);
+    expect((await getCycles()).map((c) => c.id)).toEqual(['c1']);
+    expect(await db.cycles.count()).toBe(0); // typed table holds no residue
   });
 });
 
