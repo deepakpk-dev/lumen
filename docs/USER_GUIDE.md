@@ -380,6 +380,16 @@ flowchart TD
 - **Ovulation status** — confirms ovulation once your logged signals (temperature shift, a positive LH test, egg‑white mucus) line up. Confirmed ovulation also **sharpens your period prediction**.
 - **Conception guidance** — a simple read on today's chances.
 
+### Import temperatures from a CSV
+
+Under the BBT chart on the **Fertility** screen, you can bulk‑import temperatures instead of typing each day:
+
+1. Export a CSV from your thermometer app or spreadsheet. Lumen needs **one row per reading, with a date and a temperature** — extra columns are ignored.
+2. Dates can be `YYYY-MM-DD` or `M/D/YYYY`; temperatures can be °C or °F (Lumen converts °F automatically).
+3. Tap **Import temperatures from a CSV** and pick the file. Lumen reports how many it imported, how many days it skipped because you'd already logged a temperature (**your typed‑in value always wins**), and how many lines it couldn't read.
+
+> Note: exports that only contain a **relative "temperature deviation"** (e.g. some wearable summaries) can't be imported — Lumen needs absolute temperatures to place the ovulation shift.
+
 > 💡 After several cycles of tracking, Lumen may gently suggest talking to a healthcare provider — this is common and supportive, not a warning.
 
 > ⚠️ **Lumen is not a contraceptive** and is not a substitute for fertility treatment or medical advice.
