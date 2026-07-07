@@ -3,7 +3,7 @@
 **Audience:** anyone deciding what Lumen builds next — product, strategy, or an engineer weighing priorities.
 **Purpose:** benchmark Lumen against the reproductive-health app market as of **July 2026**, identify the real gaps, and translate them into a ranked set of actions. Read the [README](../README.md) for product framing and the [Engineering doc](./ENGINEERING.md) for how the current capabilities are actually built.
 
-> **A note on honesty.** This document is deliberately candid about where Lumen trails. Every ✅/⚠️/❌ for Lumen is cross-checked against the shipped code (routes in `app/`, domain in `src/domain/`, crypto in `src/crypto/`), not the marketing. Where a capability is designed but not live, it is marked *planned* or *dormant*, never ✅.
+> **A note on honesty.** This document is deliberately candid about where Lumen trails. Every ✅/⚠️/❌ for Lumen is cross-checked against the shipped code (routes in `app/`, domain in `src/domain/`, crypto in `src/crypto/`), not the marketing. Where a capability is designed but not live, it is marked *planned*, never ✅.
 
 ---
 
@@ -13,7 +13,7 @@ The period/fertility app market is a barbell. At one end sit **surveillance-clou
 
 **Lumen occupies the empty space between them.** It is the only entrant that combines (a) local-first, no-account-by-default privacy, (b) *full reproductive life-cycle* coverage — cycle → TTC → pregnancy → postpartum with clinical PPD screening — (c) deterministic, explainable predictions with no ML/LLM, and (d) an **opt-in, end-to-end-encrypted, zero-knowledge sync** that closes the #1 weakness of every other privacy-first app: it gives you backup and multi-device continuity *without* handing your data to anyone.
 
-That combination is genuinely differentiated. The catch is delivery: Lumen is a **web PWA**, sync is **code-complete but dormant** (no production database provisioned), and it lacks three things the market now treats as table stakes — a native mobile app, wearable/temperature import, and a menopause mode. The strategic story is therefore not "find a wedge" — the wedge exists and is defensible — it is **"finish shipping the wedge before the incumbents' privacy theater catches up."**
+That combination is genuinely differentiated. The catch is delivery: Lumen is a **web PWA** (sync is now **live in production**), and it lacks three things the market now treats as table stakes — a native mobile app, wearable/temperature import, and a menopause mode. The strategic story is therefore not "find a wedge" — the wedge exists and is defensible — it is **"finish shipping the wedge before the incumbents' privacy theater catches up."**
 
 ---
 
@@ -48,14 +48,14 @@ Two axes separate this market: **privacy posture** (does your data leave the dev
 
 ## 3. Feature comparison matrix
 
-Legend: ✅ shipped / strong · ⚠️ partial, paywalled, or caveated · ❌ absent · 🔵 planned/roadmap · 💤 built but not live
+Legend: ✅ shipped / strong · ⚠️ partial, paywalled, or caveated · ❌ absent · 🔵 planned/roadmap
 
 | Capability | **Lumen** | Flo | Clue | Natural Cycles | Apple Cycle Tr. | Euki | Drip |
 |---|---|---|---|---|---|---|---|
 | Local-first, data stays on device by default | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
 | Usable with **no account** | ✅ | ❌ | ⚠️ | ❌ | ✅ | ✅ | ✅ |
 | E2E / zero-knowledge design | ✅ (opt-in) | ⚠️ (Anon Mode, paid) | ❌ | ❌ | ⚠️ (on-device) | ✅ (local) | ✅ (local) |
-| **Cross-device sync + backup** | ✅ 💤 (dormant) | ✅ | ✅ | ✅ | ✅ (iCloud) | ❌ | ❌ |
+| **Cross-device sync + backup** | ✅ | ✅ | ✅ | ✅ | ✅ (iCloud) | ❌ | ❌ |
 | Cycle prediction | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ⚠️ |
 | Prediction **confidence + explanation** | ✅ | ⚠️ | ⚠️ | ⚠️ | ❌ | ❌ | ❌ |
 | Deterministic / no black-box ML | ✅ | ❌ | ❌ | ⚠️ | ❌ | n/a | ⚠️ |
@@ -112,7 +112,7 @@ Legend: ✅ shipped / strong · ⚠️ partial, paywalled, or caveated · ❌ ab
 
 ### 5.1 Table-stakes gaps — must close
 1. **No native mobile app (web PWA only).** This is the ceiling on everything: discoverability (no App Store presence), retention (PWA install friction), notifications reliability, *and* the privacy story (see 5.3). Every serious competitor — including the local-only ones — ships native.
-2. **Sync is dormant.** The zero-knowledge sync engine is code-complete but has no production database; with no `DATABASE_URL`, `/api/sync/*` is simply unused. The single biggest differentiator vs. Euki/Drip **is currently invisible to users.**
+2. ~~**Sync is dormant.**~~ **Closed (July 2026).** Neon Postgres is provisioned and the zero-knowledge sync engine is live in production, verified end-to-end by `scripts/sync-smoke.mjs`.
 3. **No wearable / temperature import.** Apple, NC, Clue, and Flo all consume wrist/finger temperature. Lumen has the BBT engine but no HealthKit/Oura ingestion — a credibility gap for TTC users.
 4. **No menopause / perimenopause mode (Phase 5b).** Both Flo and Clue shipped this in 2026; it is now table stakes for a "whole life cycle" claim, and it's the one life stage Lumen advertises coverage of the arc but doesn't yet serve.
 
@@ -172,7 +172,7 @@ Ranked by leverage. Each closes a specific gap above and aligns with the standin
 
 | # | Action | Closes gap | Why it's ranked here |
 |---|---|---|---|
-| **1** | **Ship sync to production** — provision Neon + set `DATABASE_URL` | 5.1(2) | Lowest effort, highest leverage. The single biggest differentiator no privacy peer has is built and just needs turning on. Until then, the moat is invisible. |
+| **1** | ✅ **Done (July 2026)** — **Ship sync to production**: Neon provisioned, `DATABASE_URL` set, smoke-tested live | 5.1(2) | Lowest effort, highest leverage. The single biggest differentiator no privacy peer has is built — and is now on. |
 | **2** | **Native wrapper (Capacitor or Tauri)** | 5.1(1) + 5.3 | One move closes *two* gaps: the web-only ceiling (distribution, notifications, App Store trust) **and** the honest-E2E trust-boundary caveat. Highest strategic value after sync. |
 | **3** | **Wearable / temperature import (Apple Health + Oura)** | 5.1(3) | Makes the existing BBT/TTC engine credible against Natural Cycles and Apple with no regulatory exposure. Meets users where the effort bar now is. |
 | **4** | **Perimenopause / menopause mode (Phase 5b)** | 5.1(4) | Now table stakes for the "whole life cycle" claim after Flo and Clue shipped it. Completes the arc Lumen already advertises. |
