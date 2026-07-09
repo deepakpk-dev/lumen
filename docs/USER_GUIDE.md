@@ -509,7 +509,7 @@ flowchart TD
 
 Every result carries the same reminder: **this is a screening tool, not a diagnosis — please share it with your healthcare provider.**
 
-> 🆘 If your score is high **or** you give any answer above zero to the question about thoughts of harming yourself, Lumen shows a prominent **"Support is available"** block: contact your provider, call a crisis or mental‑health line in your area, and contact emergency services if you're in immediate danger. The guidance is region‑agnostic (it names the *kind* of help, not a specific number, so it's never out‑of‑date or wrong‑country).
+> 🆘 If your score is high **or** you give any answer above zero to the question about thoughts of harming yourself, Lumen shows a prominent **"Support is available"** block: contact your provider, and contact emergency services if you're in immediate danger. It also lists **crisis helplines for your region** — Lumen guesses your country from your device's language setting (never your location), you can switch it with the dropdown, and if your country isn't listed there's a link to [findahelpline.com](https://findahelpline.com) to find one.
 
 Your past check‑ins are saved and listed under *Settings → Postpartum*.
 

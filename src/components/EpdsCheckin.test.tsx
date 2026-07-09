@@ -149,6 +149,26 @@ describe('EpdsCheckin', () => {
     expect(screen.getAllByRole('group')).toHaveLength(10);
   });
 
+  it('shows region-aware helplines in the crisis block and updates on region change', async () => {
+    render(<EpdsCheckin />);
+    answerAllBestExcept(9, 3);
+    fireEvent.click(screen.getByRole('button', { name: /see my result/i }));
+    await screen.findByText(/support is available/i);
+
+    // jsdom's navigator.language is en-US → US helplines by default
+    expect(screen.getByText(/suicide & crisis lifeline/i)).toBeInTheDocument();
+
+    // Switching region swaps the helplines
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'IN' } });
+    expect(screen.getByText(/tele-manas/i)).toBeInTheDocument();
+    expect(screen.queryByText(/suicide & crisis lifeline/i)).not.toBeInTheDocument();
+
+    // "Other / not listed" falls back to the helpline directory link
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } });
+    const link = screen.getByRole('link', { name: /findahelpline\.com/i });
+    expect(link).toHaveAttribute('href', 'https://findahelpline.com');
+  });
+
   it('shows an error message and no result when saveEpdsCheckin rejects', async () => {
     saveEpdsCheckin.mockRejectedValueOnce(new Error('network error'));
     render(<EpdsCheckin />);

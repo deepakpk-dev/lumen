@@ -125,7 +125,7 @@ Legend: ✅ shipped / strong · ⚠️ partial, paywalled, or caveated · ❌ ab
 ### 5.4 Known deliberate limitations (from the code)
 - Preferences sync as one whole-snapshot last-write-wins record → concurrent edits on two devices can silently lose one side (`src/data/sync-engine.ts`).
 - The restore flow is built for the empty-new-device case; data that existed on a device before a restore stays local-only until re-saved.
-- EPDS crisis guidance is region-agnostic — no localized helpline numbers, which matters as soon as there are non-US users.
+- ~~EPDS crisis guidance is region-agnostic~~ **Closed (July 2026).** The crisis block now shows curated national helplines (region from device locale, user-overridable) with a findahelpline.com fallback (`src/domain/postpartum/crisis-resources.ts`).
 
 These are acceptable for today's scope but should be tracked before sync goes wide.
 

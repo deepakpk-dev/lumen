@@ -319,7 +319,7 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 - ⬜ **Phase 6 — AI health assistant** (RAG over a vetted corpus, strict guardrails).
 - ⬜ **Phase 7 — Community ("Circles")**, anonymous + moderated.
 - ⬜ **Phase 8 — Native mobile** + TTC partner sharing (reusing the API + prediction core).
-- Possible **v1.x**: region-aware crisis resources.
+- ✅ **v1.x — Region-aware crisis resources**: curated national helplines in the EPDS crisis block, selected from the device locale (never geolocation) with a manual override and a directory fallback.
 
 ---
 
@@ -328,7 +328,7 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 These are shipped *knowingly* and documented so reviewers don't mistake them for oversights:
 
 - **No analytics or error monitoring in production.** This is the price of the zero-tracking guarantee — there is intentionally no production error visibility. Revisit only with a privacy-preserving approach.
-- **EPDS crisis guidance is region-agnostic.** No hardcoded helpline numbers or "find help in your country" link yet; revisit when localizing.
+- **EPDS crisis helplines are a curated shortlist, not exhaustive.** Well-established national lines for a handful of regions (region from device locale, user-overridable), with [findahelpline.com](https://findahelpline.com) as the fallback everywhere else. Numbers live in `src/domain/postpartum/crisis-resources.ts` and need periodic review.
 - **The local DB is only encrypted with a passcode.** Without a passcode, the on-device store is plaintext IndexedDB (the app-lock and at-rest encryption are the same opt-in). The Settings copy states this plainly.
 - **Sync uses whole-snapshot LWW for preferences** — two devices editing different preferences within the same window can lose one side. Split into per-preference records if it ever bites.
 - **Data that existed on a device *before* a fresh-device restore stays local-only** until re-saved; the restore flow is built for the empty-new-device case. See the `ponytail:` notes in `src/data/sync-engine.ts`.

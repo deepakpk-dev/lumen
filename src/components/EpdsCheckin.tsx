@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import { EPDS_QUESTIONS, EPDS_SOURCE, scoreEpds, type EpdsResult } from '@/src/domain/postpartum/epds';
+import {
+  CRISIS_RESOURCES,
+  HELPLINE_DIRECTORY_URL,
+  detectRegion,
+  resourcesForRegion,
+} from '@/src/domain/postpartum/crisis-resources';
 import { useHealthData } from '@/src/state/useHealthData';
 
 export function EpdsCheckin() {
@@ -9,8 +15,13 @@ export function EpdsCheckin() {
   const [answers, setAnswers] = useState<(number | null)[]>(Array(10).fill(null));
   const [result, setResult] = useState<EpdsResult | null>(null);
   const [saveError, setSaveError] = useState(false);
+  // Region from the device locale only — never geolocation or a network call.
+  const [region, setRegion] = useState(() =>
+    detectRegion(typeof navigator === 'undefined' ? '' : navigator.language),
+  );
 
   const complete = answers.every((a) => a !== null);
+  const regionResources = resourcesForRegion(region);
 
   function choose(qi: number, value: number) {
     setAnswers((prev) => {
@@ -56,9 +67,48 @@ export function EpdsCheckin() {
             </p>
             <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
               <li>Contact your healthcare provider as soon as you can.</li>
-              <li>Call a crisis or mental-health support line in your area.</li>
               <li>If you are in immediate danger, contact your local emergency services.</li>
             </ul>
+
+            <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+              Helplines for
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+              >
+                {CRISIS_RESOURCES.map((r) => (
+                  <option key={r.region} value={r.region}>
+                    {r.country}
+                  </option>
+                ))}
+                <option value="">Other / not listed</option>
+              </select>
+            </label>
+
+            {regionResources ? (
+              <ul className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
+                {regionResources.lines.map((line) => (
+                  <li key={line.name}>
+                    <span className="font-medium">{line.name}</span> — {line.contact}
+                    {line.note ? ` (${line.note})` : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                Find a helpline in your country at{' '}
+                <a
+                  href={HELPLINE_DIRECTORY_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium underline"
+                >
+                  findahelpline.com
+                </a>
+                .
+              </p>
+            )}
           </section>
         )}
 
