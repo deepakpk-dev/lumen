@@ -26,6 +26,10 @@ import { pregnancyFetalMovement } from './articles/pregnancy-fetal-movement';
 import { postpartumRecoveryBasics } from './articles/postpartum-recovery-basics';
 import { postpartumMentalHealth } from './articles/postpartum-mental-health';
 import { postpartumCycleReturn } from './articles/postpartum-cycle-return';
+// Perimenopause
+import { perimenopauseWhatChanges } from './articles/perimenopause-what-changes';
+import { hotFlashesNightSweats } from './articles/hot-flashes-night-sweats';
+import { perimenopauseWhenToSeeADoctor } from './articles/perimenopause-when-to-see-a-doctor';
 
 export const ARTICLES: ContentArticle[] = [
   howTrackingWorks,
@@ -54,6 +58,10 @@ export const ARTICLES: ContentArticle[] = [
   postpartumRecoveryBasics,
   postpartumMentalHealth,
   postpartumCycleReturn,
+  // Perimenopause
+  perimenopauseWhatChanges,
+  hotFlashesNightSweats,
+  perimenopauseWhenToSeeADoctor,
 ];
 
 export function findArticle(slug: string): ContentArticle | undefined {
