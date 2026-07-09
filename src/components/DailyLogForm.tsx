@@ -12,6 +12,8 @@ import {
   PREGNANCY_SYMPTOM_OPTIONS,
   POSTPARTUM_SYMPTOM_OPTIONS,
   POSTPARTUM_MOOD_OPTIONS,
+  MENOPAUSE_SYMPTOM_OPTIONS,
+  MENOPAUSE_MOOD_OPTIONS,
   MUCUS_OPTIONS,
   LH_OPTIONS,
 } from '@/src/domain/log-options';
@@ -76,13 +78,21 @@ export function DailyLogForm({ date }: { date: ISODate }) {
 
   const isPostpartum = lifeStage === 'postpartum';
 
+  const isMenopause = lifeStage === 'menopause';
+
   const symptomChoices = isPregnant
     ? Array.from(new Set([...SYMPTOM_OPTIONS, ...PREGNANCY_SYMPTOM_OPTIONS]))
     : isPostpartum
       ? POSTPARTUM_SYMPTOM_OPTIONS
-      : SYMPTOM_OPTIONS;
+      : isMenopause
+        ? MENOPAUSE_SYMPTOM_OPTIONS
+        : SYMPTOM_OPTIONS;
 
-  const moodChoices = isPostpartum ? POSTPARTUM_MOOD_OPTIONS : MOOD_OPTIONS;
+  const moodChoices = isPostpartum
+    ? POSTPARTUM_MOOD_OPTIONS
+    : isMenopause
+      ? MENOPAUSE_MOOD_OPTIONS
+      : MOOD_OPTIONS;
 
   const [flow, setFlow] = useState<FlowIntensity>('none');
   const [lochia, setLochia] = useState<FlowIntensity>('none');

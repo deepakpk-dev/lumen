@@ -67,6 +67,29 @@ export const POSTPARTUM_SYMPTOM_OPTIONS: string[] = [
   'Hair loss',
 ];
 
+export const MENOPAUSE_SYMPTOM_OPTIONS: string[] = [
+  'Hot flashes',
+  'Night sweats',
+  'Sleep problems',
+  'Brain fog',
+  'Headache',
+  'Joint aches',
+  'Vaginal dryness',
+  'Heart palpitations',
+  'Fatigue',
+  'Bloating',
+];
+
+export const MENOPAUSE_MOOD_OPTIONS: string[] = [
+  'Happy',
+  'Calm',
+  'Anxious',
+  'Irritable',
+  'Low mood',
+  'Mood swings',
+  'Energetic',
+];
+
 export const POSTPARTUM_MOOD_OPTIONS: string[] = [
   'Happy',
   'Calm',
