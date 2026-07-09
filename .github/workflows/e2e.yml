@@ -13,6 +13,12 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Serve the prod build over http://localhost for testing. Drops the CSP
+    # upgrade-insecure-requests directive (next.config.ts) so WebKit doesn't
+    # upgrade every /_next asset to https and fail; real https deploys keep it.
+    # Set job-wide because Next bakes headers() at build time, not just at start.
+    env:
+      E2E_HTTP: "1"
     steps:
       - uses: actions/checkout@v4
 

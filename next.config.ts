@@ -15,6 +15,11 @@ import type { NextConfig } from "next";
 // ponytail: switch to a nonce CSP (proxy.ts) only if a native/dynamic build
 // removes the static-rendering constraint — then drop 'unsafe-inline'.
 const isDev = process.env.NODE_ENV === "development";
+// The e2e suite serves the *production* build over http://localhost (see
+// e2e.yml / PW_WEB_COMMAND). That's still http, so upgrade-insecure-requests
+// would brick WebKit exactly as it does in dev. This flag drops the directive
+// for that http test path only — real https deploys never set it.
+const httpTest = process.env.E2E_HTTP === "1";
 
 const csp = [
   "default-src 'self'",
@@ -29,10 +34,11 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'", // clickjacking: nothing may frame the unlock UI
-  // Prod is https, so upgrade any stray http subresource. Skipped in dev: the
-  // dev server is http://localhost and WebKit honors this directive even there,
-  // upgrading every /_next asset to https → SSL failures → blank page.
-  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+  // Prod is https, so upgrade any stray http subresource. Skipped on the http
+  // test paths (dev server + E2E_HTTP prod build): WebKit honors this directive
+  // even on http://localhost, upgrading every /_next asset to https → SSL
+  // failures → blank page.
+  ...(isDev || httpTest ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const securityHeaders = [
