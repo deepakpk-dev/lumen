@@ -54,7 +54,7 @@ Request/response contracts (verified against the route sources):
 | `POST /api/sync/pull` | same | `{ since: number }` | `{ records: [...], since, more }` |
 | `POST /api/sync/delete-account` | same | `{}` | `{ ok: true }` |
 
-- [ ] **Step 1: Write the script**
+- [x] **Step 1: Write the script**
 
 ```js
 #!/usr/bin/env node
@@ -122,7 +122,7 @@ try {
 }
 ```
 
-- [ ] **Step 2: Verify the failure path first** (before the DB exists, or against a bogus origin):
+- [x] **Step 2: Verify the failure path first** (before the DB exists, or against a bogus origin):
 
 Run: `node scripts/sync-smoke.mjs https://example.invalid`
 Expected: `SMOKE FAILED: ...`, exit code 1 (check with `echo $LASTEXITCODE` / `echo $?`).
@@ -132,7 +132,7 @@ Expected: `SMOKE FAILED: ...`, exit code 1 (check with `echo $LASTEXITCODE` / `e
 Run: `node scripts/sync-smoke.mjs https://<production-domain>`
 Expected: four `OK` lines and `Sync is LIVE`. **Known wrinkle:** the very first request after deploy creates the schema (`sync-db.ts` runs `SCHEMA_SQL` lazily) and hits a Neon cold start — if `register` times out once, just re-run; a second consecutive failure is a real failure.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/sync-smoke.mjs
@@ -154,8 +154,8 @@ git commit -m "feat(sync): add production smoke test for sync go-live"
 - Modify: `README.md` (search for any "dormant"/"not live"/"needs DATABASE_URL" wording and update)
 - Modify: `docs/USER_GUIDE.md` (same check)
 
-- [ ] **Step 1:** Grep for stale claims: `dormant`, `DATABASE_URL`, `not live`, `500` across `README.md docs/*.md`. Update each to reflect live sync. Do NOT touch the "Trust boundary" honesty section in the README — the web-delivery caveat is still true.
-- [ ] **Step 2: Commit**
+- [x] **Step 1:** Grep for stale claims: `dormant`, `DATABASE_URL`, `not live`, `500` across `README.md docs/*.md`. Update each to reflect live sync. Do NOT touch the "Trust boundary" honesty section in the README — the web-delivery caveat is still true.
+- [x] **Step 2: Commit**
 
 ```bash
 git add README.md docs
