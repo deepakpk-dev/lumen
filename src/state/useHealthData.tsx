@@ -160,6 +160,15 @@ function useHealthDataState() {
     [refreshSettings],
   );
 
+  // Same live-context reason as setTtcMode: flip the stage and rehydrate.
+  const setMenopauseMode = useCallback(
+    (on: boolean) => {
+      setLifeStage(on ? 'menopause' : 'cycle', todayISO());
+      refreshSettings();
+    },
+    [refreshSettings],
+  );
+
   const setBbtUnitPreference = useCallback(
     (u: BbtUnit) => {
       setBbtUnitPref(u);
@@ -537,6 +546,7 @@ function useHealthDataState() {
     conceptionToday,
     refreshSettings,
     setTtcMode,
+    setMenopauseMode,
     setBbtUnitPreference,
     pregnancyProfile,
     isPregnant,

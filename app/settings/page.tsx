@@ -11,6 +11,7 @@ import { PostpartumControls } from '@/src/components/PostpartumControls';
 import { SyncControls } from '@/src/components/SyncControls';
 import { PregnancyControls } from '@/src/components/PregnancyControls';
 import { TtcControls } from '@/src/components/TtcControls';
+import { MenopauseControls } from '@/src/components/MenopauseControls';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -68,6 +69,17 @@ export default function SettingsPage() {
             fertility treatment or medical advice.
           </p>
           <TtcControls onEnabled={() => router.push('/')} />
+        </section>
+      )}
+      {!inJourney && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Perimenopause</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Track the transition: irregular cycles are expected here, so Lumen reframes
+            predictions instead of alarming you, and adds symptoms like hot flashes and sleep
+            changes. Pregnancy is still possible until you&apos;ve gone 12 months without a period.
+          </p>
+          <MenopauseControls onEnabled={() => router.push('/')} />
         </section>
       )}
       {!isPostpartum && (
