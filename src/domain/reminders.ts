@@ -26,7 +26,8 @@ export function dueReminders(input: {
   prefs: ReminderPrefs;
 }): Reminder[] {
   const { prediction, dailyLogs, lifeStage, today, prefs } = input;
-  const cycleTracking = lifeStage === 'cycle' || lifeStage === 'ttc';
+  const cycleTracking =
+    lifeStage === 'cycle' || lifeStage === 'ttc' || lifeStage === 'menopause';
   const reminders: Reminder[] = [];
 
   if (prefs.periodReminder && cycleTracking && prediction) {
@@ -44,7 +45,9 @@ export function dueReminders(input: {
     }
   }
 
-  if (prefs.fertileReminder && cycleTracking && prediction) {
+  // No fertile-window nudge in perimenopause: ovulation prediction is
+  // unreliable there and the nudge could be misread as contraceptive guidance.
+  if (prefs.fertileReminder && cycleTracking && lifeStage !== 'menopause' && prediction) {
     const { start, end } = prediction.fertileWindow;
     if (today >= start && today <= end) {
       const onOvulation = today === prediction.ovulationDate;

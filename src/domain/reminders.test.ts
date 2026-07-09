@@ -40,6 +40,24 @@ describe('dueReminders', () => {
     );
   });
 
+  it('never fires the fertile reminder in the menopause stage but keeps period and log reminders', () => {
+    // Same inputs, cycle stage: fertile reminder fires.
+    const cycleKinds = dueReminders({ ...base, today: '2026-06-21' }).map((r) => r.kind);
+    expect(cycleKinds).toContain('fertile-window');
+
+    const peri = { ...base, lifeStage: 'menopause' as const };
+    const periKinds = dueReminders({ ...peri, today: '2026-06-21' }).map((r) => r.kind);
+    expect(periKinds).not.toContain('fertile-window');
+
+    // Period and log reminders still work in menopause.
+    expect(dueReminders({ ...peri, today: '2026-07-06' }).map((r) => r.kind)).toContain(
+      'period-soon',
+    );
+    expect(dueReminders({ ...peri, today: '2026-07-01' }).map((r) => r.kind)).toContain(
+      'log-today',
+    );
+  });
+
   it('reminds to log when nothing is logged today, and stops once logged', () => {
     const today = '2026-07-01';
     expect(dueReminders({ ...base, today }).map((r) => r.kind)).toContain('log-today');

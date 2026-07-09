@@ -17,7 +17,7 @@ const MONTH_LABEL = new Intl.DateTimeFormat(undefined, {
 });
 
 export default function CalendarPage() {
-  const { cycles, prediction, loading } = useHealthData();
+  const { cycles, prediction, loading, lifeStage } = useHealthData();
   const today = todayISO();
   const [month, setMonth] = useState(() => today);
 
@@ -51,6 +51,7 @@ export default function CalendarPage() {
         prediction={prediction}
         month={month}
         today={today}
+        showFertile={lifeStage !== 'menopause'}
       />
       {month.slice(0, 7) !== today.slice(0, 7) && (
         <button

@@ -29,11 +29,15 @@ export function CycleCalendar({
   prediction,
   month,
   today,
+  showFertile = true,
 }: {
   cycles: Cycle[];
   prediction: Prediction | null;
   month: ISODate; // any date within the month to render
   today?: ISODate; // highlighted as the current day, if within this month
+  // Off in perimenopause: erratic ovulation makes fertile/ovulation markers
+  // imply a precision Lumen doesn't have there.
+  showFertile?: boolean;
 }) {
   const first = parseISODate(month);
   const year = first.getFullYear();
@@ -59,7 +63,9 @@ export function CycleCalendar({
       <div className="mt-1 grid grid-cols-7 gap-1">
         {cells.map((date, i) => {
           if (!date) return <div key={i} />;
-          const marker = getDayMarker(date, cycles, prediction);
+          const raw = getDayMarker(date, cycles, prediction);
+          const marker =
+            !showFertile && (raw === 'fertile' || raw === 'ovulation') ? 'none' : raw;
           const day = Number(date.slice(-2));
           const isToday = date === today;
           const parts = [date];
@@ -100,7 +106,7 @@ export function CycleCalendar({
         })}
       </div>
       <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-600 dark:text-neutral-300">
-        {LEGEND.map((marker) => (
+        {LEGEND.filter((m) => showFertile || (m !== 'fertile' && m !== 'ovulation')).map((marker) => (
           <li key={marker} className="flex items-center gap-1.5">
             <span
               aria-hidden

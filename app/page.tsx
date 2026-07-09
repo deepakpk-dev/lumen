@@ -75,6 +75,11 @@ export default function HomePage() {
           today={today}
         />
       )}
+      {lifeStage === 'menopause' && (
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          Cycles often become irregular in perimenopause — predictions carry extra uncertainty.
+        </p>
+      )}
       <ReminderBanner />
       {/* Cycle insight + daily reads are cycle-stage content; hide them while
           pregnancy mode is the active context to avoid surfacing period/PMS
