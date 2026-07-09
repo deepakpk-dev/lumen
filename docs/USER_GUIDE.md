@@ -36,7 +36,7 @@
 
 | Step | What you do | Where |
 |:----:|-------------|-------|
-| 1️⃣ | Open Lumen, tap **Continue**, then pick a goal — **Track my cycle**, **Trying to conceive**, or **I'm pregnant**. | Welcome screen |
+| 1️⃣ | Open Lumen, tap **Continue**, then pick a goal — **Track my cycle**, **Trying to conceive**, **I'm pregnant**, or **Navigating perimenopause**. | Welcome screen |
 | 2️⃣ | Enter the date your **last period started** (or your **due date** if pregnant), then tap **Get started**. | Setup screen |
 | 3️⃣ | Each day, tap **Log today** and record your flow, symptoms, and mood. | Home → Log |
 | 4️⃣ | After a cycle or two, check **Calendar**, **Insights**, and **History** for predictions. | Home |
@@ -71,7 +71,7 @@ flowchart TD
     style M fill:#fff,stroke:#e11d48
 ```
 
-Lumen works in **four modes**. You're always in one of them. You choose most modes in **Settings** (or at onboarding), while **Postpartum** is entered automatically after a birth:
+Lumen works in **five modes**. You're always in one of them. You choose most modes in **Settings** (or at onboarding), while **Postpartum** is entered automatically after a birth:
 
 | Mode | For | Turn it on in |
 |------|-----|---------------|
@@ -79,6 +79,7 @@ Lumen works in **four modes**. You're always in one of them. You choose most mod
 | 🌱 **TTC** (trying to conceive) | Pinpointing your fertile window with BBT, LH tests & mucus | Onboarding, or Settings → *Trying to conceive* |
 | 🤰 **Pregnancy** | Week‑by‑week pregnancy, kick counts & contractions | Onboarding, or Settings → *Pregnancy* |
 | 🤱 **Postpartum** | Recovery + mental‑health support after birth | Automatic when you confirm **Baby arrived** |
+| 🌗 **Perimenopause** | Irregular cycles, hot flashes & night sweats in the transition years | Onboarding, or Settings → *Perimenopause* |
 
 ---
 
@@ -97,6 +98,8 @@ The very first time you open Lumen, you'll see a **Welcome** screen explaining t
 │  │ 🌱 Trying to conceive            ││  ← fertile window, BBT, ovulation
 │  ├──────────────────────────────────┤│
 │  │ 💗 I'm pregnant                  ││  ← week-by-week, kicks, contractions
+│  ├──────────────────────────────────┤│
+│  │ 🌗 Navigating perimenopause      ││  ← irregular cycles, hot flashes
 │  └──────────────────────────────────┘│
 │                                      │
 │  When did your last period start?    │

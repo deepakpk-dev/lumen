@@ -134,7 +134,7 @@ Lumen is layered so the logic that matters most — the prediction, fertility, p
 ┌────────────────────────────────────────────────────────────┐
 │  UI   app/* routes + src/components/*                        │  Next.js App Router, React 19, Tailwind v4
 ├────────────────────────────────────────────────────────────┤
-│  State   src/state/useHealthData.ts                          │  one hook: store ↔ domain, memoized derived state
+│  State   src/state/useHealthData.tsx                         │  one hook: store ↔ domain, memoized derived state
 ├────────────────────────────────────────────────────────────┤
 │  Domain   src/domain/* — PURE TS, the core IP                │
 │    prediction.ts   cycle-stats.ts   calendar.ts   reminders   │
