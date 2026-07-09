@@ -61,6 +61,7 @@ Lumen follows a person across every stage of reproductive life, switching modes 
 | **Fertility / TTC** | Opt-in trying-to-conceive mode: BBT, LH, cervical mucus, ovulation confirmation, BBT chart | ✅ Phase 3 |
 | **Pregnancy** | Week-by-week, kick counter, contraction timer (5-1-1), compassionate birth/loss exit | ✅ Phase 4 |
 | **Postpartum** | Mother-focused recovery tracking + EPDS mental-health screening with crisis support | ✅ Phase 5 |
+| **Perimenopause** | Transition-years mode: stage-fit symptom logging (hot flashes, night sweats), softened predictions, fertile-window suppression, cited guidance | ✅ Phase 5b |
 | **Encryption & sync** | Passcode-encrypted local vault + opt-in, end-to-end-encrypted, zero-knowledge cross-device sync | ✅ Phase 3 (sync) |
 
 ### Cross-cutting (all stages)
@@ -315,7 +316,7 @@ Built phase by phase; each phase has a design spec and implementation plan in [`
 - ✅ **Phase 3 (sync) — E2E-encrypted sync**: passcode-encrypted vault, blind Postgres server, client sync engine (outbox, tombstones, LWW), settings UI, zero-knowledge CI check. *Live in production (Neon Postgres).*
 - ✅ **Phase 4 — Pregnancy**: week-by-week, kick counter, contraction timer, compassionate loss flow.
 - ✅ **Phase 5 — Postpartum**: recovery tracking + EPDS mental-health screening.
-- ⬜ **Phase 5b — Perimenopause & menopause** (a life-stage value today, benefits from irregular-cycle handling, but no dedicated mode UI yet).
+- ✅ **Phase 5b — Perimenopause**: stage toggle + onboarding goal, vasomotor symptom logging, softened predictions with fertile-window suppression, and a cited content program.
 - ⬜ **Phase 6 — AI health assistant** (RAG over a vetted corpus, strict guardrails).
 - ⬜ **Phase 7 — Community ("Circles")**, anonymous + moderated.
 - ⬜ **Phase 8 — Native mobile** + TTC partner sharing (reusing the API + prediction core).

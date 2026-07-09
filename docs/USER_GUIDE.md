@@ -22,12 +22,13 @@
 12. [Trying‑to‑conceive (TTC) mode](#trying-to-conceive-ttc-mode)
 13. [Pregnancy mode](#pregnancy-mode)
 14. [Postpartum mode](#postpartum-mode)
-15. [Doctor summary (print / PDF)](#doctor-summary-print--pdf)
-16. [Privacy, encryption & your data](#privacy-encryption--your-data)
-17. [Moving to a new phone](#moving-to-a-new-phone)
-18. [Install Lumen as an app](#install-lumen-as-an-app)
-19. [Troubleshooting & FAQ](#troubleshooting--faq)
-20. [Important: medical disclaimer](#important-medical-disclaimer)
+15. [Perimenopause mode](#perimenopause-mode)
+16. [Doctor summary (print / PDF)](#doctor-summary-print--pdf)
+17. [Privacy, encryption & your data](#privacy-encryption--your-data)
+18. [Moving to a new phone](#moving-to-a-new-phone)
+19. [Install Lumen as an app](#install-lumen-as-an-app)
+20. [Troubleshooting & FAQ](#troubleshooting--faq)
+21. [Important: medical disclaimer](#important-medical-disclaimer)
 
 ---
 
@@ -537,6 +538,26 @@ Under **Settings → Postpartum** you can:
   - **Start trying to conceive** (TTC mode)
 
 Exit is entirely **your choice** — Lumen never predicts when your cycle will return and never nags you to move on.
+
+---
+
+## Perimenopause mode
+
+Turn this on for the transition years before menopause, when cycles naturally become irregular.
+
+### Turn it on
+
+1. Go to **Settings → Perimenopause** (or pick **Navigating perimenopause** at onboarding).
+2. Tap **Turn on perimenopause mode**.
+
+### What changes
+
+- **Predictions soften instead of alarming.** Period prediction stays — irregular cycles simply widen the estimate and lower the stated confidence — and Home adds a gentle reminder that predictions carry extra uncertainty in this stage.
+- **No fertile window.** Ovulation timing is unreliable in perimenopause, so Lumen stops showing the fertile window, calendar fertile/ovulation markers, and the fertile-window reminder. This is deliberate: showing one would imply precision that doesn't exist, and it must never be read as contraceptive guidance. **Pregnancy remains possible until you've gone 12 months without a period.**
+- **Symptoms that fit the stage.** The Log screen swaps in perimenopause symptoms — hot flashes, night sweats, sleep problems, brain fog, and more — so patterns you can bring to a doctor are one tap away.
+- **Stage-specific reading.** The Library and Programs surface a cited three-part guide: what changes, handling hot flashes, and which bleeding patterns deserve a doctor visit.
+
+Turning the mode off returns you to standard cycle tracking with nothing lost.
 
 ---
 

@@ -266,7 +266,7 @@ Search the codebase for `ponytail:` comments — each names a shortcut and its u
 - **Pre-restore local data stays local-only.** `restoreSync` doesn't seed; data that predates a fresh-device restore must be re-saved to sync. Fine for the empty-new-device case it targets.
 - **`refresh()` reloads all stores on every write.** Correct and simple; the first thing to make incremental if a single account's data ever grows large.
 - **EPDS crisis helplines are a curated shortlist** (`src/domain/postpartum/crisis-resources.ts`) — region from the device locale only (privacy: no geolocation), manual override, findahelpline.com fallback for unlisted regions. Numbers need periodic review.
-- **Menopause is a `LifeStage` value without a dedicated mode UI** — it benefits from irregular-cycle handling but isn't a first-class stage yet.
+- **Perimenopause mode suppresses fertility UI by design** — no fertile-window display, calendar markers, or reminders in the `menopause` stage (erratic ovulation makes them imply false precision and risks contraceptive misreading); period prediction stays, with its normal confidence machinery. The `/report` doctor summary stays factual and unfiltered.
 - **No transaction around multi-record server push** — intentional; see §8.5.
 
 ---
