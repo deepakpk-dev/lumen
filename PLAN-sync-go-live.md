@@ -127,7 +127,7 @@ try {
 Run: `node scripts/sync-smoke.mjs https://example.invalid`
 Expected: `SMOKE FAILED: ...`, exit code 1 (check with `echo $LASTEXITCODE` / `echo $?`).
 
-- [ ] **Step 3: Run against the redeployed production URL** (after Task 1):
+- [x] **Step 3: Run against the redeployed production URL** (after Task 1) — passed 2026-07-09 against https://lumen-pi-one.vercel.app:
 
 Run: `node scripts/sync-smoke.mjs https://<production-domain>`
 Expected: four `OK` lines and `Sync is LIVE`. **Known wrinkle:** the very first request after deploy creates the schema (`sync-db.ts` runs `SCHEMA_SQL` lazily) and hits a Neon cold start — if `register` times out once, just re-run; a second consecutive failure is a real failure.
