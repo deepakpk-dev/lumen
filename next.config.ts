@@ -29,7 +29,10 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'", // clickjacking: nothing may frame the unlock UI
-  "upgrade-insecure-requests",
+  // Prod is https, so upgrade any stray http subresource. Skipped in dev: the
+  // dev server is http://localhost and WebKit honors this directive even there,
+  // upgrading every /_next asset to https → SSL failures → blank page.
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const securityHeaders = [
