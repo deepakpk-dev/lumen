@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useHealthData } from '@/src/state/useHealthData';
 import { addDays, parseISODate, todayISO } from '@/src/domain/dates';
 
-export type Goal = 'cycle' | 'ttc' | 'pregnant';
+export type Goal = 'cycle' | 'ttc' | 'pregnant' | 'menopause';
 
 // Shared stroke style so the goal glyphs match the icon language established on
 // the intro screen (thin outline, rounded joins).
@@ -38,6 +38,12 @@ const goalIcon: Record<Goal, ReactNode> = {
   pregnant: (
     <svg aria-hidden="true" {...iconProps}>
       <path d="M12 20s-6.5-4.2-6.5-9A3.5 3.5 0 0 1 12 7a3.5 3.5 0 0 1 6.5 4c0 4.8-6.5 9-6.5 9z" />
+    </svg>
+  ),
+  // A gentle wave for the transition years.
+  menopause: (
+    <svg aria-hidden="true" {...iconProps}>
+      <path d="M3 12c2.5-3 4.5-3 6 0s3.5 3 6 0 4-3 6 0" />
     </svg>
   ),
 };
@@ -113,6 +119,11 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
     { value: 'cycle', label: 'Track my cycle', hint: 'Periods, symptoms, and predictions' },
     { value: 'ttc', label: 'Trying to conceive', hint: 'Fertile window, BBT, and ovulation' },
     { value: 'pregnant', label: "I'm pregnant", hint: 'Week-by-week, kicks, and contractions' },
+    {
+      value: 'menopause',
+      label: 'Navigating perimenopause',
+      hint: 'Irregular cycles, hot flashes, and the transition',
+    },
   ];
 
   if (step === 'intro') {

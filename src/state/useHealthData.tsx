@@ -258,17 +258,20 @@ function useHealthDataState() {
   // carried-over 'pregnancy'/'postpartum'/'ttc' stage. (Goal mirrors the union
   // in OnboardingForm; kept inline to avoid a component→state import cycle.)
   const completeOnboarding = useCallback(
-    async (goal: 'cycle' | 'ttc' | 'pregnant', input: { date?: ISODate; dueDate?: ISODate }) => {
+    async (
+      goal: 'cycle' | 'ttc' | 'pregnant' | 'menopause',
+      input: { date?: ISODate; dueDate?: ISODate },
+    ) => {
       await clearPregnancyProfile();
       await clearPostpartumProfile();
       if (goal === 'pregnant') {
         await savePregnancyProfile(startPregnancy({ today: todayISO(), dueDate: input.dueDate }));
         setLifeStage('pregnancy', todayISO());
       } else {
-        // Both cycle and TTC seed a cycle so predictions work from day one; TTC
-        // additionally lands in fertility mode.
+        // Cycle, TTC, and perimenopause all seed a cycle so predictions work
+        // from day one; TTC lands in fertility mode, peri in menopause stage.
         if (input.date) await addCycle({ id: newId(), startDate: input.date });
-        setLifeStage(goal === 'ttc' ? 'ttc' : 'cycle', todayISO());
+        setLifeStage(goal === 'ttc' ? 'ttc' : goal === 'menopause' ? 'menopause' : 'cycle', todayISO());
       }
       refreshSettings();
       await refresh();

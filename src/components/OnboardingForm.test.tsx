@@ -68,6 +68,19 @@ describe('OnboardingForm', () => {
     );
   });
 
+  it('onboards the perimenopause goal with a last period date when chosen', async () => {
+    renderSetup();
+    fireEvent.click(screen.getByRole('radio', { name: /navigating perimenopause/i }));
+    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
+    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
+    await waitFor(() =>
+      expect(completeOnboarding).toHaveBeenCalledWith(
+        'menopause',
+        expect.objectContaining({ date: '2026-06-01' }),
+      ),
+    );
+  });
+
   it('disables submit on the pregnant goal until a due date is entered', () => {
     renderSetup();
     fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));

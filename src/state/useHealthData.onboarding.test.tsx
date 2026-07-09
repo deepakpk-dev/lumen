@@ -61,6 +61,19 @@ describe('useHealthData onboarding', () => {
     expect(result.current.cycles).toHaveLength(1);
   });
 
+  it('onboarding as menopause seeds a cycle and lands in the menopause stage', async () => {
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.completeOnboarding('menopause', { date: '2026-06-01' });
+    });
+
+    await waitFor(() => expect(result.current.lifeStage).toBe('menopause'));
+    expect(result.current.cycles).toHaveLength(1);
+    expect(result.current.cycles[0].startDate).toBe('2026-06-01');
+  });
+
   it('onboarding as pregnant clears a prior postpartum stage', async () => {
     const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));
