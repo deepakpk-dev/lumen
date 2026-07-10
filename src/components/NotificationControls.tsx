@@ -11,6 +11,7 @@ import {
   requestNotificationPermission,
   type NotifyPermission,
 } from '@/src/notifications/notify';
+import { useHealthData } from '@/src/state/useHealthData';
 
 const TOGGLES: { key: keyof ReminderPrefs; label: string }[] = [
   { key: 'periodReminder', label: 'Period is coming up' },
@@ -19,6 +20,7 @@ const TOGGLES: { key: keyof ReminderPrefs; label: string }[] = [
 ];
 
 export function NotificationControls() {
+  const { lifeStage } = useHealthData();
   const [prefs, setPrefs] = useState<ReminderPrefs | null>(null);
   const [perm, setPerm] = useState<NotifyPermission>('default');
 
@@ -69,7 +71,9 @@ export function NotificationControls() {
         </p>
       )}
       <div className="space-y-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
-        {TOGGLES.map((t) => (
+        {/* The fertile-window reminder never fires in perimenopause (see
+            src/domain/reminders.ts), so don't show a toggle that does nothing. */}
+        {TOGGLES.filter((t) => t.key !== 'fertileReminder' || lifeStage !== 'menopause').map((t) => (
           <label key={t.key} className="flex items-center justify-between gap-3 text-sm">
             <span>{t.label}</span>
             <input
