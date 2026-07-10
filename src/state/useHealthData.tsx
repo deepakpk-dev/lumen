@@ -473,9 +473,10 @@ function useHealthDataState() {
         today,
       },
       lifeStage,
+      currentTrimester,
     );
     return buildContentFeed(ARTICLES, context);
-  }, [cycles, dailyLogs, stats, prediction, today, lifeStage]);
+  }, [cycles, dailyLogs, stats, prediction, today, lifeStage, currentTrimester]);
 
   const dailyContent: ContentArticle | null = useMemo(
     () => selectDailyContent(contentFeed, today),

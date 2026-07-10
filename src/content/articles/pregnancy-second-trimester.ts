@@ -30,6 +30,7 @@ Staying active, eating well, and keeping your antenatal appointments all support
   phases: [],
   symptoms: [],
   lifeStages: ['pregnancy'],
+  trimesters: [2],
   readingMinutes: 3,
   author: 'Lumen Editorial',
   medicalReviewer: 'Aligned with NHS guidance',

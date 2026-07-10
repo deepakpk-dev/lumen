@@ -1,12 +1,14 @@
 import type { ContentInput, ContentContext } from './types';
 import { RECENT_LOG_WINDOW } from './types';
 import type { LifeStage } from '@/src/domain/types';
+import type { Trimester } from '@/src/domain/pregnancy/gestation';
 import { phaseForDate } from '@/src/domain/insights/phase-assignment';
 import { daysBetween } from '@/src/domain/dates';
 
 export function deriveContentContext(
   input: ContentInput,
   lifeStage: LifeStage = 'cycle',
+  trimester: Trimester | null = null,
 ): ContentContext {
   const { cycles, dailyLogs, stats, today } = input;
   const hasData = cycles.length > 0 || dailyLogs.length > 0;
@@ -25,5 +27,6 @@ export function deriveContentContext(
     isIrregular: hasData && !stats.isRegular,
     hasData,
     lifeStage,
+    trimester,
   };
 }

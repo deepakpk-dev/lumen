@@ -46,7 +46,12 @@ export function buildContentFeed(
   return articles
     .filter(
       (a) =>
-        a.lifeStages.length === 0 || a.lifeStages.includes(context.lifeStage),
+        (a.lifeStages.length === 0 || a.lifeStages.includes(context.lifeStage)) &&
+        // Trimester-scoped articles only surface in their trimester, so a
+        // week-8 user never gets the third-trimester read.
+        (!a.trimesters?.length ||
+          context.trimester === null ||
+          a.trimesters.includes(context.trimester)),
     )
     .map((a) => scoreArticle(a, context))
     .sort(

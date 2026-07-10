@@ -35,6 +35,7 @@ Heavy bleeding, severe or constant tummy pain, a bad headache with vision change
   phases: [],
   symptoms: [],
   lifeStages: ['pregnancy'],
+  trimesters: [3],
   readingMinutes: 3,
   author: 'Lumen Editorial',
   medicalReviewer: 'Aligned with NHS guidance',

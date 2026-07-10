@@ -33,6 +33,7 @@ Early pregnancy can feel fragile and anxious, especially around symptoms coming 
   phases: [],
   symptoms: [],
   lifeStages: ['pregnancy'],
+  trimesters: [1],
   readingMinutes: 3,
   author: 'Lumen Editorial',
   medicalReviewer: 'Aligned with NHS guidance',

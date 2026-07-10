@@ -27,6 +27,7 @@ const baseCtx: ContentContext = {
   isIrregular: false,
   hasData: true,
   lifeStage: 'cycle',
+  trimester: null,
 };
 
 describe('buildContentFeed', () => {
@@ -71,8 +72,21 @@ describe('buildContentFeed', () => {
       isIrregular: false,
       hasData: false,
       lifeStage: 'cycle',
+      trimester: null,
     });
     expect(feed[0].article.slug).toBe('start');
+  });
+
+  it('gates trimester-scoped articles to the current trimester', () => {
+    const tri1 = article({ slug: 'tri1', lifeStages: ['pregnancy'], trimesters: [1] });
+    const tri3 = article({ slug: 'tri3', lifeStages: ['pregnancy'], trimesters: [3] });
+    const anytime = article({ slug: 'any', lifeStages: ['pregnancy'] });
+    const feed = buildContentFeed([tri1, tri3, anytime], {
+      ...baseCtx,
+      lifeStage: 'pregnancy',
+      trimester: 1,
+    });
+    expect(feed.map((f) => f.article.slug).sort()).toEqual(['any', 'tri1']);
   });
 
   it('is a deterministic tie-break by lastReviewed then slug', () => {

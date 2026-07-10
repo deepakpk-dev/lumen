@@ -1,4 +1,5 @@
 import type { CyclePhase, LifeStage, ISODate } from '@/src/domain/types';
+import type { Trimester } from '@/src/domain/pregnancy/gestation';
 import type { InsightInput } from '@/src/domain/insights/types';
 
 export const CONTENT_TOPICS = [
@@ -30,6 +31,7 @@ export interface ContentArticle {
   phases: CyclePhase[]; // [] = relevant to any phase
   symptoms: string[]; // members of SYMPTOM_OPTIONS / MOOD_OPTIONS
   lifeStages: LifeStage[]; // [] = universal; ['cycle'] for now
+  trimesters?: Trimester[]; // pregnancy-only articles: which trimesters it fits; absent = all
   readingMinutes: number;
   author: string;
   medicalReviewer: string;
@@ -43,6 +45,7 @@ export interface ContentContext {
   isIrregular: boolean;
   hasData: boolean;
   lifeStage: LifeStage;
+  trimester: Trimester | null; // set while pregnant so week-scoped articles can be gated
 }
 
 export interface ScoredArticle {

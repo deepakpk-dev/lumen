@@ -94,8 +94,10 @@ export default function HomePage() {
       )}
       {/* The daily read is now scoped to the active life stage by the content
           engine (the feed filters by lifeStage), so each stage surfaces its own
-          guidance. Renders nothing when there is no article for today. */}
-      <DailyContentCard article={dailyContent} />
+          guidance. Renders nothing when there is no article for today. Held
+          back after a pregnancy loss: cycle reads next to the loss card would
+          break the no-period-prompts promise. */}
+      {!endedByLoss && <DailyContentCard article={dailyContent} />}
       <Link
         href="/log"
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-4 font-semibold text-white shadow-[0_12px_32px_-8px_rgba(225,29,72,0.55)] transition-all duration-200 hover:shadow-[0_16px_40px_-8px_rgba(225,29,72,0.65)] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"

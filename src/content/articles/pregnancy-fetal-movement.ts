@@ -25,6 +25,8 @@ You will never be wasting anyone's time by checking.`,
   phases: [],
   symptoms: [],
   lifeStages: ['pregnancy'],
+  // Movements are felt from ~16-24 weeks; premature at trimester 1.
+  trimesters: [2, 3],
   readingMinutes: 2,
   author: 'Lumen Editorial',
   medicalReviewer: 'Aligned with NHS guidance',
