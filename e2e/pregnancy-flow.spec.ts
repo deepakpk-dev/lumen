@@ -87,7 +87,7 @@ test('pregnancy journey: onboard via LMP, hub, kicks, contractions, log, loss ex
   await expect(page.getByText(/so sorry for your loss/)).toBeVisible();
   await expect(page.getByText('Congratulations', { exact: false })).toHaveCount(0);
   await page.getByRole('button', { name: 'Return to cycle mode' }).click();
-  await page.goto('/');
+  await page.waitForURL('**/');
   await expect(page.getByText('Take all the time you need', { exact: false })).toBeVisible();
   await expect(page.getByRole('heading', { name: /Postpartum/ })).toHaveCount(0);
   // No daily read next to the loss card — cycle content waits until the user
