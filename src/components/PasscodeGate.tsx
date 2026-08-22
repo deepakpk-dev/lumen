@@ -105,7 +105,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
             type="password"
             value={newCode}
             onChange={(e) => setNewCode(e.target.value)}
-            placeholder="New passcode"
+            placeholder="New passphrase (16+ characters)"
             className={inputClass}
           />
           {error && <p className="text-center text-sm text-red-600 dark:text-red-400">{error}</p>}

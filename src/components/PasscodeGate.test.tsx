@@ -6,6 +6,9 @@ import { createVault, unlockVault } from '@/src/crypto/vault';
 import { saveVault, loadVault } from '@/src/security/vault-store';
 import { setStorageKeys, setSyncTracking, storageIsEncrypted } from '@/src/data/storage';
 
+const TEST_PASSPHRASE = 'violet-river-sunrise';
+const NEW_PASSPHRASE = 'marigold-cloud-path';
+
 // The storage session/tracking are module-level; leaking them flips later tests
 // into the wrong mode.
 beforeEach(() => {
@@ -21,7 +24,7 @@ afterEach(() => {
 
 describe('PasscodeGate', () => {
   it('renders the lock, rejects a wrong passcode, unlocks on the right one', async () => {
-    const { vault } = await createVault('pw');
+    const { vault } = await createVault(TEST_PASSPHRASE);
     saveVault(vault);
 
     render(
@@ -40,7 +43,7 @@ describe('PasscodeGate', () => {
     expect(screen.queryByText('app')).toBeNull();
 
     await userEvent.clear(screen.getByLabelText('passcode'));
-    await userEvent.type(screen.getByLabelText('passcode'), 'pw');
+    await userEvent.type(screen.getByLabelText('passcode'), TEST_PASSPHRASE);
     await userEvent.click(screen.getByRole('button', { name: /unlock/i }));
 
     expect(await screen.findByText('app')).toBeInTheDocument();
@@ -48,7 +51,7 @@ describe('PasscodeGate', () => {
   });
 
   it('restore path: valid phrase + new passcode re-wraps the vault and opens', async () => {
-    const { vault, unlocked } = await createVault('pw');
+    const { vault, unlocked } = await createVault(TEST_PASSPHRASE);
     saveVault(vault);
 
     render(
@@ -60,13 +63,13 @@ describe('PasscodeGate', () => {
     await userEvent.click(await screen.findByRole('button', { name: /forgot passcode/i }));
     await userEvent.click(screen.getByLabelText(/recovery phrase/i));
     await userEvent.paste(unlocked.mnemonic);
-    await userEvent.type(screen.getByLabelText(/new passcode/i), 'newpw');
+    await userEvent.type(screen.getByLabelText(/new passcode/i), NEW_PASSPHRASE);
     await userEvent.click(screen.getByRole('button', { name: /^restore$/i }));
 
     expect(await screen.findByText('app')).toBeInTheDocument();
     expect(storageIsEncrypted()).toBe(true);
     // The vault was re-wrapped under the new passcode.
-    await expect(unlockVault('newpw', loadVault()!)).resolves.toBeDefined();
+    await expect(unlockVault(NEW_PASSPHRASE, loadVault()!)).resolves.toBeDefined();
   });
 
   it('corrupt vault blob steers to recovery instead of opening plaintext', async () => {

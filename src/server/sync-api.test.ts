@@ -30,10 +30,13 @@ const OTHER_PHRASE = 'zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong';
 let keys: DerivedKeys;
 let hash: string;
 
-function req(json: unknown, auth?: string): Request {
+function req(json: unknown, auth?: string, clientIp?: string): Request {
   return new Request('http://lumen.test/api/sync', {
     method: 'POST',
-    headers: auth ? { authorization: auth } : {},
+    headers: {
+      ...(auth ? { authorization: auth } : {}),
+      ...(clientIp ? { 'x-forwarded-for': clientIp } : {}),
+    },
     body: JSON.stringify(json),
   });
 }
@@ -67,6 +70,21 @@ describe('register', () => {
   it('rejects malformed ids', async () => {
     expect((await register(req({ accountId: 'nope', authHash: hash }))).status).toBe(400);
     expect((await register(req({})) ).status).toBe(400);
+  });
+
+  it('rate-limits account creation per client across server instances', async () => {
+    const clientIp = '203.0.113.42';
+    for (let i = 1; i <= 5; i++) {
+      const accountId = i.toString(16).padStart(32, '0');
+      expect(
+        (await register(req({ accountId, authHash: 'a'.repeat(64) }, undefined, clientIp))).status,
+      ).toBe(200);
+    }
+    const blocked = await register(
+      req({ accountId: 'f'.repeat(32), authHash: 'b'.repeat(64) }, undefined, clientIp),
+    );
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get('Retry-After')).toBe('3600');
   });
 });
 
@@ -130,6 +148,25 @@ describe('push + pull', () => {
     const { records } = await pullAll(keys, before);
     expect(records).toHaveLength(1);
     expect((await decryptRecord(keys, records[0])).value).toEqual({ flow: 'heavy' });
+  });
+
+  it('clamps far-future client clocks and returns the canonical timestamp', async () => {
+    const env = await encryptRecord(
+      keys,
+      { store: 'dailyLogs', key: 'future-clock', value: { flow: 'light' } },
+      { updatedAt: '2999-01-01T00:00:00.000Z' },
+    );
+    const before = Date.now();
+    const response = await push(req({ records: [env] }, bearer(keys)));
+    const body = (await response.json()) as {
+      records: { recordKey: string; updatedAt: string }[];
+    };
+    const canonical = body.records[0].updatedAt;
+    expect(Date.parse(canonical)).toBeGreaterThanOrEqual(before);
+    expect(Date.parse(canonical)).toBeLessThanOrEqual(Date.now() + 5 * 60 * 1000);
+
+    const stored = (await pullAll(keys)).records.find((r) => r.recordKey === env.recordKey);
+    expect(stored?.updatedAt).toBe(canonical);
   });
 
   it('stores tombstones', async () => {

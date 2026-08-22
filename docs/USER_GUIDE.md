@@ -601,7 +601,7 @@ Everything below is managed under **Settings**.
 
 ### 1. Passcode & encryption
 
-Under **Settings → Passcode lock**, tap **Turn on encryption** and choose a passcode.
+Under **Settings → Passcode lock**, tap **Turn on encryption** and choose a passphrase of at least 16 characters.
 
 - Lumen encrypts your on‑device data with **AES‑256** and shows you a **12‑word recovery phrase**.
 - **Write the recovery phrase down and keep it safe.** It is the **only** way back in if you forget your passcode — Lumen can't reset it for you, because it never stores your passcode or phrase.

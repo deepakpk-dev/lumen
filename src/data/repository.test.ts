@@ -55,7 +55,7 @@ describe('repository', () => {
     await upsertDailyLog({ date: '2026-01-01', symptoms: ['cramps'], moods: [] });
     expect(await db.cycles.count()).toBe(1);
 
-    const keys = (await createVault('1234')).unlocked.keys;
+    const keys = (await createVault('test-passphrase-1234')).unlocked.keys;
     const saved: unknown[] = [];
     await encryptExistingData(keys, () => {
       saved.push(true);
@@ -111,7 +111,7 @@ describe('repository', () => {
 describe('decryptExistingData', () => {
   let keys: DerivedKeys;
   beforeEach(async () => {
-    keys = (await createVault('1234')).unlocked.keys;
+    keys = (await createVault('test-passphrase-1234')).unlocked.keys;
   });
 
   it('round-trips: encrypted records land back in plaintext tables and ciphertext is gone', async () => {
@@ -179,7 +179,7 @@ describe('importBbtReadings', () => {
   });
 
   it('lands imported rows in the encrypted store when a vault is active', async () => {
-    const keys = (await createVault('1234')).unlocked.keys;
+    const keys = (await createVault('test-passphrase-1234')).unlocked.keys;
     setStorageKeys(keys);
     await importBbtReadings([{ date: '2026-07-01', bbt: 36.5 }]);
     expect((await getDailyLog('2026-07-01'))?.bbt).toBe(36.5);

@@ -136,13 +136,21 @@ export async function push(keys: DerivedKeys): Promise<void> {
     const dirty = await db.syncMeta.filter((r) => r.dirty).limit(PUSH_CHUNK).toArray();
     if (dirty.length === 0) return;
     const records = dirty.map<SyncEnvelope>(({ recordKey, iv, ciphertext, updatedAt, deleted }) => ({ recordKey, iv, ciphertext, updatedAt, deleted }));
-    await post('/api/sync/push', keys, { records });
+    const result = (await post('/api/sync/push', keys, { records })) as {
+      records?: { recordKey: string; updatedAt: string }[];
+    };
+    const acceptedClocks = new Map(
+      result.records?.map((record) => [record.recordKey, record.updatedAt]) ?? [],
+    );
     for (const r of dirty) {
       await db.syncMeta
         .where('recordKey')
         .equals(r.recordKey)
         .modify((row: SyncMetaRow) => {
-          if (row.updatedAt === r.updatedAt) row.dirty = false;
+          if (row.updatedAt === r.updatedAt) {
+            row.updatedAt = acceptedClocks.get(r.recordKey) ?? row.updatedAt;
+            row.dirty = false;
+          }
         });
     }
   }
