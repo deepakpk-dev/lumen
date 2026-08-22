@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PregnancyEndFlow } from './PregnancyEndFlow';
 
 const endPregnancyBirth = vi.fn().mockResolvedValue(undefined);
@@ -22,8 +22,9 @@ describe('PregnancyEndFlow', () => {
     expect(endPregnancyBirth).toHaveBeenCalledTimes(1);
   });
 
-  it('handles loss compassionately without celebratory or period prompts', () => {
-    render(<PregnancyEndFlow />);
+  it('handles loss compassionately and redirects after the update is saved', async () => {
+    const onEnded = vi.fn();
+    render(<PregnancyEndFlow onEnded={onEnded} />);
     fireEvent.click(screen.getByRole('button', { name: /manage pregnancy/i }));
     fireEvent.click(screen.getByRole('button', { name: /my pregnancy has ended/i }));
 
@@ -35,5 +36,6 @@ describe('PregnancyEndFlow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /return to cycle mode/i }));
     expect(endPregnancyLoss).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onEnded).toHaveBeenCalledTimes(1));
   });
 });
