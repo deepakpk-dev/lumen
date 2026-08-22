@@ -117,7 +117,10 @@ export function PregnancyEndFlow({ onEnded }: { onEnded?: () => void }) {
       </ul>
       <button
         type="button"
-        onClick={() => endPregnancyLoss(todayISO())}
+        onClick={async () => {
+          await endPregnancyLoss(todayISO());
+          onEnded?.();
+        }}
         className="w-full rounded-md border px-4 py-2 text-sm"
       >
         Return to cycle mode
