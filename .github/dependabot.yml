@@ -13,6 +13,11 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # eslint-config-next's bundled plugins currently support ESLint 9 only.
+      - dependency-name: "eslint"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
