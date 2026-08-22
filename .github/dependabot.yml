@@ -18,6 +18,10 @@ updates:
       - dependency-name: "eslint"
         update-types:
           - "version-update:semver-major"
+      # Keep Node.js type definitions aligned with the Node 24 runtime in CI.
+      - dependency-name: "@types/node"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
