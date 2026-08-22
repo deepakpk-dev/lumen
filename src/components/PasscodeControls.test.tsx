@@ -8,8 +8,10 @@ import { setStorageKeys, storageIsEncrypted } from '@/src/data/storage';
 import { deleteAll } from '@/src/data/repository';
 import { setPasscode, hasPasscode } from '@/src/security/passcode';
 
+const TEST_PASSPHRASE = 'violet-river-sunrise';
+
 // Drive the whole "turn on encryption" flow and land on the steady 'on' view.
-async function enableEncryption(passcode = '1234') {
+async function enableEncryption(passcode = TEST_PASSPHRASE) {
   await userEvent.type(await screen.findByLabelText('new passcode'), passcode);
   await userEvent.click(screen.getByRole('button', { name: /turn on encryption/i }));
   await userEvent.click(await screen.findByRole('button', { name: /saved my recovery phrase/i }));
@@ -26,24 +28,33 @@ describe('PasscodeControls', () => {
   it('turning on encryption creates a vault, shows the recovery phrase, and never stores the passcode', async () => {
     render(<PasscodeControls />);
 
-    await userEvent.type(await screen.findByLabelText('new passcode'), '1234');
+    await userEvent.type(await screen.findByLabelText('new passcode'), TEST_PASSPHRASE);
     await userEvent.click(screen.getByRole('button', { name: /turn on encryption/i }));
 
     await waitFor(() => expect(hasVault()).toBe(true));
     // Recovery-phrase screen shown for the user to save before continuing.
     await screen.findByRole('button', { name: /saved my recovery phrase/i });
-    expect(JSON.stringify(localStorage)).not.toContain('1234'); // passcode never persisted
+    expect(JSON.stringify(localStorage)).not.toContain(TEST_PASSPHRASE); // passcode never persisted
+  });
+
+  it('explains the minimum when a weak vault passphrase is rejected', async () => {
+    render(<PasscodeControls />);
+    await userEvent.type(await screen.findByLabelText('new passcode'), '1234');
+    await userEvent.click(screen.getByRole('button', { name: /turn on encryption/i }));
+
+    expect(await screen.findByText(/at least 16 characters/i)).toBeInTheDocument();
+    expect(hasVault()).toBe(false);
   });
 
   it('rejects a wrong current passcode when changing it', async () => {
     render(<PasscodeControls />);
-    await userEvent.type(await screen.findByLabelText('new passcode'), '1234');
+    await userEvent.type(await screen.findByLabelText('new passcode'), TEST_PASSPHRASE);
     await userEvent.click(screen.getByRole('button', { name: /turn on encryption/i }));
     await userEvent.click(await screen.findByRole('button', { name: /saved my recovery phrase/i }));
 
     await userEvent.click(await screen.findByRole('button', { name: /change passcode/i }));
     await userEvent.type(await screen.findByLabelText('current passcode'), 'wrong');
-    await userEvent.type(screen.getByLabelText('new passcode'), '5678');
+    await userEvent.type(screen.getByLabelText('new passcode'), 'another-passphrase-5678');
     await userEvent.click(screen.getByRole('button', { name: /change passcode/i }));
 
     await screen.findByText(/current passcode is incorrect/i);
@@ -55,7 +66,7 @@ describe('PasscodeControls', () => {
     expect(storageIsEncrypted()).toBe(true);
 
     await userEvent.click(await screen.findByRole('button', { name: /turn off encryption/i }));
-    await userEvent.type(await screen.findByLabelText('current passcode'), '1234');
+    await userEvent.type(await screen.findByLabelText('current passcode'), TEST_PASSPHRASE);
     await userEvent.click(screen.getByRole('button', { name: /decrypt and turn off/i }));
 
     await waitFor(() => expect(hasVault()).toBe(false));
@@ -100,7 +111,7 @@ describe('PasscodeControls', () => {
   it('reflects a vault created elsewhere on the same page', async () => {
     render(<PasscodeControls />);
     await screen.findByRole('button', { name: /turn on encryption/i }); // enable form
-    const { vault } = await createVault('1234');
+    const { vault } = await createVault(TEST_PASSPHRASE);
     act(() => saveVault(vault)); // e.g. the Sync section's restore flow
     await screen.findByRole('button', { name: /change passcode/i }); // now 'on'
   });

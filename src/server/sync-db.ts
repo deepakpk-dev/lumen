@@ -22,6 +22,13 @@ create table if not exists sync_records (
 );
 create index if not exists sync_records_account_seq
   on sync_records (account_id, server_seq);
+create table if not exists sync_rate_limits (
+  scope        text primary key,
+  window_start timestamptz not null,
+  attempts     integer not null
+);
+create index if not exists sync_rate_limits_window_start
+  on sync_rate_limits (window_start);
 `;
 
 export interface QueryResult {

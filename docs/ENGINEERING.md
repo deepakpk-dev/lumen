@@ -165,7 +165,7 @@ When both are on they hold the *same* `DerivedKeys` (one recovery phrase), so th
 
 `src/crypto/vault.ts` + `src/security/vault-store.ts`.
 
-- Setting a passcode creates a vault: generate a fresh **BIP-39 12-word phrase**, wrap it under the passcode with **PBKDF2-SHA256, 210,000 iterations** (an OWASP-2023 floor; the stored iteration count is re-read on unlock so old vaults keep working), AES-256-GCM.
+- Setting a 16+ character passphrase creates a vault: generate a fresh **BIP-39 12-word phrase**, wrap it under the passphrase with **PBKDF2-SHA256, 210,000 iterations** (the stored iteration count is re-read on unlock so old vaults keep working), AES-256-GCM. Existing shorter passcodes still unlock, but new and re-wrapped vaults enforce the stronger minimum.
 - The wrapped blob (`WrappedVault`) is persisted in the clear in localStorage (`lumen.vault`) — it's **inert without the passcode**. A wrong passcode fails AES-GCM authentication (the only signal, since the passcode is never stored) rather than yielding garbage keys.
 - Unlock decrypts the phrase, derives the full key hierarchy (§8), and installs `session` keys via `setStorageKeys`, at which point the `records` table becomes the live store.
 - `restoreVault` / `rewrapVault` handle recovery-from-phrase and change-passcode; `restoreVault` validates the phrase first so a typo can't create a vault whose keys silently mismatch the data.
@@ -228,8 +228,8 @@ The real `store`, `key`, and `value` live **inside** the ciphertext. The server 
 
 Four Route Handlers. Auth is `Authorization: Bearer <accountId>:<authSecret>` (`/^Bearer ([0-9a-f]{32}):([0-9a-f]{64})$/`), verified against the stored hash with `timingSafeEqual`.
 
-- **`register`** — idempotent account create (`accountId`, `authHash`).
-- **`push`** — validates each envelope at the trust boundary (hex/base64/length caps: `MAX_RECORDS` 500, `MAX_CIPHERTEXT_CHARS` 64k), then upserts with an **LWW guard**: `... on conflict do update ... where excluded.updated_at > sync_records.updated_at`, bumping `server_seq` so other devices see the change on incremental pull. One statement per record, no transaction — LWW upserts are idempotent and the client only clears `dirty` on a 200, so a partial failure is a harmless re-push.
+- **`register`** — idempotent account create (`accountId`, `authHash`), protected by database-backed per-client and global hourly registration budgets. Client IPs are HMACed before persistence.
+- **`push`** — validates each envelope at the trust boundary (hex/base64/length caps: `MAX_RECORDS` 500, `MAX_CIPHERTEXT_CHARS` 90k), clamps clocks more than five minutes in the future, returns the canonical clocks to the sender, then upserts with an **LWW guard**: `... on conflict do update ... where excluded.updated_at > sync_records.updated_at`, bumping `server_seq` so other devices see the change on incremental pull. One statement per record, no transaction — LWW upserts are idempotent and the client only clears `dirty` on a 200, so a partial failure is a harmless re-push.
 - **`pull`** — `select ... where account_id = $1 and server_seq > $2 order by server_seq asc limit 1000`, returning `{ records, since, more }`.
 - **`delete-account`** — hard delete.
 

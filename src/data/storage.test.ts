@@ -27,7 +27,7 @@ describe('storage (plaintext mode)', () => {
 describe('storage (encrypted mode)', () => {
   let keys: DerivedKeys;
   beforeEach(async () => {
-    keys = (await createVault('1234')).unlocked.keys;
+    keys = (await createVault('test-passphrase-1234')).unlocked.keys;
     setStorageKeys(keys);
   });
 
@@ -57,7 +57,7 @@ describe('storage (encrypted mode)', () => {
 
   it('cannot read another vault\'s records', async () => {
     await putRecord('cycles', 'c1', { id: 'c1', startDate: '2026-01-01' });
-    setStorageKeys((await createVault('1234')).unlocked.keys); // different phrase → different keys
+    setStorageKeys((await createVault('another-passphrase-5678')).unlocked.keys); // different phrase → different keys
     expect(await getAllRecords('cycles')).toHaveLength(0);
   });
 });

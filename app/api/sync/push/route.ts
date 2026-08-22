@@ -14,11 +14,16 @@ const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 // one row/day) stays well under 20k rows over decades; 50k is generous headroom
 // while bounding an authenticated attacker who mints unlimited distinct
 // recordKeys to exhaust storage. Worst case per account is capped at
-// MAX_RECORDS_PER_ACCOUNT × MAX_CIPHERTEXT_CHARS. Abusive account *creation* is
-// unauthenticated and belongs at the platform edge (Vercel/Cloudflare IP rate
-// limiting) — a serverless in-app limiter has no shared state to enforce it.
+// MAX_RECORDS_PER_ACCOUNT × MAX_CIPHERTEXT_CHARS. Account creation has a
+// database-backed shared limiter in sync-rate-limit.ts; an edge rule remains a
+// useful first layer because it rejects abusive traffic before a function runs.
 // ponytail: bump if a power user ever legitimately nears it.
 const MAX_RECORDS_PER_ACCOUNT = 50_000;
+const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
+
+function normalizeUpdatedAt(updatedAt: string, receivedAt: number): string {
+  return new Date(Math.min(Date.parse(updatedAt), receivedAt + MAX_FUTURE_SKEW_MS)).toISOString();
+}
 
 function isEnvelope(r: unknown): r is SyncEnvelope {
   if (typeof r !== 'object' || r === null) return false;
@@ -68,7 +73,12 @@ export async function POST(req: Request) {
   // ponytail: one statement per record, no transaction — LWW upserts are
   // idempotent and the client clears its dirty flags only on a 200, so a
   // partial failure just means a harmless re-push. Batch VALUES if it's slow.
+  const receivedAt = Date.now();
+  const accepted: { recordKey: string; updatedAt: string }[] = [];
   for (const r of records) {
+    // Bound client clock skew so one misconfigured device cannot create a
+    // timestamp that blocks every other device's edits for months or years.
+    const updatedAt = normalizeUpdatedAt(r.updatedAt, receivedAt);
     await query(
       `insert into sync_records (account_id, record_key, iv, ciphertext, updated_at, deleted)
        values ($1, $2, $3, $4, $5, $6)
@@ -79,8 +89,11 @@ export async function POST(req: Request) {
          deleted = excluded.deleted,
          server_seq = nextval(pg_get_serial_sequence('sync_records', 'server_seq'))
        where excluded.updated_at > sync_records.updated_at`,
-      [accountId, r.recordKey, r.iv, r.ciphertext, r.updatedAt, r.deleted],
+      [accountId, r.recordKey, r.iv, r.ciphertext, updatedAt, r.deleted],
     );
+    accepted.push({ recordKey: r.recordKey, updatedAt });
   }
-  return Response.json({ ok: true });
+  // Echo the canonical clocks so the sending device uses the same LWW values
+  // as the server. `records` is additive for compatibility with older clients.
+  return Response.json({ ok: true, records: accepted });
 }

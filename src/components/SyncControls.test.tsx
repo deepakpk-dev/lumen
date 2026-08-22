@@ -107,7 +107,7 @@ describe('SyncControls', () => {
     await userEvent.click(screen.getByRole('button', { name: /restore from another device/i }));
     await userEvent.click(screen.getByLabelText(/recovery phrase/i));
     await userEvent.paste(mnemonic);
-    await userEvent.type(screen.getByLabelText(/new passcode/i), '9876');
+    await userEvent.type(screen.getByLabelText(/new passcode/i), 'sync-restore-passphrase');
     await userEvent.click(screen.getByRole('button', { name: /restore my data/i }));
 
     await waitFor(() => expect(onRestored).toHaveBeenCalled(), { timeout: 20_000 });

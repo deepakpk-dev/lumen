@@ -108,6 +108,25 @@ describe('sync engine', () => {
     expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(0);
   });
 
+  it('adopts the server clock returned for a future-skewed write', async () => {
+    startSyncTracking(keys);
+    await addCycle({ id: 'future-clock', startDate: '2026-01-01' });
+    const row = (await db.syncMeta.toArray())[0];
+    await db.syncMeta.update(row.recordKey, { updatedAt: '2999-01-01T00:00:00.000Z' });
+    const canonical = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve(
+        json({ ok: true, records: [{ recordKey: row.recordKey, updatedAt: canonical }] }),
+      ),
+    );
+
+    await push(keys);
+    expect(await db.syncMeta.get(row.recordKey)).toMatchObject({
+      dirty: false,
+      updatedAt: canonical,
+    });
+  });
+
   it('round-trips the full record set and prefs to a fresh device', async () => {
     // Device A: existing data, then sync enabled.
     setBbtUnit('F');

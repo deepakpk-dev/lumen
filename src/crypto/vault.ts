@@ -30,8 +30,15 @@ export interface UnlockedVault {
 // floor moves; unlock re-reads the stored count so old vaults keep working.
 const PBKDF2_ITERATIONS = 210_000;
 const SALT_BYTES = 16;
+export const MIN_VAULT_PASSPHRASE_LENGTH = 16;
 const enc = new TextEncoder();
 const dec = new TextDecoder();
+
+function assertStrongPassphrase(passcode: string): void {
+  if (passcode.trim().length < MIN_VAULT_PASSPHRASE_LENGTH) {
+    throw new Error(`Passphrase must be at least ${MIN_VAULT_PASSPHRASE_LENGTH} characters.`);
+  }
+}
 
 async function deriveKek(
   passcode: string,
@@ -77,6 +84,7 @@ async function wrap(
 export async function createVault(
   passcode: string,
 ): Promise<{ vault: WrappedVault; unlocked: UnlockedVault }> {
+  assertStrongPassphrase(passcode);
   const mnemonic = newRecoveryPhrase();
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
   return { vault: await wrap(mnemonic, passcode, salt), unlocked: { mnemonic, keys: await deriveKeys(mnemonic) } };
@@ -103,6 +111,7 @@ export async function unlockVault(passcode: string, vault: WrappedVault): Promis
 // Re-wrap the same phrase under a new passcode (change-passcode). Fresh salt+iv;
 // the caller already holds the mnemonic from an unlocked session.
 export async function rewrapVault(mnemonic: string, newPasscode: string): Promise<WrappedVault> {
+  assertStrongPassphrase(newPasscode);
   return wrap(mnemonic, newPasscode, crypto.getRandomValues(new Uint8Array(SALT_BYTES)));
 }
 

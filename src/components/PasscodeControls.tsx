@@ -296,7 +296,7 @@ export function PasscodeControls() {
           type="password"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="New passcode"
+        placeholder="New passphrase (16+ characters)"
           className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
         />
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
@@ -368,7 +368,7 @@ export function PasscodeControls() {
           setCode(e.target.value);
           setError('');
         }}
-        placeholder="Choose a passcode"
+        placeholder="Choose a passphrase (16+ characters)"
         className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
       />
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
