@@ -8,6 +8,8 @@ Lumen is a women's-health app built around a simple promise: track your cycle, f
 
 **Status:** `v1.x` — shipped and in active development. 400+ tests passing · `build` + `lint` + typecheck green in CI.
 
+**Live:**  https://lumen-pi-one.vercel.app/
+
 ---
 
 ## Table of contents
