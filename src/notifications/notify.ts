@@ -29,6 +29,10 @@ export async function requestNotificationPermission(): Promise<NotifyPermission>
 // the app repeatedly doesn't re-notify.
 const FIRED_KEY = 'lumen.notify.fired';
 
+export function clearFiredReminderNotifications(): void {
+  localStorage.removeItem(FIRED_KEY);
+}
+
 function firedToday(today: ISODate): Set<string> {
   try {
     const raw = localStorage.getItem(FIRED_KEY);

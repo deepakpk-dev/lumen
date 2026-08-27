@@ -12,6 +12,9 @@ import { hasPasscode, verifyPasscode } from '@/src/security/passcode';
 // 'legacy' = a pre-encryption screen-lock passcode, honored until upgraded.
 type Mode = 'loading' | 'open' | 'vault' | 'legacy';
 
+const IDLE_LOCK_MS = 5 * 60 * 1000;
+const BACKGROUND_LOCK_MS = 60 * 1000;
+
 export function PasscodeGate({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<Mode>('loading');
   const [code, setCode] = useState('');
@@ -24,6 +27,56 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-time lock detection from localStorage; SSR-safe via the loading gate
     setMode(hasVault() ? 'vault' : hasPasscode() ? 'legacy' : 'open');
   }, []);
+
+  useEffect(() => {
+    if (mode !== 'open' || (!hasVault() && !hasPasscode())) return;
+
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
+    let backgroundTimer: ReturnType<typeof setTimeout> | undefined;
+    let backgroundedAt: number | undefined;
+
+    const lock = () => {
+      setStorageKeys(null);
+      startSyncTracking(null);
+      setCode('');
+      setError('');
+      setRecovering(false);
+      setMode(hasVault() ? 'vault' : 'legacy');
+    };
+    const resetIdleTimer = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(lock, IDLE_LOCK_MS);
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        if (idleTimer) clearTimeout(idleTimer);
+        if (backgroundTimer) clearTimeout(backgroundTimer);
+        backgroundedAt = Date.now();
+        backgroundTimer = setTimeout(lock, BACKGROUND_LOCK_MS);
+      } else {
+        if (backgroundTimer) clearTimeout(backgroundTimer);
+        const backgroundDeadlinePassed =
+          backgroundedAt !== undefined && Date.now() - backgroundedAt >= BACKGROUND_LOCK_MS;
+        backgroundedAt = undefined;
+        if (backgroundDeadlinePassed) {
+          lock();
+          return;
+        }
+        resetIdleTimer();
+      }
+    };
+
+    resetIdleTimer();
+    const activityEvents = ['pointerdown', 'keydown', 'touchstart'];
+    activityEvents.forEach((event) => window.addEventListener(event, resetIdleTimer));
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      if (backgroundTimer) clearTimeout(backgroundTimer);
+      activityEvents.forEach((event) => window.removeEventListener(event, resetIdleTimer));
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [mode]);
 
   async function handleVaultUnlock(e: React.FormEvent) {
     e.preventDefault();

@@ -183,7 +183,8 @@ Each subsystem is a small set of independently testable pure functions:
 Privacy is enforced by the shape of the system, not by a promise:
 
 - **Local-first by default.** With no passcode and no sync, health data lives only in this browser's IndexedDB — there is nothing to breach server-side because nothing leaves the device.
-- **At-rest encryption via a vault** (`src/crypto/vault.ts`, `src/security/vault-store.ts`). Setting a **16+ character passphrase** creates a **BIP-39 12-word recovery phrase** and wraps it with **PBKDF2-SHA256 (210,000 iterations)** under the passphrase; the wrapped blob is inert without the passphrase, which is never stored (a wrong passphrase fails AES-GCM authentication rather than yielding garbage keys). With a vault active, records are stored as **AES-256-GCM ciphertext** in the `records` table — even at rest, the on-device store reveals nothing about which stores or dates hold data. The app is gated behind a passphrase screen (`PasscodeGate`) with auto-lock.
+- **At-rest encryption and session lock via a vault** (`src/crypto/vault.ts`, `src/security/vault-store.ts`). Setting a **16+ character passphrase** creates a **BIP-39 12-word recovery phrase** and wraps it with **PBKDF2-SHA256 (210,000 iterations)** under the passphrase; the wrapped blob is inert without the passphrase, which is never stored (a wrong passphrase fails AES-GCM authentication rather than yielding garbage keys). With a vault active, records are stored as **AES-256-GCM ciphertext** in the `records` table — even at rest, the on-device store reveals nothing about which stores or dates hold data. The app re-locks after five idle minutes or one minute in the background, clearing the in-memory encryption and sync keys.
+- **Strict browser boundary.** A per-request CSP nonce permits only trusted application scripts; cross-origin network connections, framing, plugins, and form targets are restricted.
 - **No analytics or error monitoring in production** — an intentional tradeoff (see below) that keeps the zero-tracking guarantee literal.
 - **One root secret.** The same recovery phrase that unlocks the vault is the sync credential — there is no second place a root secret could live.
 
@@ -334,7 +335,7 @@ These are shipped *knowingly* and documented so reviewers don't mistake them for
 - **EPDS crisis helplines are a curated shortlist, not exhaustive.** Well-established national lines for a handful of regions (region from device locale, user-overridable), with [findahelpline.com](https://findahelpline.com) as the fallback everywhere else. Numbers live in `src/domain/postpartum/crisis-resources.ts` and need periodic review.
 - **The local DB is only encrypted with a passcode.** Without a passcode, the on-device store is plaintext IndexedDB (the app-lock and at-rest encryption are the same opt-in). The Settings copy states this plainly.
 - **Sync uses whole-snapshot LWW for preferences** — two devices editing different preferences within the same window can lose one side. Split into per-preference records if it ever bites.
-- **Data that existed on a device *before* a fresh-device restore stays local-only** until re-saved; the restore flow is built for the empty-new-device case. See the `ponytail:` notes in `src/data/sync-engine.ts`.
+- **Sync restore merges rather than replaces.** The app pulls the encrypted account before seeding local records, so unique data already on a device joins the account while normal LWW rules resolve conflicts.
 
 ---
 
