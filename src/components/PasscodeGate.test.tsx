@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PasscodeGate } from './PasscodeGate';
 import { createVault, unlockVault } from '@/src/crypto/vault';
@@ -17,6 +17,8 @@ beforeEach(() => {
   setSyncTracking(null);
 });
 afterEach(() => {
+  vi.useRealTimers();
+  Object.defineProperty(document, 'hidden', { configurable: true, value: false });
   localStorage.clear();
   setStorageKeys(null);
   setSyncTracking(null);
@@ -86,6 +88,90 @@ describe('PasscodeGate', () => {
 
     expect(await screen.findByText(/unreadable|restore/i)).toBeInTheDocument();
     expect(screen.queryByText('app')).toBeNull(); // never silently opens plaintext
+    expect(storageIsEncrypted()).toBe(false);
+  });
+
+  it('locks an unlocked vault and clears its session key after five idle minutes', async () => {
+    const user = userEvent.setup();
+    const { vault } = await createVault(TEST_PASSPHRASE);
+    saveVault(vault);
+
+    render(
+      <PasscodeGate>
+        <p>app</p>
+      </PasscodeGate>,
+    );
+
+    await user.type(await screen.findByLabelText('passcode'), TEST_PASSPHRASE);
+    await user.click(screen.getByRole('button', { name: /unlock/i }));
+    expect(await screen.findByText('app')).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    window.dispatchEvent(new Event('pointerdown'));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+    });
+
+    expect(screen.queryByText('app')).toBeNull();
+    expect(screen.getByLabelText('passcode')).toBeInTheDocument();
+    expect(storageIsEncrypted()).toBe(false);
+  });
+
+  it('locks an unlocked vault after one minute in the background', async () => {
+    const user = userEvent.setup();
+    const { vault } = await createVault(TEST_PASSPHRASE);
+    saveVault(vault);
+
+    render(
+      <PasscodeGate>
+        <p>app</p>
+      </PasscodeGate>,
+    );
+
+    await user.type(await screen.findByLabelText('passcode'), TEST_PASSPHRASE);
+    await user.click(screen.getByRole('button', { name: /unlock/i }));
+    expect(await screen.findByText('app')).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    expect(document.hidden).toBe(true);
+    document.dispatchEvent(new Event('visibilitychange'));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+    });
+
+    expect(screen.queryByText('app')).toBeNull();
+    expect(storageIsEncrypted()).toBe(false);
+  });
+
+  it('locks on return when the browser suspended the background timer past its deadline', async () => {
+    const user = userEvent.setup();
+    const { vault } = await createVault(TEST_PASSPHRASE);
+    saveVault(vault);
+
+    render(
+      <PasscodeGate>
+        <p>app</p>
+      </PasscodeGate>,
+    );
+
+    await user.type(await screen.findByLabelText('passcode'), TEST_PASSPHRASE);
+    await user.click(screen.getByRole('button', { name: /unlock/i }));
+    expect(await screen.findByText('app')).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-17T12:00:00.000Z'));
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    vi.setSystemTime(new Date('2026-06-17T12:01:00.000Z'));
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    expect(screen.queryByText('app')).toBeNull();
     expect(storageIsEncrypted()).toBe(false);
   });
 });

@@ -1,10 +1,11 @@
 import { db, type SyncMetaRow } from './db';
-import { encryptRecord, decryptRecord, type SyncEnvelope } from '@/src/crypto/envelope';
+import { encryptRecord, decryptRecord, opaqueRecordKey, type SyncEnvelope } from '@/src/crypto/envelope';
 import { authHash, type DerivedKeys } from '@/src/crypto/keys';
 import {
   getAllRecords,
   putRecordRaw,
   deleteRecordRaw,
+  getStorageKeys,
   setSyncTracking,
   notifyOutboxChanged,
 } from './storage';
@@ -93,14 +94,21 @@ async function queueRecord(
   notifyOutboxChanged();
 }
 
-// Initial full push seed (enable-sync flow): queue every existing record and
-// the preferences snapshot, so the first push uploads the whole health record.
+// Initial full push seed (enable-sync/restore): queue only records which do
+// not already have a sync clock. A preceding pull records every remote envelope
+// in syncMeta, so this uploads local-only data without restamping pulled data.
 export async function seedOutbox(keys: DerivedKeys): Promise<void> {
   for (const [store, keyField] of Object.entries(STORE_KEYS)) {
     const records = await getAllRecords<Record<string, unknown>>(store);
-    for (const r of records) await queueRecord(keys, store, String(r[keyField]), r);
+    for (const r of records) {
+      const key = String(r[keyField]);
+      if (await db.syncMeta.get(await opaqueRecordKey(keys, store, key))) continue;
+      await queueRecord(keys, store, key, r);
+    }
   }
-  await queueRecord(keys, PREFS_STORE, PREFS_KEY, exportPreferences());
+  if (!(await db.syncMeta.get(await opaqueRecordKey(keys, PREFS_STORE, PREFS_KEY)))) {
+    await queueRecord(keys, PREFS_STORE, PREFS_KEY, exportPreferences());
+  }
 }
 
 async function post(path: string, keys: DerivedKeys, body: unknown): Promise<unknown> {
@@ -160,9 +168,13 @@ export async function push(keys: DerivedKeys): Promise<void> {
 // device's own echoes (equal timestamps) and stale writes are no-ops. Returns
 // whether local data changed.
 async function applyRemote(keys: DerivedKeys, env: SyncEnvelope): Promise<boolean> {
+  if (getStorageKeys() !== keys) return false;
   const local = await db.syncMeta.get(env.recordKey);
   if (local && local.updatedAt >= env.updatedAt) return false;
   const { store, key, value } = await decryptRecord(keys, env);
+  // A pending pull can outlive an auto-lock. Re-check after decryption because
+  // raw storage chooses its encrypted/plaintext path from the current session.
+  if (getStorageKeys() !== keys) return false;
   if (store === PREFS_STORE) {
     if (!env.deleted) importPreferences(value as Partial<PreferencesSnapshot>, false);
   } else if (STORE_KEYS[store]) {
@@ -187,8 +199,10 @@ export async function pull(keys: DerivedKeys): Promise<number> {
       more: boolean;
     };
     for (const env of page.records) {
+      if (getStorageKeys() !== keys) return applied;
       if (await applyRemote(keys, env)) applied++;
     }
+    if (getStorageKeys() !== keys) return applied;
     localStorage.setItem(lastSeqKey(keys), String(page.since));
     if (!page.more) return applied;
   }
@@ -217,15 +231,14 @@ export async function enableSync(keys: DerivedKeys): Promise<void> {
   localStorage.setItem(SYNCED_AT_KEY, new Date().toISOString());
 }
 
-// Restore flow (fresh device, phrase just entered): no seed — there is nothing
-// local worth pushing yet, and tracking picks up everything from here on.
-// ponytail: data that existed on this device BEFORE the restore stays
-// local-only; sync it by re-saving it. Fine for the fresh-device case this
-// flow is for.
+// Restore flow (phrase just entered): pull before seeding so existing remote
+// records win by LWW and any unique local data joins the encrypted account.
 export async function restoreSync(keys: DerivedKeys): Promise<number> {
   await registerAccount(keys);
   startSyncTracking(keys);
   const applied = await pull(keys);
+  await seedOutbox(keys);
+  await push(keys);
   localStorage.setItem(ENABLED_KEY, '1');
   localStorage.setItem(SYNCED_AT_KEY, new Date().toISOString());
   return applied;

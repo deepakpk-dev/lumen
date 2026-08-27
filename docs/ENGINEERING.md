@@ -220,7 +220,7 @@ The real `store`, `key`, and `value` live **inside** the ciphertext. The server 
 ### 8.4 Flows (order matters)
 
 - **`enableSync`:** register → start tracking → **pull first** → seed outbox with all existing records → push. Pulling before seeding means a *second* device merges remote state in before pushing, instead of clobbering it with fresh-clock copies.
-- **`restoreSync`:** register → start tracking → pull. **No seed** — a fresh device has nothing local worth pushing. (Tradeoff: data that existed on the device *before* the restore stays local-only until re-saved.)
+- **`restoreSync`:** register → start tracking → **pull first** → seed outbox → push. Pulling first preserves the account's LWW state, then unique local records are added to the encrypted account.
 - **`disableSync`:** optionally delete the server copy, stop tracking, clear `syncMeta` and flags. Local data untouched.
 - **`deleteAccount`:** server half of "delete all data" — wipes the account's rows and record.
 
@@ -263,7 +263,6 @@ Search the codebase for `ponytail:` comments — each names a shortcut and its u
 
 - **No production analytics or error monitoring.** The price of the literal zero-tracking guarantee. There is intentionally no server-side error visibility.
 - **Preferences sync as a whole snapshot (LWW).** Two devices editing *different* preferences in the same window lose one side. Split into per-preference records if it bites.
-- **Pre-restore local data stays local-only.** `restoreSync` doesn't seed; data that predates a fresh-device restore must be re-saved to sync. Fine for the empty-new-device case it targets.
 - **`refresh()` reloads all stores on every write.** Correct and simple; the first thing to make incremental if a single account's data ever grows large.
 - **EPDS crisis helplines are a curated shortlist** (`src/domain/postpartum/crisis-resources.ts`) — region from the device locale only (privacy: no geolocation), manual override, findahelpline.com fallback for unlisted regions. Numbers need periodic review.
 - **Perimenopause mode suppresses fertility UI by design** — no fertile-window display, calendar markers, or reminders in the `menopause` stage (erratic ovulation makes them imply false precision and risks contraceptive misreading); period prediction stays, with its normal confidence machinery. The `/report` doctor summary stays factual and unfiltered.

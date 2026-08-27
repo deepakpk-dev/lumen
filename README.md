@@ -334,7 +334,7 @@ These are shipped *knowingly* and documented so reviewers don't mistake them for
 - **EPDS crisis helplines are a curated shortlist, not exhaustive.** Well-established national lines for a handful of regions (region from device locale, user-overridable), with [findahelpline.com](https://findahelpline.com) as the fallback everywhere else. Numbers live in `src/domain/postpartum/crisis-resources.ts` and need periodic review.
 - **The local DB is only encrypted with a passcode.** Without a passcode, the on-device store is plaintext IndexedDB (the app-lock and at-rest encryption are the same opt-in). The Settings copy states this plainly.
 - **Sync uses whole-snapshot LWW for preferences** — two devices editing different preferences within the same window can lose one side. Split into per-preference records if it ever bites.
-- **Data that existed on a device *before* a fresh-device restore stays local-only** until re-saved; the restore flow is built for the empty-new-device case. See the `ponytail:` notes in `src/data/sync-engine.ts`.
+- **Sync restore merges rather than replaces.** The app pulls the encrypted account before seeding local records, so unique data already on a device joins the account while normal LWW rules resolve conflicts.
 
 ---
 

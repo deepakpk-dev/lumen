@@ -8,6 +8,7 @@ import { clearPasscode } from '@/src/security/passcode';
 import { clearVault } from '@/src/security/vault-store';
 import { getStorageKeys, setStorageKeys } from '@/src/data/storage';
 import { deleteAccount, isSyncEnabled, startSyncTracking } from '@/src/data/sync-engine';
+import { clearFiredReminderNotifications } from '@/src/notifications/notify';
 
 export function DataControls({
   onDeleted,
@@ -17,6 +18,7 @@ export function DataControls({
   onImported?: () => void | Promise<void>;
 }) {
   const [confirming, setConfirming] = useState(false);
+  const [confirmingExport, setConfirmingExport] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; msg: string } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -66,6 +68,7 @@ export function DataControls({
     }
     await deleteAll();
     clearPreferences();
+    clearFiredReminderNotifications();
     clearPasscode();
     clearVault();
     setStorageKeys(null);
@@ -78,11 +81,36 @@ export function DataControls({
     <div className="space-y-4">
       <button
         type="button"
-        onClick={handleExport}
+        onClick={() => setConfirmingExport(true)}
         className="w-full rounded-md border px-4 py-3"
       >
         Export my data
       </button>
+
+      {confirmingExport && (
+        <div className="space-y-2 rounded-md border border-amber-300 p-3 dark:border-amber-800">
+          <p className="text-sm text-amber-900 dark:text-amber-200">
+            This download is an unencrypted JSON file containing sensitive health data. Save
+            or share it only somewhere you trust.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="flex-1 rounded-md bg-amber-700 px-4 py-3 text-white"
+            >
+              Download unencrypted export
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingExport(false)}
+              className="flex-1 rounded-md border px-4 py-3"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <input
         ref={fileInput}

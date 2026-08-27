@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { db } from './db';
 import { deleteAll, addCycle, getCycles, getDailyLog, upsertDailyLog, clearPregnancyProfile, savePregnancyProfile, addKickSession } from './repository';
+import { setStorageKeys } from './storage';
 import {
   startSyncTracking,
   seedOutbox,
@@ -71,12 +72,14 @@ beforeEach(async () => {
   registered = null;
   vi.stubGlobal('fetch', vi.fn(fakeFetch));
   keys = await deriveKeys(newRecoveryPhrase());
+  setStorageKeys(keys);
   clearPreferences();
   await deleteAll();
 });
 
 afterEach(async () => {
   startSyncTracking(null);
+  setStorageKeys(null);
   vi.unstubAllGlobals();
 });
 
@@ -313,6 +316,99 @@ describe('sync engine', () => {
     // Tracking is live: a new write queues for the next push.
     await upsertDailyLog({ date: '2026-01-05', symptoms: [], moods: [] });
     expect(await db.syncMeta.filter((r) => r.dirty).count()).toBe(1);
+  });
+
+  it('restoreSync merges records already on this device into the synced account', async () => {
+    // The account already has data from another device.
+    startSyncTracking(keys);
+    await addCycle({ id: 'from-server', startDate: '2026-01-01' });
+    await push(keys);
+
+    // This device has a local record before its owner restores the phrase.
+    startSyncTracking(null);
+    await deleteAll();
+    await addCycle({ id: 'already-local', startDate: '2026-02-01' });
+
+    await restoreSync(keys);
+
+    expect((await getCycles()).map((cycle) => cycle.id).sort()).toEqual([
+      'already-local',
+      'from-server',
+    ]);
+    const { decryptRecord } = await import('@/src/crypto/envelope');
+    const recordsOnServer = await Promise.all(
+      [...serverRows.values()].map(async (row) => decryptRecord(keys, row)),
+    );
+    expect(recordsOnServer.map((record) => record.key)).toContain('already-local');
+  });
+
+  it('does not write a pulled record into plaintext storage after the vault locks', async () => {
+    startSyncTracking(keys);
+    setStorageKeys(keys);
+    await addCycle({ id: 'from-server', startDate: '2026-01-01' });
+    await push(keys);
+
+    startSyncTracking(null);
+    setStorageKeys(null);
+    await deleteAll();
+    await db.syncMeta.clear();
+
+    setStorageKeys(keys);
+    startSyncTracking(keys);
+    let releasePull: (() => void) | undefined;
+    vi.mocked(fetch).mockImplementation((url, init) => {
+      if (String(url).endsWith('/pull')) {
+        return new Promise<Response>((resolve) => {
+          releasePull = () => resolve(fakeFetch(String(url), init as RequestInit));
+        });
+      }
+      return fakeFetch(String(url), init as RequestInit);
+    });
+
+    const pendingPull = pull(keys);
+    await vi.waitFor(() => expect(releasePull).toBeTypeOf('function'));
+    setStorageKeys(null); // auto-lock while the server response is in flight
+    startSyncTracking(null);
+    releasePull!();
+
+    await expect(pendingPull).resolves.toBe(0);
+    expect(await db.cycles.toArray()).toEqual([]);
+    expect(await db.records.count()).toBe(0);
+  });
+
+  it('does not restamp a pulled record and overwrite a newer server edit when seeding', async () => {
+    setStorageKeys(keys);
+    startSyncTracking(keys);
+    await addCycle({ id: 'shared-cycle', startDate: '2026-01-01' });
+    await push(keys);
+
+    // Device B pulls the original record.
+    startSyncTracking(null);
+    setStorageKeys(null);
+    await deleteAll();
+    await db.syncMeta.clear();
+    setStorageKeys(keys);
+    startSyncTracking(keys);
+    await pull(keys);
+
+    // Device A edits after B pulled, but before B seeds its local outbox.
+    await tick();
+    const { encryptRecord, decryptRecord } = await import('@/src/crypto/envelope');
+    const newerRemote = await encryptRecord(
+      keys,
+      { store: 'cycles', key: 'shared-cycle', value: { id: 'shared-cycle', startDate: '2026-02-02' } },
+      { updatedAt: new Date().toISOString() },
+    );
+    serverRows.set(newerRemote.recordKey, { ...newerRemote, serverSeq: ++serverSeq });
+
+    await tick();
+    await seedOutbox(keys);
+    await push(keys);
+
+    const cycleOnServer = await Promise.all(
+      [...serverRows.values()].map(async (row) => decryptRecord(keys, row)),
+    ).then((records) => records.find((record) => record.store === 'cycles'));
+    expect((cycleOnServer?.value as { startDate: string }).startDate).toBe('2026-02-02');
   });
 
   it('disableSync with deleteServerCopy wipes the server and stops tracking', async () => {

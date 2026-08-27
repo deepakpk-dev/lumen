@@ -52,6 +52,35 @@ describe('DataControls', () => {
     });
   });
 
+  it('removes reminder delivery history when deleting all data', async () => {
+    localStorage.setItem(
+      'lumen.notify.fired',
+      JSON.stringify({ date: '2026-06-17', kinds: ['period-soon'] }),
+    );
+
+    render(<DataControls />);
+
+    await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem('lumen.notify.fired')).toBeNull();
+    });
+  });
+
+  it('warns that a backup download is unencrypted before exporting it', async () => {
+    render(<DataControls />);
+
+    await userEvent.click(screen.getByRole('button', { name: /export my data/i }));
+
+    expect(
+      screen.getByText(/download is an unencrypted json file containing sensitive health data/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /download unencrypted export/i }),
+    ).toBeInTheDocument();
+  });
+
   describe('with sync on', () => {
     afterEach(() => {
       setStorageKeys(null);
