@@ -28,9 +28,8 @@ export function CycleSummary({
   if (!prediction || !lastPeriodStart) {
     return (
       <section className="lumen-card">
-        <p className="lumen-eyebrow">Your cycle today</p>
-        <h2 className="lumen-editorial-title">Start where you are</h2>
-        <p className="lumen-subtitle">Log your first period to see predictions.</p>
+        <h2 className="lumen-editorial-title">No period logged yet</h2>
+        <p className="lumen-subtitle">Log when your last period started to see an estimate for your next one.</p>
       </section>
     );
   }
@@ -70,7 +69,7 @@ export function CycleSummary({
           <p className="lumen-muted text-xs">Next estimated period</p>
           <p className="font-semibold">{dateFormat.formatRange(parseISODate(earliest), parseISODate(latest))}</p>
         </div>
-        <Link href="/calendar" className="lumen-text-link">Details <LumenIcon name="arrow" size={15} /></Link>
+        <Link href="/calendar" className="lumen-text-link">View calendar <LumenIcon name="arrow" size={15} /></Link>
       </div>
       <details className="mt-3 text-xs lumen-muted">
         <summary className="cursor-pointer py-2">Confidence: {prediction.confidence}</summary>

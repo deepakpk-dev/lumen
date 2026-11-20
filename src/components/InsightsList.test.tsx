@@ -25,6 +25,7 @@ describe('InsightsList', () => {
 
   it('shows the empty state when there are no insights', () => {
     render(<InsightsList insights={[]} />);
-    expect(screen.getByText(/keep logging to unlock insights/i)).toBeInTheDocument();
+    expect(screen.getByText(/no insights yet/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Log today' })).toHaveAttribute('href', '/log');
   });
 });

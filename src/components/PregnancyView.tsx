@@ -22,7 +22,7 @@ export function PregnancyView() {
   }
 
   return (
-    <PageShell title="Pregnancy" eyebrow="Your pregnancy, your pace" subtitle="Your week, your observations, and a little support.">
+    <PageShell title="Pregnancy" subtitle="See what to expect this week and track symptoms, kicks, and contractions.">
       <PregnancyCard
         gestation={gestation}
         trimester={currentTrimester}

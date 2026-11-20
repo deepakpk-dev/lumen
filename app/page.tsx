@@ -55,7 +55,6 @@ export default function HomePage() {
       backHref={null}
       title={personalization?.preferredName ? <>Welcome back,<br />{personalization.preferredName}.</> : 'Today'}
       eyebrow={parseISODate(today).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-      subtitle={endedByLoss ? undefined : 'Here’s a gentle look at your day.'}
       action={endedByLoss ? undefined : (
         <Link href="/profile" className="lumen-badge" aria-label={`${stageLabel[lifeStage]} preferences`}><LumenIcon name="heart" size={14} />{stageLabel[lifeStage]}</Link>
       )}
@@ -86,7 +85,7 @@ export default function HomePage() {
       )}
       {lifeStage === 'menopause' && (
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Cycles often become irregular in perimenopause — predictions carry extra uncertainty.
+          Cycles often become irregular in perimenopause, so period estimates may be less reliable.
         </p>
       )}
       {!endedByLoss && <ReminderBanner />}
@@ -99,10 +98,10 @@ export default function HomePage() {
         />
       )}
       <section className="lumen-card lumen-checkin-card">
-        <h2 className="lumen-editorial-title">A moment for you</h2>
-        <p className="lumen-subtitle">{dailyLogs.some((log) => log.date === today) ? 'Your check-in is here whenever you want to revisit it.' : 'How are you feeling today?'}</p>
+        <h2 className="lumen-editorial-title">Daily log</h2>
+        <p className="lumen-subtitle">{dailyLogs.some((log) => log.date === today) ? 'You’ve logged today. You can add to or edit your entry.' : 'Record your mood, symptoms, or anything you want to remember.'}</p>
         {!isPregnant && !isPostpartum && !endedByLoss && lifeStage !== 'menopause' && (
-          <div className="lumen-quick-moods" aria-label="Start a check-in with a mood" role="group">
+          <div className="lumen-quick-moods" aria-label="Choose a mood to log" role="group">
             {MOOD_OPTIONS.filter((mood) => ['Calm', 'Happy', 'Anxious', 'Energetic'].includes(mood)).map((mood) => (
               <button key={mood} type="button" className="lumen-chip" onClick={() => {
                 setDraftMood({ date: today, mood });

@@ -90,8 +90,8 @@ describe('parseImport', () => {
   });
 
   it('rejects non-JSON, non-export, and newer-version files', () => {
-    expect(() => parseImport('not json')).toThrow(/JSON/);
-    expect(() => parseImport('{"foo":1}')).toThrow(/Lumen export/);
+    expect(() => parseImport('not json')).toThrow(/backup file ending in \.json/);
+    expect(() => parseImport('{"foo":1}')).toThrow(/backup file exported from Lumen/);
     expect(() => parseImport('{"version":99}')).toThrow(/newer version/);
   });
 });

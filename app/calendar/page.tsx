@@ -26,9 +26,9 @@ export default function CalendarPage() {
   if (loading) return <main className="p-6">Loading…</main>;
 
   return (
-    <PageShell title="Calendar" eyebrow="Your month at a glance" subtitle="A little more context for each day." backHref={null}>
+    <PageShell title="Calendar" subtitle="Select today or an earlier date to open its log." backHref={null}>
       <div className="lumen-card lumen-calendar">
-      <div className="mb-4 flex items-center justify-between gap-2">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="lumen-editorial-title" aria-live="polite">{MONTH_LABEL.format(parseISODate(month))}</h2>
         <div className="flex gap-1.5">
         <button
@@ -68,8 +68,7 @@ export default function CalendarPage() {
       </div>
       <section className="lumen-card">
         <h2 className="lumen-card-title">Today</h2>
-        <p className="lumen-subtitle">{dailyLogs.some((entry) => entry.date === today) ? 'You’ve already checked in today.' : 'Record what feels useful, or tap a date to look back.'}</p>
-        <Link href="/log" className="lumen-text-link"><LumenIcon name="add" size={17} /> {dailyLogs.some((entry) => entry.date === today) ? 'Edit today’s check-in' : 'Add entry'}</Link>
+        <Link href="/log" className="lumen-text-link"><LumenIcon name="add" size={17} /> {dailyLogs.some((entry) => entry.date === today) ? 'Edit today’s log' : 'Log today'}</Link>
       </section>
     </PageShell>
   );

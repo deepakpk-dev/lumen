@@ -19,7 +19,7 @@ test('postpartum journey: birth, recovery home, mood check-in, log, exit', async
 
   // Onboarding: pick the pregnancy goal and enter a due date.
   await openOnboarding(page);
-  await page.getByRole('radio', { name: /I'm pregnant/ }).click();
+  await page.getByRole('radio', { name: /^Pregnancy\b/ }).click();
   await continueSetup(page);
   await page.getByLabel('Due date', { exact: true }).fill(dueDate);
   await finishSetupFromDate(page, false);
@@ -29,11 +29,11 @@ test('postpartum journey: birth, recovery home, mood check-in, log, exit', async
   await expect(page.getByRole('heading', { name: 'Pregnancy' })).toBeVisible();
 
   // Baby arrives: the end-of-pregnancy flow lives in Settings.
-  await page.getByRole('link', { name: 'Back to Home', exact: true }).click();
+  await page.getByRole('link', { name: 'Back to Today', exact: true }).click();
   await page.getByRole('link', { name: 'Settings' }).click();
   await page.getByRole('button', { name: 'Manage pregnancy' }).click();
   await page.getByRole('button', { name: 'Baby arrived' }).click();
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Start postpartum recovery' }).click();
 
   // Home is now postpartum-aware: week-1 recovery card + Postpartum nav tile.
   await expect(page.getByRole('heading', { name: 'Postpartum · week 1' })).toBeVisible();

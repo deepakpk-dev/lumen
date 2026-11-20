@@ -25,7 +25,7 @@ export function TrackingOptions({ choices, selected, onChange }: {
 }) {
   return (
     <fieldset className="setup-tracking">
-      <legend className="sr-only">Prioritize fields in your daily check-in</legend>
+      <legend className="sr-only">Fields to show first in your daily log</legend>
       {choices.map(({ key, label, icon }) => (
         <label key={key} className="setup-choice">
           <span className="lumen-icon-box"><LumenIcon name={icon} size={17} /></span>

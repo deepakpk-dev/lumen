@@ -28,7 +28,7 @@ describe('DataControls', () => {
     render(<DataControls />);
 
     await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
-    await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+    await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
 
     await waitFor(async () => {
       expect(await getCycles()).toEqual([]);
@@ -45,7 +45,7 @@ describe('DataControls', () => {
     render(<DataControls />);
 
     await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
-    await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+    await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
 
     await waitFor(() => {
       expect(hasPasscode()).toBe(false);
@@ -61,7 +61,7 @@ describe('DataControls', () => {
     render(<DataControls />);
 
     await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
-    await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+    await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
 
     await waitFor(() => {
       expect(localStorage.getItem('lumen.notify.fired')).toBeNull();
@@ -71,13 +71,13 @@ describe('DataControls', () => {
   it('warns that a backup download is unencrypted before exporting it', async () => {
     render(<DataControls />);
 
-    await userEvent.click(screen.getByRole('button', { name: /export my data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /export a backup/i }));
 
     expect(
-      screen.getByText(/download is an unencrypted json file containing sensitive health data/i),
+      screen.getByText(/unencrypted backup contains sensitive health data/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /download unencrypted export/i }),
+      screen.getByRole('button', { name: /download unencrypted backup/i }),
     ).toBeInTheDocument();
   });
 
@@ -103,7 +103,7 @@ describe('DataControls', () => {
 
       render(<DataControls />);
       await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
-      await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+      await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
 
       await waitFor(async () => {
         expect(calls).toEqual(['/api/sync/delete-account']);
@@ -121,9 +121,9 @@ describe('DataControls', () => {
 
       render(<DataControls />);
       await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
-      await userEvent.click(screen.getByRole('button', { name: /yes, delete/i }));
+      await userEvent.click(screen.getByRole('button', { name: /delete all data/i }));
 
-      await screen.findByText(/nothing was deleted/i);
+      await screen.findByText(/your data on this device was kept/i);
       expect(await getCycles()).toHaveLength(1);
       expect(localStorage.getItem('lumen.sync.enabled')).toBe('1');
     });

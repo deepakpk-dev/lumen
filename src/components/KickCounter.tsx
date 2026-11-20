@@ -46,24 +46,24 @@ export function KickCounter() {
           <button
             type="button"
             onClick={recordKick}
-            className="w-full rounded-md bg-rose-600 px-4 py-6 text-lg text-white"
+            className="lumen-button lumen-timer-button w-full"
           >
             Record a kick
           </button>
-          <button type="button" onClick={finish} className="w-full rounded-md border px-4 py-3">
+          <button type="button" onClick={finish} className="lumen-outline w-full">
             Finish
           </button>
         </div>
       ) : (
-        <button type="button" onClick={start} className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
+        <button type="button" onClick={start} className="lumen-button w-full">
           Start a session
         </button>
       )}
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Recent sessions</h2>
+      <section className="lumen-card space-y-2">
+        <h2 className="lumen-card-title">Recent sessions</h2>
         {kickSessions.length === 0 ? (
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">No sessions yet.</p>
+          <p className="lumen-help">No sessions yet.</p>
         ) : (
           <ul className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
             {kickSessions.map((s) => (

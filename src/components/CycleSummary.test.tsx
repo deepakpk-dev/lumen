@@ -36,6 +36,6 @@ describe('CycleSummary', () => {
         today="2026-03-10"
       />,
     );
-    expect(screen.getByText(/log your first period/i)).toBeInTheDocument();
+    expect(screen.getByText(/log when your last period started/i)).toBeInTheDocument();
   });
 });

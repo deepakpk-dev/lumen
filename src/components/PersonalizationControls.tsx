@@ -28,7 +28,7 @@ function PreferencesForm() {
       await updatePersonalization({ tracking, ...(cycleStage ? { cycleLength: cycle ? Number(cycle) : undefined, periodLength: period ? Number(period) : undefined } : {}) });
       setMessage('Preferences saved.');
     } catch {
-      setMessage('Preferences couldn’t be saved. Please try again.');
+      setMessage('Couldn’t save your tracking preferences. Try again.');
     } finally {
       setSaving(false);
     }
@@ -38,18 +38,18 @@ function PreferencesForm() {
     <form className="space-y-3" onSubmit={save}>
       {cycleStage && (
         <>
-          <p className="text-xs lumen-muted">Lumen uses these estimates until you have enough logged history.</p>
-          <label className="setup-label">Typical cycle length (days)
-            <input className="lumen-field mt-1" type="number" min={20} max={45} value={cycle} placeholder="Optional" onChange={(e) => setCycle(e.target.value)} />
+          <p className="lumen-help">Lumen uses these estimates until you have enough logged history.</p>
+          <label className="setup-label">Usual cycle length in days (optional)
+            <input className="lumen-field mt-1" type="number" min={20} max={45} value={cycle} onChange={(e) => setCycle(e.target.value)} />
           </label>
-          <label className="setup-label">Period duration (days)
-            <input className="lumen-field mt-1" type="number" min={2} max={8} value={period} placeholder="Optional" onChange={(e) => setPeriod(e.target.value)} />
+          <label className="setup-label">Usual period length in days (optional)
+            <input className="lumen-field mt-1" type="number" min={2} max={8} value={period} onChange={(e) => setPeriod(e.target.value)} />
           </label>
         </>
       )}
-      <p className="text-xs lumen-muted">Choose which fields appear first in your daily check-in.</p>
+      <p className="lumen-help">Choose which fields appear first in your daily log.</p>
       <TrackingOptions choices={trackingOptions(lifeStage)} selected={tracking} onChange={setTracking} />
-      <button type="submit" className="lumen-button" disabled={saving}>Save preferences</button>
+      <button type="submit" className="lumen-button w-full" disabled={saving}>Save preferences</button>
       {message && <p className="lumen-note" role="status">{message}</p>}
     </form>
   );

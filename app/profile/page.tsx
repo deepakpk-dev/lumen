@@ -7,10 +7,10 @@ import { PageShell } from '@/src/components/PageShell';
 import { useHealthData } from '@/src/state/useHealthData';
 
 const links: { href: string; title: string; description: string; icon: LumenIconName }[] = [
-  { href: '/settings', title: 'Settings & preferences', description: 'Your life stage, reminders, and device settings', icon: 'settings' },
-  { href: '/programs', title: 'Guided programs', description: 'Learning at your pace', icon: 'book' },
-  { href: '/report', title: 'Doctor summary', description: 'Bring your observations together', icon: 'insights' },
-  { href: '/privacy', title: 'Privacy & your data', description: 'Understand how your data is stored', icon: 'shield' },
+  { href: '/settings', title: 'Settings', description: 'Manage tracking, reminders, and sync', icon: 'settings' },
+  { href: '/programs', title: 'Programs', description: 'Read a series of articles on one topic', icon: 'book' },
+  { href: '/report', title: 'Doctor summary', description: 'Print or save a PDF for an appointment', icon: 'insights' },
+  { href: '/privacy', title: 'Privacy & your data', description: 'See where Lumen stores your data', icon: 'shield' },
 ];
 
 function NameForm({ initialName }: { initialName: string }) {
@@ -27,7 +27,7 @@ function NameForm({ initialName }: { initialName: string }) {
       setName(name.trim());
       setStatus('Name saved.');
     } catch {
-      setStatus('Your name couldn’t be saved. Please try again.');
+      setStatus('Couldn’t save your name. Try again.');
     } finally {
       setSaving(false);
     }
@@ -35,8 +35,7 @@ function NameForm({ initialName }: { initialName: string }) {
 
   return (
     <form className="lumen-card" onSubmit={save}>
-      <h2 className="lumen-card-title mb-4">Your profile</h2>
-      <label className="setup-label">What should we call you?
+      <label className="setup-label">Preferred name (optional)
         <input className="lumen-field mt-1" value={name} maxLength={35} autoComplete="nickname"
           onChange={(event) => { setName(event.target.value); setStatus(''); }} />
       </label>
@@ -49,7 +48,7 @@ function NameForm({ initialName }: { initialName: string }) {
 export default function ProfilePage() {
   const { personalization, loading } = useHealthData();
   return (
-    <PageShell eyebrow="Your space" title="My space" subtitle="Make yourself at home." backHref={null}>
+    <PageShell title="Profile" backHref={null}>
       {!loading && <NameForm initialName={personalization?.preferredName ?? ''} />}
       <div className="lumen-card py-1">
         {links.map(({ href, title, description, icon }) => (

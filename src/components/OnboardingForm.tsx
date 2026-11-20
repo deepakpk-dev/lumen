@@ -13,23 +13,24 @@ import { TrackingOptions, trackingOptions } from './TrackingOptions';
 export type Goal = 'cycle' | 'ttc' | 'pregnant' | 'postpartum' | 'menopause';
 type Step = 'focus' | 'date' | 'cycle' | 'period' | 'tracking' | 'reminders' | 'ready';
 const goals: { key: Goal; label: string; hint: string; icon: LumenIconName }[] = [
-  { key: 'cycle', label: 'Track my cycle', hint: 'Understand your pattern over time', icon: 'calendar' },
-  { key: 'ttc', label: 'Trying to conceive', hint: 'Explore cycle and fertility signals', icon: 'heart' },
-  { key: 'pregnant', label: "I'm pregnant", hint: 'A little support, week by week', icon: 'spark' },
-  { key: 'postpartum', label: 'Postpartum recovery', hint: 'Make space for your recovery', icon: 'leaf' },
-  { key: 'menopause', label: 'Navigating perimenopause', hint: 'Understand your changing rhythm', icon: 'wave' },
+  { key: 'cycle', label: 'Cycle tracking', hint: 'Log periods and see when your next period may start', icon: 'calendar' },
+  { key: 'ttc', label: 'Trying to conceive', hint: 'Log temperature and ovulation tests to track fertility', icon: 'heart' },
+  { key: 'pregnant', label: 'Pregnancy', hint: 'Follow your pregnancy week by week', icon: 'spark' },
+  { key: 'postpartum', label: 'Postpartum recovery', hint: 'Track bleeding, symptoms, and mood after birth', icon: 'leaf' },
+  { key: 'menopause', label: 'Perimenopause', hint: 'Track changes in your periods, sleep, and symptoms', icon: 'wave' },
 ];
-const copy: Record<Step, [string, string, string, string]> = {
-  focus: ['First, the important part', 'What brings you', 'here?', 'We’ll shape your experience around what matters to you right now.'],
-  date: ['Your cycle basics', 'When did your last', 'period start?', 'Choose the first day of your most recent period. It’s okay if you’re unsure.'],
-  cycle: ['Everyone is different', 'How long is your', 'cycle?', 'Count from the first day of one period to the first day of the next. An estimate is fine.'],
-  period: ['One more detail', 'How long does your', 'period last?', 'Think about the number of days you typically bleed. You can skip this if you’re unsure.'],
-  tracking: ['Make it yours', 'What would you like to', 'track?', 'Your choices appear first in your daily check-in. You can still use the other fields whenever you want.'],
-  reminders: ['Only if you want', 'Would you like', 'reminders?', 'Choose the reminders you want to see when you open Lumen. You can change them in Settings.'],
-  ready: ['All set, your way', 'A beautiful place to', 'begin.', 'Your choices are ready. You can change them from My space.'],
+const copy: Record<Step, [string, string, string]> = {
+  focus: ['Choose a', 'tracking mode', 'This changes what you can log and what you’ll see on the Today screen.'],
+  date: ['When did your', 'last period start?', 'Choose the first day of bleeding. If you’re unsure, you can continue without a date.'],
+  cycle: ['How long is your', 'usual cycle?', 'Count from the first day of one period to the first day of the next. An estimate is fine.'],
+  period: ['How long does your', 'period usually last?', 'Select the number of days you usually bleed, or continue without choosing.'],
+  tracking: ['Choose what to', 'log first', 'These fields appear first in your daily log. You can still use the other fields.'],
+  reminders: ['Choose your', 'reminders', 'Reminders appear when you open Lumen. You can leave them off or change them later in Settings.'],
+  ready: ['Review your', 'setup', 'Check your choices, then finish setup to start tracking.'],
 };
 const formatDate = new Intl.DateTimeFormat(undefined, { dateStyle: 'long' });
 const formatMonth = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
+const formatList = new Intl.ListFormat(undefined, { style: 'long', type: 'conjunction' });
 
 function PeriodDatePicker({ value, today, onChange }: { value: string; today: string; onChange: (date: string) => void }) {
   const [month, setMonth] = useState(value || today);
@@ -60,7 +61,7 @@ function PeriodDatePicker({ value, today, onChange }: { value: string; today: st
         })}
       </div>
       <label className="setup-label" htmlFor="last-period">First day of your last period</label>
-      <input className="lumen-field" id="last-period" aria-label="last period start" type="date" value={value} max={today}
+      <input className="lumen-field" id="last-period" type="date" value={value} max={today}
         onChange={(event) => {
           const date = event.target.value;
           onChange(date);
@@ -102,9 +103,9 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
   const trackingChoices = trackingOptions(goal);
   const selectedTracking = trackingChoices.filter(({ key }) => tracking.includes(key));
   const reminderChoices: { key: keyof typeof reminders; label: string; hint: string; icon: LumenIconName }[] = [
-    { key: 'logReminder', label: 'Daily check-in', hint: 'A gentle moment to log how you feel', icon: 'smile' },
-    { key: 'periodReminder', label: 'Period reminders', hint: 'A heads-up near an estimated start date', icon: 'calendar' },
-    ...(goal === 'menopause' ? [] : [{ key: 'fertileReminder', label: 'Fertile window', hint: 'A reminder when your estimate is coming up', icon: 'spark' }] as const),
+    { key: 'logReminder', label: 'Daily log reminder', hint: 'On days when you haven’t logged anything', icon: 'smile' },
+    { key: 'periodReminder', label: 'Period reminders', hint: 'Around your estimated period start', icon: 'calendar' },
+    ...(goal === 'menopause' ? [] : [{ key: 'fertileReminder', label: 'Fertile window reminders', hint: 'During your estimated fertile window', icon: 'spark' }] as const),
   ];
 
   function go(next: Step | 'welcome') {
@@ -149,20 +150,24 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
   if (step === 'welcome') return <OnboardingWelcome onStart={() => go('focus')} headingRef={headingRef} />;
 
   const position = sequence.indexOf(step);
-  const [eyebrow, title, emphasis, description] = step === 'date' && (pregnant || postpartum)
-    ? ['Your journey', 'A little about', 'your dates.', pregnant ? 'Enter your estimated due date or the date your last period began.' : 'Choose the date you gave birth to see your recovery timeline.']
-    : copy[step];
+  const [title, emphasis, description] = step === 'date' && pregnant
+    ? lmpMode
+      ? [copy.date[0], copy.date[1], 'Lumen uses this date to estimate your due date.']
+      : ['When are you', 'due?', 'Lumen uses this date to show your pregnancy week.']
+    : step === 'date' && postpartum
+      ? ['When did you', 'give birth?', 'Lumen uses this date to show your recovery week.']
+      : copy[step];
   const total = sequence.length - 1;
   const summary = step === 'ready' ? [
-    ['Your focus', goals.find(({ key }) => key === goal)!.label],
-    [pregnant ? 'Due date' : postpartum ? 'Birth date' : 'Last period start',
-      dateUnknown && tracksCycle ? 'Not sure yet' : formatDate.format(parseISODate((pregnant ? pregnancyDueDate : postpartum ? birthDate : date) || today))],
+    ['Tracking mode', goals.find(({ key }) => key === goal)!.label],
+    [pregnant ? 'Due date' : postpartum ? 'Birth date' : 'First day of your last period',
+      dateUnknown && tracksCycle ? 'Skipped' : formatDate.format(parseISODate((pregnant ? pregnancyDueDate : postpartum ? birthDate : date) || today))],
     ...(tracksCycle ? [
-      ['Typical cycle', cycleLength ? `${cycleLength} days` : 'Not sure yet'],
-      ['Period duration', periodLength ? `${periodLength} days` : 'Not sure yet'],
+      ['Usual cycle length', cycleLength ? `${cycleLength} days` : 'Skipped'],
+      ['Usual period length', periodLength ? `${periodLength} days` : 'Skipped'],
     ] : []),
-    ['Tracking', selectedTracking.map(({ label }) => label).join(', ') || 'No fields prioritized'],
-    ...(tracksCycle ? [['Reminders', reminderChoices.filter(({ key }) => reminders[key]).map(({ label }) => label).join(', ') || 'Off']] : []),
+    ['First in your daily log', formatList.format(selectedTracking.map(({ label }) => label)) || 'Default order'],
+    ...(tracksCycle ? [['Reminders', formatList.format(reminderChoices.filter(({ key }) => reminders[key]).map(({ label }) => label)) || 'Off']] : []),
   ] : [];
 
   return (
@@ -174,19 +179,18 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
       <form onSubmit={handleSubmit}>
         {step !== 'ready' && (
           <div className="setup-progress">
-            <div className="flex justify-between gap-2"><span>Personalize your experience</span><span>{position + 1} of {total}</span></div>
+            <div className="flex justify-between gap-2"><span>Setup</span><span>{position + 1} of {total}</span></div>
             <progress aria-label="Setup progress" value={position + 1} max={total} />
           </div>
         )}
         <div className="setup-heading">
           {step === 'ready' && <span className="setup-finish"><LumenIcon name="check" size={28} /></span>}
-          <p className="lumen-eyebrow">{eyebrow}</p>
           <h1 className="lumen-title" ref={headingRef} tabIndex={-1}>{title} <em>{emphasis}</em></h1>
           <p className="lumen-subtitle">{description}</p>
         </div>
         {step === 'focus' && (
           <fieldset className="setup-choices">
-            <legend className="sr-only">What brings you to Lumen?</legend>
+            <legend className="sr-only">Tracking mode</legend>
             {goals.map(({ key, label, hint, icon }) => (
               <label className="setup-choice" key={key}>
                 <span className="lumen-icon-box"><LumenIcon name={icon} /></span>
@@ -205,7 +209,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             <div className="lumen-card"><label className="setup-label" htmlFor="due-date">Due date</label>
               <input className="lumen-field" id="due-date" type="date" value={dueDate} min={today} max={maxDueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
-            <button type="button" className="lumen-text-link" onClick={() => setLmpMode(true)}>Not sure? Enter your last period instead</button>
+            <button type="button" className="lumen-text-link" onClick={() => setLmpMode(true)}>Estimate from your last period</button>
           </>
         ) : (
           <>
@@ -213,7 +217,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
             {pregnant ? (
               <>
                 {derivedDueDate && <p className="lumen-note mt-3">Estimated due date: {formatDate.format(parseISODate(derivedDueDate))}</p>}
-                <button type="button" className="lumen-text-link" onClick={() => setLmpMode(false)}>I know my due date</button>
+                <button type="button" className="lumen-text-link" onClick={() => setLmpMode(false)}>Enter a due date instead</button>
               </>
             ) : (
               <label className="setup-inline-choice"><input type="checkbox" className="lumen-check" checked={dateUnknown}
@@ -235,7 +239,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
                 {[26, 28, 30, 32].map((days) => <button key={days} type="button" className="lumen-chip" aria-pressed={days === cycleLength} onClick={() => setCycleLength(days)}>{days} days</button>)}
               </div>
             </div>
-            <button type="button" className="lumen-text-link" onClick={() => setCycleLength(undefined)}>My cycle varies / I’m not sure</button>
+            <button type="button" className="lumen-text-link" onClick={() => setCycleLength(undefined)}>Leave cycle length blank</button>
             <p className="lumen-note">Lumen uses this estimate until you have recorded a complete cycle.</p>
           </>
         )}
@@ -247,7 +251,7 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
                 {[2, 3, 4, 5, 6, 7, 8].map((days) => <button key={days} type="button" className="lumen-chip" aria-pressed={days === periodLength} onClick={() => setPeriodLength(days)}>{days}</button>)}
               </div>
             </div>
-            <button type="button" className="lumen-text-link" onClick={() => setPeriodLength(undefined)}>I’m not sure yet</button>
+            <button type="button" className="lumen-text-link" onClick={() => setPeriodLength(undefined)}>Leave period length blank</button>
           </>
         )}
         {step === 'tracking' && <TrackingOptions choices={trackingChoices} selected={tracking} onChange={setTracking} />}
@@ -269,11 +273,10 @@ export function OnboardingForm({ onComplete }: { onComplete: (goal: Goal) => voi
           <div className="setup-actions">
             <button className="lumen-outline" type="button" disabled={saving} onClick={() => go(position === 0 ? 'welcome' : sequence[position - 1])}><LumenIcon name="back" size={17} />Back</button>
             <button className="lumen-button" type="submit" disabled={saving || (step === 'date' && !dateReady)}>
-              {saving ? 'Setting up…' : step === 'ready' ? 'Finish setup' : step === sequence.at(-2) ? 'See my summary' : 'Continue'}
+              {saving ? 'Saving setup…' : step === 'ready' ? 'Finish setup' : 'Continue'}
               <LumenIcon name={step === 'ready' ? 'check' : 'arrow'} size={17} />
             </button>
           </div>
-          <p><LumenIcon name="lock" size={13} /> Stored on this device, with optional encrypted sync</p>
         </div>
       </form>
     </main>

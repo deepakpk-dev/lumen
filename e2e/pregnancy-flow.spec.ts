@@ -24,10 +24,10 @@ test('pregnancy journey: onboard via LMP, hub, kicks, contractions, log, loss ex
   // Onboarding: pregnant, but unsure of the due date — enter the last period
   // instead and let Lumen derive it (Naegele's rule).
   await openOnboarding(page);
-  await page.getByRole('radio', { name: /I'm pregnant/ }).click();
+  await page.getByRole('radio', { name: /^Pregnancy\b/ }).click();
   await continueSetup(page);
-  await page.getByRole('button', { name: /Enter your last period instead/ }).click();
-  await page.getByLabel('last period start').fill(lastPeriod);
+  await page.getByRole('button', { name: /Estimate from your last period/ }).click();
+  await page.getByLabel('First day of your last period').fill(lastPeriod);
   await expect(page.getByText(/^Estimated due date:/)).toBeVisible();
   await finishSetupFromDate(page, false);
 

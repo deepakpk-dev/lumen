@@ -11,7 +11,7 @@ export default function InsightsPage() {
   const { insights, loading, cycles, stats, isPregnant, isPostpartum } = useHealthData();
   if (loading) return <main className="p-6">Loading…</main>;
   return (
-    <PageShell title="Insights" eyebrow="Learn your rhythm" subtitle="Gentle observations from what you’ve logged." backHref={null}>
+    <PageShell title="Insights" subtitle="See what changes and what repeats in your logs." backHref={null}>
       {!isPregnant && !isPostpartum && (
         <>
           <dl className="lumen-stat-grid">
@@ -20,7 +20,7 @@ export default function InsightsPage() {
             <div><dt>Cycles logged</dt><dd>{stats.cycleCount}</dd></div>
           </dl>
           <CycleTrends cycles={cycles} />
-          <Link href="/history" className="lumen-outline">Explore trends <LumenIcon name="arrow" size={16} /></Link>
+          <Link href="/history" className="lumen-outline">View cycle history <LumenIcon name="arrow" size={16} /></Link>
         </>
       )}
       <InsightsList insights={insights} />

@@ -24,7 +24,7 @@ export function PostpartumView() {
   }
 
   return (
-    <PageShell title="Postpartum" eyebrow="Your recovery matters" subtitle="A space for you, after birth.">
+    <PageShell title="Postpartum" subtitle="See what to expect after birth and track your recovery.">
       <PostpartumCard
         week={postpartumWeekNumber}
         stage={recoveryStageToday}

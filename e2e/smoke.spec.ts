@@ -8,21 +8,21 @@ import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding
 test('first-run onboarding completes and lands on home', async ({ page }) => {
   // With no data, the home route redirects to onboarding.
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Your body has a rhythm/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Track your reproductive health' })).toBeVisible();
 
   // Intro -> setup.
   await page.getByRole('button', { name: 'Get started' }).click();
-  await expect(page.getByRole('heading', { name: 'What brings you here?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose a tracking mode' })).toBeVisible();
   await continueSetup(page);
 
-  // Default goal is "Track my cycle"; set a last-period date, then complete. This
+  // Default goal is "Cycle tracking"; set a last-period date, then complete. This
   // writes a cycle to IndexedDB and returns to home — exercising the local-first
   // storage path on each engine.
-  await page.getByLabel('last period start').fill('2026-06-20');
+  await page.getByLabel('First day of your last period').fill('2026-06-20');
   await finishSetupFromDate(page);
 
   await expect(page.getByRole('link', { name: 'Log today', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Calendar' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Calendar', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Calm', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Calm', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page).toHaveURL(/\/log$/);
@@ -75,7 +75,7 @@ test('home has no uncaught page errors after onboarding', async ({ page }) => {
 
   await openOnboarding(page);
   await continueSetup(page);
-  await page.getByLabel('last period start').fill('2026-06-20');
+  await page.getByLabel('First day of your last period').fill('2026-06-20');
   await finishSetupFromDate(page);
   await expect(page.getByRole('link', { name: 'Log today', exact: true })).toBeVisible();
 

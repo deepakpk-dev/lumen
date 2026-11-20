@@ -20,9 +20,9 @@ test('Perimenopause journey: onboard, log symptoms, no fertile window, toggle of
 
   // Onboarding: pick the perimenopause goal.
   await openOnboarding(page);
-  await page.getByRole('radio', { name: /Navigating perimenopause/ }).click();
+  await page.getByRole('radio', { name: /^Perimenopause\b/ }).click();
   await continueSetup(page);
-  await page.getByLabel('last period start').fill(lastPeriod);
+  await page.getByLabel('First day of your last period').fill(lastPeriod);
   await finishSetupFromDate(page);
 
   // Lands on home, reframed for the transition: the uncertainty note is shown.
@@ -56,10 +56,10 @@ test('Perimenopause journey: onboard, log symptoms, no fertile window, toggle of
   await page.goto('/settings');
   await expect(page.getByText('Perimenopause mode is on', { exact: false })).toBeVisible();
   // The fertile-window reminder never fires in this mode, so its toggle is hidden.
-  await expect(page.getByText('Fertile window & ovulation')).toHaveCount(0);
+  await expect(page.getByText('Fertile window reminders')).toHaveCount(0);
   await page.getByRole('button', { name: 'Turn off perimenopause mode' }).click();
   await expect(page.getByText('Perimenopause mode is off', { exact: false })).toBeVisible();
-  await expect(page.getByText('Fertile window & ovulation')).toBeVisible();
+  await expect(page.getByText('Fertile window reminders')).toBeVisible();
   await page.goto('/');
   await expect(
     page.getByText('Cycles often become irregular in perimenopause', { exact: false }),

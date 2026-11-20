@@ -18,10 +18,10 @@ test('cycle journey: onboard, prediction, period arrives, cycle rolls over', asy
     if (!err.message.includes('_rsc=')) errors.push(err.message);
   });
 
-  // Onboarding: the default goal is already "Track my cycle".
+  // Onboarding: the default goal is already "Cycle tracking".
   await openOnboarding(page);
   await continueSetup(page);
-  await page.getByLabel('last period start').fill(lastPeriod);
+  await page.getByLabel('First day of your last period').fill(lastPeriod);
   await finishSetupFromDate(page);
 
   // Home predicts from the seeded cycle: day 28, period due, honest confidence.

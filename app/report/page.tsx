@@ -42,13 +42,13 @@ export default function ReportPage() {
     .slice(0, 60);
 
   return (
-    <main className="print-full lumen-page space-y-6">
-      <div className="no-print flex items-center justify-between">
+    <main className="print-full lumen-page lumen-report space-y-6">
+      <div className="no-print flex flex-wrap items-center justify-between gap-2">
         <BackLink href="/settings">Settings</BackLink>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-md border px-4 py-2 text-sm font-medium"
+          className="lumen-outline"
         >
           Print / Save as PDF
         </button>

@@ -48,8 +48,8 @@ export function EpdsCheckin() {
   if (result) {
     return (
       <div className="space-y-4">
-        <section className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
-          <h2 className="text-base font-semibold">Your check-in</h2>
+        <section className="lumen-card space-y-2">
+          <h2 className="lumen-card-title">Your check-in</h2>
           <p className="text-sm text-neutral-700 dark:text-neutral-300">Score: {result.total} / 30</p>
           <p className="text-sm text-neutral-700 dark:text-neutral-300">{result.bandText}</p>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -59,8 +59,8 @@ export function EpdsCheckin() {
         </section>
 
         {result.riskFlag && (
-          <section className="space-y-2 rounded-md border border-rose-300 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/40">
-            <h3 className="text-sm font-semibold text-rose-800 dark:text-rose-300">Support is available</h3>
+          <section className="lumen-panel lumen-warning space-y-3">
+            <h3 className="font-semibold">Support is available</h3>
             <p className="text-sm text-neutral-700 dark:text-neutral-300">
               You do not have to go through this alone. If you are in danger or thinking of
               harming yourself, please reach out right now.
@@ -70,12 +70,12 @@ export function EpdsCheckin() {
               <li>If you are in immediate danger, contact your local emergency services.</li>
             </ul>
 
-            <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+            <label className="setup-label">
               Helplines for
               <select
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+                className="lumen-field mt-1"
               >
                 {CRISIS_RESOURCES.map((r) => (
                   <option key={r.region} value={r.region}>
@@ -128,9 +128,10 @@ export function EpdsCheckin() {
         <fieldset key={q.prompt} className="space-y-2">
           <legend className="text-sm font-medium">{q.prompt}</legend>
           {q.options.map((o) => (
-            <label key={o.label} className="flex items-center gap-2 text-sm">
+            <label key={o.label} className="lumen-choice-row">
               <input
                 type="radio"
+                className="lumen-check"
                 name={`epds-${qi}`}
                 value={o.value}
                 checked={answers[qi] === o.value}
@@ -143,7 +144,7 @@ export function EpdsCheckin() {
       ))}
 
       {saveError && (
-        <p className="text-sm text-rose-700 dark:text-rose-300" role="alert">
+        <p className="lumen-note lumen-danger" role="alert">
           We couldn&apos;t save your check-in. Please try again.
         </p>
       )}
@@ -152,7 +153,7 @@ export function EpdsCheckin() {
         type="button"
         onClick={submit}
         disabled={!complete}
-        className="w-full rounded-md bg-rose-600 px-4 py-3 font-medium text-white disabled:opacity-50"
+        className="lumen-button w-full"
       >
         See my result
       </button>

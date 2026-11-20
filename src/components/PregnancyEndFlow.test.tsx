@@ -18,7 +18,7 @@ describe('PregnancyEndFlow', () => {
     render(<PregnancyEndFlow />);
     fireEvent.click(screen.getByRole('button', { name: /manage pregnancy/i }));
     fireEvent.click(screen.getByRole('button', { name: /baby arrived/i }));
-    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start postpartum recovery/i }));
     expect(endPregnancyBirth).toHaveBeenCalledTimes(1);
   });
 

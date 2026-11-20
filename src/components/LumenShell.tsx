@@ -41,7 +41,7 @@ export function LumenShell({ children }: { children: ReactNode }) {
               <Link href="/notifications" aria-label="Notifications" className="lumen-icon-button lumen-bell">
                 <LumenIcon name="bell" />{hasReminders && <span className="lumen-bell-dot" />}
               </Link>
-              <Link href="/profile" aria-label="My space" className="lumen-icon-button lumen-avatar">
+              <Link href="/profile" aria-label="Profile" className="lumen-icon-button lumen-avatar">
                 {initials || <LumenIcon name="user" />}
               </Link>
             </div>

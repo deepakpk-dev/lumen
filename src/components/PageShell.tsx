@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { LumenIcon } from './LumenIcon';
 
-export function PageShell({ title, subtitle, eyebrow, action, backHref = '/', backLabel = 'Home', children }: {
+export function PageShell({ title, subtitle, eyebrow, action, backHref = '/', backLabel = 'Today', children }: {
   title?: ReactNode;
   subtitle?: ReactNode;
   eyebrow?: ReactNode;

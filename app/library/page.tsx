@@ -16,16 +16,15 @@ export default function LibraryPage() {
     (a) => a.lifeStages.length === 0 || a.lifeStages.includes(lifeStage),
   );
   return (
-    <PageShell title="Library" eyebrow="Curated for curiosity" subtitle="Thoughtful reads for a better understanding of your body." backHref={null}>
+    <PageShell title="Library" subtitle="Browse health articles for your current tracking mode." backHref={null}>
       {stageArticles.length > 0 ? (
         <ContentLibrary feed={contentFeed} all={stageArticles} saved={personalization?.savedArticles} />
       ) : (
-        <p className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-          Guidance for this stage is on its way. In the meantime, look for tips
-          tailored to where you are on its own screen.
+        <p className="lumen-card lumen-help">
+          There are no articles for this tracking mode yet.
         </p>
       )}
-      <Link href="/programs" className="lumen-outline w-full"><LumenIcon name="book" /> Guided programs</Link>
+      <Link href="/programs" className="lumen-outline w-full"><LumenIcon name="book" /> Browse programs</Link>
     </PageShell>
   );
 }

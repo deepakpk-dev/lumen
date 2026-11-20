@@ -73,14 +73,14 @@ export function parseImport(json: string): ImportedData {
   try {
     raw = JSON.parse(json);
   } catch {
-    throw new Error("This file isn't valid JSON — pick a Lumen export file.");
+    throw new Error('Couldn’t read this file. Choose a Lumen backup file ending in .json.');
   }
   if (!raw || typeof raw !== 'object') {
-    throw new Error("This doesn't look like a Lumen export.");
+    throw new Error('Choose a backup file exported from Lumen.');
   }
   const o = raw as Record<string, unknown>;
   if (typeof o.version !== 'number') {
-    throw new Error("This doesn't look like a Lumen export.");
+    throw new Error('Choose a backup file exported from Lumen.');
   }
   if (o.version > EXPORT_VERSION) {
     throw new Error('This export was made by a newer version of Lumen. Update the app, then try again.');

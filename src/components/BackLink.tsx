@@ -7,7 +7,7 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   return (
     <Link
       href={href}
-      className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-1 text-sm font-medium text-neutral-500 transition hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/40 dark:text-neutral-400 dark:hover:text-rose-300"
+      className="lumen-text-link"
     >
       <svg
         aria-hidden="true"

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createVault, unlockVault, rewrapVault } from '@/src/crypto/vault';
+import { createVault, unlockVault, rewrapVault, MIN_VAULT_PASSPHRASE_LENGTH } from '@/src/crypto/vault';
 import {
   hasVault,
   loadVault,
@@ -140,7 +140,7 @@ export function PasscodeControls() {
   if (view === 'legacy') {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+        <p className="lumen-help">
           You have an old screen-lock passcode. It locks the screen but does{' '}
           <span className="font-medium">not</span> encrypt your data on this device.
         </p>
@@ -150,7 +150,7 @@ export function PasscodeControls() {
             setView('off');
             setError('');
           }}
-          className="w-full rounded-md bg-rose-600 px-4 py-3 text-white"
+          className="lumen-button w-full"
         >
           Upgrade to encryption
         </button>
@@ -160,7 +160,7 @@ export function PasscodeControls() {
             setView('legacy-remove');
             setError('');
           }}
-          className="w-full rounded-md border px-4 py-3"
+          className="lumen-outline w-full"
         >
           Remove old passcode
         </button>
@@ -177,14 +177,14 @@ export function PasscodeControls() {
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
           placeholder="Current passcode"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          className="lumen-field"
         />
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <div className="flex gap-2">
+        {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
+        <div className="lumen-actions">
           <button
             type="submit"
             disabled={busy}
-            className="flex-1 rounded-md bg-rose-600 px-4 py-3 text-white disabled:opacity-60"
+            className="lumen-button"
           >
             Remove passcode
           </button>
@@ -194,7 +194,7 @@ export function PasscodeControls() {
               setView('legacy');
               setError('');
             }}
-            className="flex-1 rounded-md border px-4 py-3"
+            className="lumen-outline"
           >
             Cancel
           </button>
@@ -207,12 +207,12 @@ export function PasscodeControls() {
     const syncOn = isSyncEnabled();
     return (
       <form onSubmit={handleTurnOff} className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+        <p className="lumen-help">
           Your records will be stored <span className="font-medium">unencrypted</span> on this
           device, readable by anyone with access to it.
         </p>
         {syncOn && (
-          <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          <p className="lumen-note lumen-warning">
             Turn off sync first (in the Sync section below) — sync uses your recovery phrase, so it
             can&apos;t stay on without encryption.
           </p>
@@ -224,15 +224,15 @@ export function PasscodeControls() {
             value={current}
             onChange={(e) => setCurrent(e.target.value)}
             placeholder="Current passcode"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+            className="lumen-field"
           />
         )}
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <div className="flex gap-2">
+        {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
+        <div className="lumen-actions">
           <button
             type="submit"
             disabled={busy || syncOn}
-            className="flex-1 rounded-md bg-red-600 px-4 py-3 text-white disabled:opacity-60"
+            className="lumen-button lumen-button-danger"
           >
             Decrypt and turn off
           </button>
@@ -243,7 +243,7 @@ export function PasscodeControls() {
               setCurrent('');
               setError('');
             }}
-            className="flex-1 rounded-md border px-4 py-3"
+            className="lumen-outline"
           >
             Cancel
           </button>
@@ -255,11 +255,11 @@ export function PasscodeControls() {
   if (view === 'phrase') {
     return (
       <div className="space-y-3">
-        <p className="text-sm font-medium text-green-700 dark:text-green-400">
+        <p className="lumen-note lumen-success" role="status">
           Encryption is on. Your data is now stored encrypted on this device.
         </p>
-        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/40">
-          <p className="text-xs text-amber-900 dark:text-amber-200">
+        <div className="lumen-panel lumen-warning">
+          <p className="text-sm">
             Write down your recovery phrase and keep it somewhere safe. It is the{' '}
             <span className="font-semibold">only</span> way back in if you forget your passcode — we
             can&apos;t reset it for you.
@@ -272,7 +272,7 @@ export function PasscodeControls() {
             setPhrase('');
             setView('on');
           }}
-          className="w-full rounded-md bg-rose-600 px-4 py-3 text-white"
+          className="lumen-button w-full"
         >
           I&apos;ve saved my recovery phrase
         </button>
@@ -289,7 +289,7 @@ export function PasscodeControls() {
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
           placeholder="Current passcode"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          className="lumen-field"
         />
         <input
           aria-label="new passcode"
@@ -297,14 +297,14 @@ export function PasscodeControls() {
           value={code}
           onChange={(e) => setCode(e.target.value)}
         placeholder="New passphrase (16+ characters)"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          className="lumen-field"
         />
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <div className="flex gap-2">
+        {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
+        <div className="lumen-actions">
           <button
             type="submit"
             disabled={busy}
-            className="flex-1 rounded-md bg-rose-600 px-4 py-3 text-white disabled:opacity-60"
+            className="lumen-button"
           >
             Change passcode
           </button>
@@ -314,7 +314,7 @@ export function PasscodeControls() {
               setView('on');
               setError('');
             }}
-            className="flex-1 rounded-md border px-4 py-3"
+            className="lumen-outline"
           >
             Cancel
           </button>
@@ -326,8 +326,8 @@ export function PasscodeControls() {
   if (view === 'on') {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Encryption is <span className="font-medium text-green-700 dark:text-green-400">on</span>.
+        <p className="lumen-help">
+          Encryption is <span className="font-semibold">on</span>.
           Your data is unlocked with your passcode each time you open Lumen.
         </p>
         <button
@@ -336,7 +336,7 @@ export function PasscodeControls() {
             setView('change');
             setError('');
           }}
-          className="w-full rounded-md border px-4 py-3"
+          className="lumen-outline w-full"
         >
           Change passcode
         </button>
@@ -346,7 +346,7 @@ export function PasscodeControls() {
             setView('confirm-off');
             setError('');
           }}
-          className="w-full rounded-md border px-4 py-3 text-red-700 dark:text-red-400"
+          className="lumen-outline lumen-outline-danger w-full"
         >
           Turn off encryption
         </button>
@@ -356,26 +356,31 @@ export function PasscodeControls() {
 
   return (
     <form onSubmit={handleEnable} className="space-y-3">
-      <p className="text-sm text-neutral-700 dark:text-neutral-300">
+      <p className="lumen-help">
         Encrypt your data with a passcode. Without it, your data is readable by anyone with access to
         this device.
       </p>
+      <label className="setup-label" htmlFor="enable-passphrase">New passcode</label>
+      <p className="lumen-help" id="enable-passphrase-hint">
+        Use a passphrase with at least {MIN_VAULT_PASSPHRASE_LENGTH} characters.
+      </p>
       <input
+        id="enable-passphrase"
         aria-label="new passcode"
+        aria-describedby="enable-passphrase-hint"
         type="password"
         value={code}
         onChange={(e) => {
           setCode(e.target.value);
           setError('');
         }}
-        placeholder="Choose a passphrase (16+ characters)"
-        className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+        className="lumen-field"
       />
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
       <button
         type="submit"
         disabled={busy}
-        className="w-full rounded-md bg-rose-600 px-4 py-3 text-white disabled:opacity-60"
+        className="lumen-button w-full"
       >
         {busy ? 'Encrypting…' : 'Turn on encryption'}
       </button>

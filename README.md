@@ -1,8 +1,12 @@
 # Lumen
 
-**A private, offline-first companion for the whole reproductive life cycle.**
+<img src="public/lumen-mark-96.webp" width="72" height="72" alt="Lumen logo">
 
-Lumen is a women's-health app built around a simple promise: track your cycle, fertility, pregnancy, and postpartum recovery with accurate, *explainable* guidance — without your body ever becoming a data product. It runs as an installable Progressive Web App, stores **all** health data **on your device**, and ships with **no ads, no paywall, and no third-party tracking**. When you choose to sync across devices, it is **end-to-end encrypted** — the server only ever holds ciphertext it cannot read.
+**Private reproductive health tracking.**
+
+Track your cycle, fertility, pregnancy, postpartum recovery, or perimenopause. Log what matters to you and see the patterns and estimates supported by your logs.
+
+Lumen is an installable web app that works offline. Your logs stay on your device by default. If you turn on sync across devices, Lumen encrypts your records before uploading them. There’s no account, advertising, paywall, or third-party tracking.
 
 > ⚕️ **Not medical advice.** Lumen's predictions and insights are estimates derived from your own logged data. They are not a diagnosis, not a contraceptive method, and not a substitute for a clinician. In an emergency, contact your local emergency services.
 
@@ -38,9 +42,9 @@ Lumen is a women's-health app built around a simple promise: track your cycle, f
 
 ## Why Lumen
 
-Cycle and pregnancy data is one of the most sensitive categories of personal data — and, post-*Dobbs*, potentially legally sensitive. Most trackers monetize it. Lumen takes the opposite stance and makes privacy **structural** rather than a marketing line:
+Cycle and pregnancy data is personal. Lumen gives you control over where your logs are stored and when to share them.
 
-- **Local-first.** Health data lives in your browser's IndexedDB. Nothing is uploaded, leaked, or subpoenable unless *you* turn on sync.
+- **Local-first.** Health data lives in your browser's IndexedDB. Lumen uploads encrypted records only if you turn on sync.
 - **Encrypted at rest (optional).** Set a passcode and your on-device records are stored as **AES-256-GCM ciphertext**, keyed by a recovery phrase the passcode unwraps. The passcode itself is never stored.
 - **End-to-end encrypted sync (optional).** Turn on cross-device sync and your data is encrypted on-device *before* it leaves. The server is **blind** — your encryption key never reaches it, so it holds only ciphertext and opaque keys and can't tell which dates or life stages you have data for. (One honest caveat: the browser fetches that encryption code from the server each load — see [Trust boundary](#trust-boundary).)
 - **No tracking SDKs.** The client bundle ships zero analytics, ad, or tracking code. There is no production telemetry by design.

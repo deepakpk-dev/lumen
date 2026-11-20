@@ -41,7 +41,7 @@ export function FertilityView() {
   return (
     <PageShell
       title="Fertility"
-      subtitle="Your fertile window, temperatures, and ovulation signals — all in one place."
+      subtitle="See your estimated fertile window and what your logs suggest about ovulation."
     >
       <ConceptionCard
         guidance={conceptionToday}

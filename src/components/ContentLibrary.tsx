@@ -35,7 +35,7 @@ export function ContentLibrary({ feed, all, saved = [] }: {
       <div className="lumen-search">
         <LumenIcon name="search" size={19} />
         <label className="sr-only" htmlFor="library-search">Search the library</label>
-        <input id="library-search" type="search" className="lumen-field" placeholder="Search the library" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input id="library-search" type="search" className="lumen-field" placeholder="Search articles" value={query} onChange={(e) => setQuery(e.target.value)} />
       </div>
       <div className="lumen-filters" aria-label="Article topics" role="group">
         {[['all', 'All'], ...topics.map((key) => [key, labels[key]]), ['saved', 'Saved']].map(([key, label]) => (
@@ -60,10 +60,13 @@ export function ContentLibrary({ feed, all, saved = [] }: {
         </section>
       )}
       <section className="lumen-stack">
-        <h2 className="lumen-card-title">{topic === 'saved' ? 'Saved reads' : 'Browse'}</h2>
+        <h2 className="lumen-card-title">{topic === 'saved' ? 'Saved articles' : 'Browse articles'}</h2>
         {browse.length === 0 ? (
-          <p className="lumen-card lumen-muted text-sm" role="status">
-            {topic === 'saved' && !q && phase === 'all' ? 'No saved articles for this stage. Save an article to find it here.' : 'No articles match your search.'}
+          <p className="lumen-card lumen-muted wrap-anywhere text-sm" role="status">
+            {topic === 'saved' && !q && phase === 'all'
+              ? 'No saved articles for this tracking mode. Save an article to find it here.'
+              : q ? `No articles match “${query.trim()}”. Try a different search or change your filters.`
+                : 'No articles match these filters. Choose another topic or cycle phase.'}
           </p>
         ) : browse.map((article) => <ContentCard key={article.slug} article={article} />)}
       </section>

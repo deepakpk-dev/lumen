@@ -23,7 +23,7 @@ test('TTC journey: onboard, log signals, see fertility guidance react', async ({
   await openOnboarding(page);
   await page.getByRole('radio', { name: /Trying to conceive/ }).click();
   await continueSetup(page);
-  await page.getByLabel('last period start').fill(lastPeriod);
+  await page.getByLabel('First day of your last period').fill(lastPeriod);
   await finishSetupFromDate(page);
 
   // TTC onboarding lands directly on the fertility space.
@@ -33,7 +33,7 @@ test('TTC journey: onboard, log signals, see fertility guidance react', async ({
   await expect(page.getByRole('heading', { name: 'Ovulation status' })).toBeVisible();
 
   // Home is TTC-aware: fertility nav link + conception guidance card.
-  await page.getByRole('link', { name: 'Back to Home', exact: true }).click();
+  await page.getByRole('link', { name: 'Back to Today', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Fertility' })).toBeVisible();
   await expect(
     page.getByText('Lumen is not a contraceptive', { exact: false }).first(),

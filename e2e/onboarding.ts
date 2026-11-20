@@ -16,6 +16,6 @@ export async function finishSetupFromDate(page: Page, cycle = true) {
     await continueSetup(page);
     await continueSetup(page);
   }
-  await page.getByRole('button', { name: 'See my summary', exact: true }).click();
+  await continueSetup(page);
   await page.getByRole('button', { name: 'Finish setup', exact: true }).click();
 }

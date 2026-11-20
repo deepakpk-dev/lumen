@@ -72,14 +72,14 @@ export async function fireReminderNotifications(
 
   for (const r of pending) {
     try {
+      const options = { body: r.body, tag: `lumen-${r.kind}`, icon: '/icon-192.png' };
       if (reg) {
         await reg.showNotification(r.title, {
-          body: r.body,
-          tag: `lumen-${r.kind}`,
+          ...options,
           data: { href: r.href },
         });
       } else {
-        new Notification(r.title, { body: r.body, tag: `lumen-${r.kind}` });
+        new Notification(r.title, options);
       }
       fired.add(r.kind);
     } catch {

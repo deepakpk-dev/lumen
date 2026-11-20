@@ -9,7 +9,7 @@ export default function HistoryPage() {
   const { cycles, stats, loading } = useHealthData();
   if (loading) return <main className="p-6">Loading…</main>;
   return (
-    <PageShell title="History & trends" eyebrow="A closer look" subtitle="Your recent cycles and how their lengths vary." backHref="/insights" backLabel="Insights">
+    <PageShell title="History & trends" subtitle="Review past periods and compare cycle lengths." backHref="/insights" backLabel="Insights">
       <CycleTrends cycles={cycles} />
       <div className="lumen-card"><CycleHistory cycles={cycles} stats={stats} /></div>
     </PageShell>

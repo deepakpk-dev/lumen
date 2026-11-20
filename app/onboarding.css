@@ -14,7 +14,6 @@
 .setup-progress progress::-webkit-progress-value { background: var(--lumen-button); border-radius: 9px; }
 .setup-progress progress::-moz-progress-bar { background: var(--lumen-button); border-radius: 9px; }
 .setup-heading { margin-bottom: 23px; }
-.setup-heading .lumen-eyebrow::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--lumen-accent); margin-right: 8px; }
 .setup-heading h1:focus { outline: none; }
 .setup-choices { display: grid; gap: 10px; }
 .setup-choice { display: flex; align-items: center; gap: 11px; min-height: 67px; padding: 12px; border: 1px solid var(--lumen-line); border-radius: 16px; background: var(--lumen-surface); cursor: pointer; }
@@ -28,7 +27,7 @@
 .setup-calendar { padding: 13px; }
 .setup-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 3px; margin: 12px 0 16px; }
 .setup-days span { min-height: 19px; text-align: center; color: var(--lumen-muted); font-size: .675rem; }
-.setup-days button { min-height: 40px; border-radius: 10px; border: 1px solid transparent; font-size: .8125rem; }
+.setup-days button { min-height: 44px; border-radius: 10px; border: 1px solid transparent; font-size: .8125rem; }
 .setup-days button[aria-current=date] { border-color: var(--lumen-line); }
 .setup-days button[aria-pressed=true] { background: var(--lumen-button); color: #fff; font-weight: 650; }
 .setup-days button:disabled, .lumen-icon-button:disabled { opacity: .38; cursor: not-allowed; }
@@ -54,5 +53,4 @@
 .setup-controls { position: sticky; bottom: 0; z-index: 10; margin: auto calc(-1 * var(--lumen-gutter)) 0; padding: 12px var(--lumen-gutter) calc(10px + env(safe-area-inset-bottom)); background: var(--lumen-bg); border-top: 1px solid var(--lumen-line); }
 .setup-heading ~ :not(.setup-controls):last-of-type { margin-bottom: 18px; }
 .setup-actions { display: grid; grid-template-columns: minmax(94px, 1fr) 2fr; gap: 10px; }
-.setup-controls p { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: .65rem; color: var(--lumen-muted); margin-top: 8px; }
 @media (prefers-reduced-motion: reduce) { .setup-switch::before { transition: none; } }

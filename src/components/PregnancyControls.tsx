@@ -33,24 +33,25 @@ export function PregnancyControls({ onStarted, onEnded }: { onStarted?: () => vo
   if (isPregnant && pregnancyProfile) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+        <p className="lumen-help">
           Pregnancy mode is on. Due date: <span className="font-medium">{pregnancyProfile.dueDate}</span>.
         </p>
-        <div className="flex items-end gap-2">
-          <label className="flex-1 text-sm">
+        <div className="lumen-actions items-end">
+          <label className="setup-label mb-0">
             Edit due date
             <input
               type="date"
               aria-label="edit due date"
               value={editDue}
               onChange={(e) => setEditDue(e.target.value)}
-              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+              className="lumen-field mt-1"
             />
           </label>
           <button
             type="button"
             onClick={() => editDue && updateDueDate(editDue, 'manual')}
-            className="rounded-md border px-4 py-2 text-sm"
+            className="lumen-outline"
+            disabled={!editDue}
           >
             Save
           </button>
@@ -62,43 +63,43 @@ export function PregnancyControls({ onStarted, onEnded }: { onStarted?: () => vo
 
   return (
     <div className="space-y-3">
-      <fieldset className="space-y-2 text-sm">
-        <legend className="text-neutral-700 dark:text-neutral-300">How would you like to start?</legend>
-        <div className="flex items-center gap-2">
+      <fieldset className="min-w-0">
+        <legend className="setup-label">How would you like to start?</legend>
+        <label className="lumen-choice-row">
           <input
             type="radio"
             name="preg-method"
-            aria-label="Enter estimated delivery date"
+            className="lumen-check"
             checked={method === 'due'}
             onChange={() => setMethod('due')}
           />
           <span>Enter my due date</span>
-        </div>
-        <div className="flex items-center gap-2">
+        </label>
+        <label className="lumen-choice-row">
           <input
             type="radio"
             name="preg-method"
-            aria-label="Enter my last period date"
+            className="lumen-check"
             checked={method === 'lmp'}
             onChange={() => setMethod('lmp')}
           />
           <span>Enter my last period date (LMP)</span>
-        </div>
-        <div className="flex items-center gap-2">
+        </label>
+        <label className="lumen-choice-row">
           <input
             type="radio"
             name="preg-method"
-            aria-label={`Use my last logged period${lastPeriodStart ? ` (${lastPeriodStart})` : ' (none yet)'}`}
+            className="lumen-check"
             checked={method === 'cycle'}
             onChange={() => setMethod('cycle')}
             disabled={!lastPeriodStart}
           />
           <span>Use my last logged period{lastPeriodStart ? ` (${lastPeriodStart})` : ' (none yet)'}</span>
-        </div>
+        </label>
       </fieldset>
 
       {method !== 'cycle' && (
-        <label className="block text-sm">
+        <label className="setup-label">
           {method === 'due' ? 'Due date' : 'Last period start'}
           <input
             type="date"
@@ -106,12 +107,12 @@ export function PregnancyControls({ onStarted, onEnded }: { onStarted?: () => vo
             max={method === 'lmp' ? todayISO() : undefined}
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+            className="lumen-field mt-1"
           />
         </label>
       )}
 
-      <button type="button" onClick={start} className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
+      <button type="button" onClick={start} disabled={method === 'cycle' ? !lastPeriodStart : !value} className="lumen-button w-full">
         Start pregnancy mode
       </button>
     </div>

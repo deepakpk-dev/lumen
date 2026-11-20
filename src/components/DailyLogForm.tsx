@@ -313,18 +313,20 @@ export function DailyLogForm({ date }: { date: ISODate }) {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm">
+            <label className="lumen-choice-row">
               <input
                 type="checkbox"
+                className="lumen-check"
                 checked={intercourse}
                 onChange={(e) => setIntercourse(e.target.checked)}
               />
               Intercourse
             </label>
             {intercourse && (
-              <label className="flex items-center gap-2 text-sm">
+              <label className="lumen-choice-row">
                 <input
                   type="checkbox"
+                  className="lumen-check"
                   checked={protectedSex}
                   onChange={(e) => setProtectedSex(e.target.checked)}
                 />
@@ -351,7 +353,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
       {saved && (
         <p
           role="status"
-          className="rounded-md bg-green-50 px-3 py-2 text-center text-sm text-green-800 dark:bg-green-950 dark:text-green-300"
+          className="lumen-note lumen-success text-center"
         >
           Saved to your log.{' '}
           <Link href="/history" className="underline">

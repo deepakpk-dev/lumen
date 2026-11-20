@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('PregnancyControls', () => {
   it('starts pregnancy from an entered due date', () => {
     render(<PregnancyControls />);
-    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
+    fireEvent.change(screen.getByLabelText(/^due date$/i), { target: { value: '2026-10-08' } });
     fireEvent.click(screen.getByRole('button', { name: /start pregnancy mode/i }));
     expect(startPregnancyMode).toHaveBeenCalledWith(
       expect.objectContaining({ dueDate: '2026-10-08' }),
@@ -34,7 +34,7 @@ describe('PregnancyControls', () => {
   it('redirects (calls onStarted) after starting pregnancy from a due date', async () => {
     const onStarted = vi.fn();
     render(<PregnancyControls onStarted={onStarted} />);
-    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
+    fireEvent.change(screen.getByLabelText(/^due date$/i), { target: { value: '2026-10-08' } });
     fireEvent.click(screen.getByRole('button', { name: /start pregnancy mode/i }));
     await waitFor(() => expect(onStarted).toHaveBeenCalled());
   });
@@ -42,7 +42,9 @@ describe('PregnancyControls', () => {
   it('does not redirect when no date has been entered', () => {
     const onStarted = vi.fn();
     render(<PregnancyControls onStarted={onStarted} />);
-    fireEvent.click(screen.getByRole('button', { name: /start pregnancy mode/i }));
+    const startButton = screen.getByRole('button', { name: /start pregnancy mode/i });
+    expect(startButton).toBeDisabled();
+    fireEvent.click(startButton);
     expect(startPregnancyMode).not.toHaveBeenCalled();
     expect(onStarted).not.toHaveBeenCalled();
   });

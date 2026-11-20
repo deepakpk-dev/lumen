@@ -31,13 +31,13 @@ export default function NotificationsPage() {
   }
 
   return (
-    <PageShell title="Notifications" eyebrow="Your updates" subtitle="Reminders from your Lumen preferences." backHref={null}>
+    <PageShell title="Notifications" backHref={null}>
       <section className="lumen-card">
         <div className="flex items-center justify-between gap-2">
           <h2 className="lumen-card-title">Today</h2>
           {unread.length > 0 && <button type="button" className="lumen-text-link" disabled={saving} onClick={markRead}>Mark all as read</button>}
         </div>
-        {loading && <p className="lumen-subtitle">Loading…</p>}
+        {loading && <p className="lumen-subtitle">Loading reminders…</p>}
         {!loading && reminders.length === 0 && <p className="lumen-subtitle">No reminders due today.</p>}
         {reminders.map((reminder) => (
           <Link href={reminder.href} key={reminder.kind} className="lumen-row">
@@ -49,12 +49,10 @@ export default function NotificationsPage() {
             <LumenIcon name="chevron" size={16} />
           </Link>
         ))}
-        {error && <p role="alert" className="lumen-note">Couldn’t update your reminders. Please try again.</p>}
+        {error && <p role="alert" className="lumen-note">Couldn’t mark reminders as read. Try again.</p>}
       </section>
       <section className="lumen-card">
-        <h2 className="lumen-card-title">Only what helps</h2>
-        <p className="lumen-subtitle">Choose which reminders appear here.</p>
-        <Link href="/settings#reminders" className="lumen-text-link">Your reminder preferences <LumenIcon name="arrow" size={17} /></Link>
+        <Link href="/settings#reminders" className="lumen-text-link">Manage reminders <LumenIcon name="arrow" size={17} /></Link>
       </section>
     </PageShell>
   );

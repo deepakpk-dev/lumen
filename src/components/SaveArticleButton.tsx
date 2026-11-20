@@ -28,7 +28,7 @@ export function SaveArticleButton({ slug }: { slug: string }) {
       <button type="button" disabled={loading || saving} aria-pressed={isSaved} className="lumen-outline" onClick={toggle}>
         <LumenIcon name={isSaved ? 'check' : 'add'} size={17} /> {isSaved ? 'Saved article' : 'Save article'}
       </button>
-      {error && <p role="alert" className="lumen-note mt-2">Couldn’t update your saved reads. Please try again.</p>}
+      {error && <p role="alert" className="lumen-note mt-2">{isSaved ? 'Couldn’t remove the saved article. Try again.' : 'Couldn’t save the article. Try again.'}</p>}
     </div>
   );
 }

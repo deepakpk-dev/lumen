@@ -51,4 +51,8 @@ body {
   .print-full {
     max-width: none !important;
   }
+  .lumen-app:has(.print-full) {
+    width: 100%;
+    min-height: 0;
+  }
 }
