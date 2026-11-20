@@ -12,6 +12,7 @@ import { SyncControls } from '@/src/components/SyncControls';
 import { PregnancyControls } from '@/src/components/PregnancyControls';
 import { TtcControls } from '@/src/components/TtcControls';
 import { MenopauseControls } from '@/src/components/MenopauseControls';
+import { PersonalizationControls } from '@/src/components/PersonalizationControls';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -22,7 +23,12 @@ export default function SettingsPage() {
   // stray "turn on" here just orphans the still-active profile in storage.
   const inJourney = isPregnant || isPostpartum;
   return (
-    <PageShell title="Settings">
+    <PageShell title="Settings" eyebrow="Make it yours" subtitle="Choose the experience that feels right for you.">
+      <div className="lumen-settings">
+      <section className="space-y-3">
+        <h2>Tracking preferences</h2>
+        <PersonalizationControls />
+      </section>
       <section className="space-y-3">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Passcode lock</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -31,7 +37,7 @@ export default function SettingsPage() {
         </p>
         <PasscodeControls />
       </section>
-      <section className="space-y-3">
+      <section className="space-y-3" id="restore">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Sync across devices</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
           Optional. Your data is encrypted with your recovery phrase before it leaves this device,
@@ -51,14 +57,14 @@ export default function SettingsPage() {
           }}
         />
       </section>
-      <section className="space-y-3">
+      <section className="space-y-3" id="reminders">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Reminders</h2>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
           Lumen can nudge you about your period, fertile window, and daily logging.
           Because everything stays on this device, notifications appear when you open
           Lumen — there is no server sending you push messages.
         </p>
-        <NotificationControls />
+          <NotificationControls />
       </section>
       {!inJourney && (
         <section className="space-y-3">
@@ -136,6 +142,7 @@ export default function SettingsPage() {
           }}
         />
       </section>
+      </div>
     </PageShell>
   );
 }

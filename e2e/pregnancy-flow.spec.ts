@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding';
 
 // End-to-end pregnancy user journey in one browser context: onboarding as
 // pregnant via the last-period path (due date derived), the week-by-week hub,
@@ -22,13 +23,13 @@ test('pregnancy journey: onboard via LMP, hub, kicks, contractions, log, loss ex
 
   // Onboarding: pregnant, but unsure of the due date — enter the last period
   // instead and let Lumen derive it (Naegele's rule).
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await openOnboarding(page);
   await page.getByRole('radio', { name: /I'm pregnant/ }).click();
+  await continueSetup(page);
   await page.getByRole('button', { name: /Enter your last period instead/ }).click();
   await page.getByLabel('last period start').fill(lastPeriod);
-  await expect(page.getByText('Estimated due date:')).toBeVisible();
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await expect(page.getByText(/^Estimated due date:/)).toBeVisible();
+  await finishSetupFromDate(page, false);
 
   // Lands on the week-by-week pregnancy hub with stage-true framing.
   await page.waitForURL('**/pregnancy');
@@ -45,7 +46,7 @@ test('pregnancy journey: onboard via LMP, hub, kicks, contractions, log, loss ex
   await expect(page.getByText(/: 3 kicks/)).toBeVisible();
 
   // Contraction timer: one timed contraction, saved to recent sessions.
-  await page.getByRole('link', { name: 'Pregnancy', exact: true }).click();
+  await page.getByRole('link', { name: 'Back to Pregnancy', exact: true }).click();
   await page.getByRole('link', { name: 'Contraction timer' }).click();
   await page.getByRole('button', { name: 'Start contraction' }).click();
   await page.getByRole('button', { name: 'Stop contraction' }).click();

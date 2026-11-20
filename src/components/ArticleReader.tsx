@@ -7,7 +7,7 @@ export function ArticleReader({ article }: { article: ContentArticle }) {
   return (
     <article className="space-y-5">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold">{article.title}</h1>
+        <h1 className="lumen-title">{article.title}</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           {article.readingMinutes} min read
         </p>

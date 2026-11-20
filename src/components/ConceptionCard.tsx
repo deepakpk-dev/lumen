@@ -24,12 +24,14 @@ export function ConceptionCard({
   guidance,
   confirmation,
   hasCycleHistory = true,
+  estimatedCycleLength = 28,
 }: {
   guidance: ConceptionGuidance | null;
   confirmation: OvulationConfirmation | null;
   // False until at least one full cycle has been logged, so a day-one user
   // isn't told the estimate comes from history they don't have yet.
   hasCycleHistory?: boolean;
+  estimatedCycleLength?: number;
 }) {
   if (!guidance) return null;
   return (
@@ -69,7 +71,7 @@ export function ConceptionCard({
           ? `Ovulation ${confirmation.status === 'confirmed' ? 'confirmed' : 'estimated'} around ${confirmation.ovulationDate}.`
           : hasCycleHistory
             ? 'Ovulation estimated from your cycle history.'
-            : 'Based on a typical 28-day cycle — this sharpens as you log periods and temperatures.'}
+            : `Based on a ${estimatedCycleLength}-day cycle estimate. This sharpens as you log periods and temperatures.`}
       </p>
       <p className="border-t border-black/5 pt-2.5 text-[11px] text-neutral-500 dark:border-white/10 dark:text-neutral-400">
         Lumen is not a contraceptive and not a substitute for fertility

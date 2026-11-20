@@ -42,7 +42,7 @@ export default function ReportPage() {
     .slice(0, 60);
 
   return (
-    <main className="print-full mx-auto max-w-2xl space-y-6 p-6">
+    <main className="print-full lumen-page space-y-6">
       <div className="no-print flex items-center justify-between">
         <BackLink href="/settings">Settings</BackLink>
         <button
@@ -55,7 +55,7 @@ export default function ReportPage() {
       </div>
 
       <header className="space-y-1 border-b border-neutral-300 pb-4 dark:border-neutral-700">
-        <h1 className="text-2xl font-semibold">Cycle Health Summary</h1>
+        <h1 className="lumen-title">Cycle Health Summary</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Generated {rangeEnd}
           {rangeStart ? ` · covers ${fmt(rangeStart)} – ${rangeEnd}` : ''}

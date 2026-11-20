@@ -8,6 +8,7 @@ import type {
   PostpartumProfile,
   EpdsEntry,
   ProgramProgress,
+  Personalization,
 } from '@/src/domain/types';
 import type { SyncEnvelope } from '@/src/crypto/envelope';
 
@@ -30,6 +31,7 @@ export class HealthDB extends Dexie {
   postpartumProfile!: Table<PostpartumProfile, string>;
   epdsEntries!: Table<EpdsEntry, string>;
   programProgress!: Table<ProgramProgress, string>;
+  personalization!: Table<Personalization, string>;
   // Encrypted store: populated only when a passcode/vault is active. Plaintext
   // (no-passcode) users leave this empty and keep using the typed tables above.
   records!: Table<StoredEnvelope, string>;
@@ -91,6 +93,7 @@ export class HealthDB extends Dexie {
       records: 'recordKey, storeKey',
       syncMeta: 'recordKey',
     });
+    this.version(7).stores({ personalization: 'id' });
   }
 }
 

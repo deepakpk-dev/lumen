@@ -22,7 +22,7 @@ export function PregnancyView() {
   }
 
   return (
-    <PageShell title="Pregnancy" subtitle="Your week by week, kicks, and contractions.">
+    <PageShell title="Pregnancy" eyebrow="Your pregnancy, your pace" subtitle="Your week, your observations, and a little support.">
       <PregnancyCard
         gestation={gestation}
         trimester={currentTrimester}
@@ -32,7 +32,7 @@ export function PregnancyView() {
 
       {/* Informational sections stay flat and quiet — elevation is reserved
           for the hero card so the page stays short on phones. */}
-      <section className="space-y-2">
+      <section className="lumen-card space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Baby this week</h2>
         <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
           {weekContentToday.fetalDevelopment.map((t) => (
@@ -41,7 +41,7 @@ export function PregnancyView() {
         </ul>
       </section>
 
-      <section className="space-y-2">
+      <section className="lumen-card space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Your body this week</h2>
         <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
           {weekContentToday.maternalChanges.map((t) => (
@@ -57,7 +57,7 @@ export function PregnancyView() {
         <NavTile href="/settings">Manage pregnancy</NavTile>
       </nav>
 
-      <section className="space-y-1">
+      <section className="lumen-card space-y-1">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Sources</h2>
         <ul className="list-disc space-y-1 pl-5 text-xs text-neutral-500 dark:text-neutral-400">
           {WEEK_SOURCES[currentTrimester].map((s) => (

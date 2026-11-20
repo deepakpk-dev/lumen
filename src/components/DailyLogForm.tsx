@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { FlowIntensity, ISODate, LHResult, MucusType } from '@/src/domain/types';
+import type { FlowIntensity, ISODate, LHResult, MucusType, TrackingGroup } from '@/src/domain/types';
 import { useHealthData } from '@/src/state/useHealthData';
 import {
   FLOW_OPTIONS,
@@ -24,27 +24,17 @@ function Chip({
   label,
   active,
   onClick,
-  // 'neutral' shows the active state in gray instead of period-red — used for
-  // "none" flow so selecting it doesn't look like a logged bleeding value.
-  tone = 'brand',
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
-  tone?: 'brand' | 'neutral';
 }) {
-  const activeStyle =
-    tone === 'neutral'
-      ? 'border-neutral-600 bg-neutral-600 text-white'
-      : 'border-rose-600 bg-rose-600 text-white';
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`inline-flex min-h-[44px] items-center rounded-full border px-4 text-sm ${
-        active ? activeStyle : 'border-neutral-300 dark:border-neutral-700'
-      }`}
+      className="lumen-chip"
     >
       {label}
     </button>
@@ -73,6 +63,9 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     lifeStage,
     bbtUnit,
     isPregnant,
+    personalization,
+    draftMood,
+    setDraftMood,
   } = useHealthData();
   const existing = dailyLogs.find((l) => l.date === date);
 
@@ -97,7 +90,8 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   const [flow, setFlow] = useState<FlowIntensity>('none');
   const [lochia, setLochia] = useState<FlowIntensity>('none');
   const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [moods, setMoods] = useState<string[]>([]);
+  const [startingMood] = useState(() => draftMood?.date === date && moodChoices.includes(draftMood.mood) ? draftMood.mood : undefined);
+  const [moods, setMoods] = useState<string[]>(startingMood ? [startingMood] : []);
   const [notes, setNotes] = useState('');
   // Timestamp of last save; drives a transient confirmation. Using a value
   // (not a bool) so each save re-triggers the auto-dismiss timer even when the
@@ -113,12 +107,16 @@ export function DailyLogForm({ date }: { date: ISODate }) {
   const [protectedSex, setProtectedSex] = useState(false);
 
   useEffect(() => {
+    if (startingMood) setDraftMood(undefined);
+  }, [startingMood, setDraftMood]);
+
+  useEffect(() => {
     if (existing) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate form fields from the selected date's saved log
       setFlow(existing.flow ?? 'none');
       setLochia(existing.lochia ?? 'none');
       setSymptoms(existing.symptoms);
-      setMoods(existing.moods);
+      setMoods((current) => [...new Set([...existing.moods, ...current])]);
       setNotes(existing.notes ?? '');
       setBbt(
         existing.bbt === undefined
@@ -168,7 +166,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           : parsedBbt;
     await saveLog({
       date,
-      flow,
+      flow: isPregnant ? existing?.flow : flow,
       symptoms,
       moods,
       notes: notes || undefined,
@@ -182,7 +180,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           }
         : {}),
     });
-    if (isPeriodFlow(flow) && !cycles.some((c) => c.startDate === date)) {
+    if (!isPregnant && isPeriodFlow(flow) && !cycles.some((c) => c.startDate === date)) {
       const previousCycle = [...cycles]
         .sort((a, b) => a.startDate.localeCompare(b.startDate))
         .filter((c) => c.startDate < date)
@@ -204,9 +202,34 @@ export function DailyLogForm({ date }: { date: ISODate }) {
     setSavedAt(Date.now());
   }
 
-  return (
-    <div className="space-y-6">
-      {isPostpartum ? (
+  const sections: Partial<Record<TrackingGroup, React.ReactNode>> = {
+    mood: (<section>
+        <h2 className="mb-2 text-sm font-medium">Mood</h2>
+        <div className="flex flex-wrap gap-2">
+          {moodChoices.map((m) => (
+            <Chip
+              key={m}
+              label={m}
+              active={moods.includes(m)}
+              onClick={() => setMoods((prev) => toggle(prev, m))}
+            />
+          ))}
+        </div>
+      </section>),
+    symptoms: (<section>
+        <h2 className="mb-2 text-sm font-medium">Symptoms</h2>
+        <div className="flex flex-wrap gap-2">
+          {symptomChoices.map((s) => (
+            <Chip
+              key={s}
+              label={s}
+              active={symptoms.includes(s)}
+              onClick={() => setSymptoms((prev) => toggle(prev, s))}
+            />
+          ))}
+        </div>
+      </section>),
+    flow: (!isPregnant && (isPostpartum ? (
         <section>
           <h2 className="mb-2 text-sm font-medium">Lochia (bleeding)</h2>
           <div className="flex flex-wrap gap-2">
@@ -216,7 +239,6 @@ export function DailyLogForm({ date }: { date: ISODate }) {
                 label={f}
                 active={lochia === f}
                 onClick={() => setLochia(f)}
-                tone={f === 'none' ? 'neutral' : 'brand'}
               />
             ))}
           </div>
@@ -231,42 +253,12 @@ export function DailyLogForm({ date }: { date: ISODate }) {
                 label={f}
                 active={flow === f}
                 onClick={() => setFlow(f)}
-                tone={f === 'none' ? 'neutral' : 'brand'}
               />
             ))}
           </div>
         </section>
-      )}
-
-      <section>
-        <h2 className="mb-2 text-sm font-medium">Symptoms</h2>
-        <div className="flex flex-wrap gap-2">
-          {symptomChoices.map((s) => (
-            <Chip
-              key={s}
-              label={s}
-              active={symptoms.includes(s)}
-              onClick={() => setSymptoms((prev) => toggle(prev, s))}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="mb-2 text-sm font-medium">Mood</h2>
-        <div className="flex flex-wrap gap-2">
-          {moodChoices.map((m) => (
-            <Chip
-              key={m}
-              label={m}
-              active={moods.includes(m)}
-              onClick={() => setMoods((prev) => toggle(prev, m))}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section>
+      ))),
+    notes: (<section>
         <label htmlFor="notes" className="mb-2 block text-sm font-medium">
           Notes
         </label>
@@ -274,13 +266,12 @@ export function DailyLogForm({ date }: { date: ISODate }) {
           id="notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 p-2 dark:border-neutral-700 dark:bg-transparent"
+          className="lumen-field"
           rows={3}
         />
-      </section>
-
-      {lifeStage === 'ttc' && (
-        <section className="space-y-4 rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+      </section>),
+    fertility: (lifeStage === 'ttc' && (
+        <section className="space-y-4">
           <div>
             <label htmlFor="bbt" className="mb-2 block text-sm font-medium">
               Basal body temperature (°{bbtUnit})
@@ -292,7 +283,7 @@ export function DailyLogForm({ date }: { date: ISODate }) {
               inputMode="decimal"
               value={bbt}
               onChange={(e) => setBbt(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 p-2 dark:border-neutral-700 dark:bg-transparent"
+              className="lumen-field"
             />
           </div>
           <div>
@@ -342,14 +333,18 @@ export function DailyLogForm({ date }: { date: ISODate }) {
             )}
           </div>
         </section>
-      )}
+      )),
+  };
+  const defaultOrder: TrackingGroup[] = ['mood', 'symptoms', 'flow', 'fertility', 'notes'];
+  const order = [...new Set([...(personalization?.tracking ?? []), ...defaultOrder])];
 
+  return (
+    <div className="lumen-log">
+      {order.map((key) => <Fragment key={key}>{sections[key]}</Fragment>)}
       <button
         type="button"
         onClick={handleSave}
-        className={`w-full rounded-md px-4 py-3 font-medium text-white ${
-          saved ? 'bg-green-600' : 'bg-rose-600'
-        }`}
+        className="lumen-button w-full"
       >
         {saved ? '✓ Saved' : 'Save'}
       </button>

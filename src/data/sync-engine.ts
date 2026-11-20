@@ -24,7 +24,7 @@ import {
 // Matches the server's MAX_RECORDS cap on /push.
 const PUSH_CHUNK = 500;
 
-// The 8 syncable Dexie stores and how to read each record's key (design §2).
+// Syncable Dexie stores and how to read each record's key (design §2).
 const STORE_KEYS: Record<string, string> = {
   cycles: 'id',
   dailyLogs: 'date',
@@ -34,6 +34,7 @@ const STORE_KEYS: Record<string, string> = {
   postpartumProfile: 'id',
   epdsEntries: 'id',
   programProgress: 'programSlug',
+  personalization: 'id',
 };
 
 // Preferences sync as one pseudo-record holding the whole snapshot.

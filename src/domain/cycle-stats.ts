@@ -1,4 +1,4 @@
-import type { Cycle, CycleStats } from './types';
+import type { Cycle, CycleEstimates, CycleStats } from './types';
 import {
   DEFAULT_CYCLE_LENGTH,
   DEFAULT_PERIOD_LENGTH,
@@ -37,16 +37,16 @@ function computePeriodLengths(cycles: Cycle[]): number[] {
     .map((c) => daysBetween(c.startDate, c.endDate as string) + 1);
 }
 
-export function computeCycleStats(cycles: Cycle[]): CycleStats {
+export function computeCycleStats(cycles: Cycle[], estimates?: CycleEstimates): CycleStats {
   const lengths = computeCycleLengths(cycles);
   const periodLengths = computePeriodLengths(cycles);
 
   const averageCycleLength =
-    lengths.length > 0 ? Math.round(mean(lengths)) : DEFAULT_CYCLE_LENGTH;
+    lengths.length > 0 ? Math.round(mean(lengths)) : estimates?.cycleLength ?? DEFAULT_CYCLE_LENGTH;
   const averagePeriodLength =
     periodLengths.length > 0
       ? Math.round(mean(periodLengths))
-      : DEFAULT_PERIOD_LENGTH;
+      : estimates?.periodLength ?? DEFAULT_PERIOD_LENGTH;
   const cycleLengthStdDev = Number(stdDev(lengths).toFixed(2));
 
   return {

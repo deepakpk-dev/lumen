@@ -1,15 +1,34 @@
-const CACHE = 'lumen-shell-v2';
-const SHELL = ['/', '/log', '/calendar', '/history', '/settings'];
+const CACHE = 'lumen-shell-v3';
+const SHELL = [
+  '/', '/onboarding', '/log', '/calendar', '/history', '/insights', '/library',
+  '/profile', '/notifications', '/settings', '/privacy',
+];
+
+function isStaticAsset(url) {
+  return url.origin === self.location.origin && url.pathname.startsWith('/_next/static/');
+}
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await cache.addAll(SHELL);
+    const assets = new Set();
+    for (const route of SHELL) {
+      const html = await (await cache.match(route)).text();
+      for (const [, resource] of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) {
+        const url = new URL(resource, self.location.origin);
+        if (isStaticAsset(url)) assets.add(url.href);
+      }
+    }
+    await cache.addAll([...assets]);
+  })());
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+      Promise.all(keys.filter((k) => k.startsWith('lumen-shell-') && k !== CACHE).map((k) => caches.delete(k))),
     ),
   );
   self.clients.claim();
@@ -17,7 +36,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
   // Page navigations (HTML) are network-first so a fresh shell — referencing the
   // current build's chunk hashes — is served whenever online. A cached shell with
@@ -27,15 +47,28 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          void caches.open(CACHE).then((c) => c.put(request, copy));
+          if (response.ok) {
+            const copy = response.clone();
+            event.waitUntil(caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {}));
+          }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/'))),
+        .catch(async () => (await caches.match(request)) || (await caches.match(url.pathname)) || caches.match('/')),
     );
     return;
   }
 
-  // Static assets are content-hashed and immutable, so cache-first is safe.
-  event.respondWith(caches.match(request).then((cached) => cached || fetch(request)));
+  // Cache content-hashed chunks when the user opens an additional route.
+  if (isStaticAsset(url)) {
+    event.respondWith((async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {}));
+      }
+      return response;
+    })());
+  }
 });

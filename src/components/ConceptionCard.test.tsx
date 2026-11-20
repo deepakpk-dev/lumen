@@ -28,8 +28,8 @@ describe('ConceptionCard', () => {
   };
 
   it('does not claim cycle history when there is none', () => {
-    render(<ConceptionCard guidance={guidance} confirmation={null} hasCycleHistory={false} />);
-    expect(screen.getByText(/typical 28-day cycle/i)).toBeTruthy();
+    render(<ConceptionCard guidance={guidance} confirmation={null} hasCycleHistory={false} estimatedCycleLength={31} />);
+    expect(screen.getByText(/31-day cycle estimate/i)).toBeTruthy();
     expect(screen.queryByText(/from your cycle history/i)).toBeNull();
   });
 

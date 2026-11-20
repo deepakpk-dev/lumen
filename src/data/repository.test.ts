@@ -17,6 +17,8 @@ import {
   addContractionSession,
   getContractionSessions,
   importBbtReadings,
+  savePersonalization,
+  getPersonalization,
 } from './repository';
 import { setStorageKeys, storageIsEncrypted } from './storage';
 import { db } from './db';
@@ -53,6 +55,7 @@ describe('repository', () => {
   it('encrypts existing plaintext data and drops the plaintext copy', async () => {
     await addCycle({ id: 'c1', startDate: '2026-01-01' });
     await upsertDailyLog({ date: '2026-01-01', symptoms: ['cramps'], moods: [] });
+    await savePersonalization({ id: 'current', preferredName: 'Private nickname', cycleLength: 31 });
     expect(await db.cycles.count()).toBe(1);
 
     const keys = (await createVault('test-passphrase-1234')).unlocked.keys;
@@ -66,6 +69,8 @@ describe('repository', () => {
 
     // Plaintext tables emptied; data now lives (and reads back) encrypted.
     expect(await db.cycles.count()).toBe(0);
+    expect(await db.personalization.count()).toBe(0);
+    expect(await getPersonalization()).toMatchObject({ preferredName: 'Private nickname', cycleLength: 31 });
     expect(await db.records.count()).toBeGreaterThan(0);
     expect((await getCycles()).map((c) => c.id)).toEqual(['c1']);
     expect(await getDailyLog('2026-01-01')).toMatchObject({ symptoms: ['cramps'] });
@@ -73,6 +78,7 @@ describe('repository', () => {
     // The date and content are not readable in the raw encrypted rows.
     const raw = JSON.stringify(await db.records.toArray());
     expect(raw).not.toContain('cramps');
+    expect(raw).not.toContain('Private nickname');
   });
 
   it('stores and returns cycles sorted by start date', async () => {

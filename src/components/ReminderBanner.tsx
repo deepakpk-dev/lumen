@@ -7,6 +7,7 @@ import { dueReminders } from '@/src/domain/reminders';
 import { getReminderPrefs } from '@/src/settings/preferences';
 import { fireReminderNotifications } from '@/src/notifications/notify';
 import { todayISO } from '@/src/domain/dates';
+import { LumenIcon } from './LumenIcon';
 
 // The single most relevant reminder for today, shown on Home. Also fires opt-in
 // OS notifications for whatever is due (deduped per day inside notify).
@@ -28,10 +29,10 @@ export function ReminderBanner() {
   return (
     <Link
       href={top.href}
-      className="block rounded-md border border-rose-200 bg-rose-50 p-3 dark:border-rose-900 dark:bg-rose-950/40"
+      className="lumen-note flex items-center gap-3"
     >
-      <p className="text-sm font-medium text-rose-900 dark:text-rose-100">{top.title}</p>
-      <p className="text-xs text-rose-800/80 dark:text-rose-200/80">{top.body}</p>
+      <LumenIcon name="bell" size={18} />
+      <span><strong className="block">{top.title}</strong>{top.body}</span>
     </Link>
   );
 }

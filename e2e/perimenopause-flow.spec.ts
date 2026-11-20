@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding';
 
 // End-to-end perimenopause user journey in one browser context: onboarding
 // with the perimenopause goal, the reframed home screen, logging stage-specific
@@ -18,11 +19,11 @@ test('Perimenopause journey: onboard, log symptoms, no fertile window, toggle of
   });
 
   // Onboarding: pick the perimenopause goal.
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await openOnboarding(page);
   await page.getByRole('radio', { name: /Navigating perimenopause/ }).click();
+  await continueSetup(page);
   await page.getByLabel('last period start').fill(lastPeriod);
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await finishSetupFromDate(page);
 
   // Lands on home, reframed for the transition: the uncertainty note is shown.
   await expect(

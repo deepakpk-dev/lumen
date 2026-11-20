@@ -10,6 +10,32 @@ beforeEach(async () => {
 });
 
 describe('useHealthData onboarding', () => {
+  it('allows setup without inventing a period and keeps that choice across sessions', async () => {
+    const { result, unmount } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => { await result.current.completeOnboarding('cycle', {}); });
+    expect(result.current.onboardingComplete).toBe(true);
+    expect(result.current.cycles).toEqual([]);
+    expect(result.current.prediction).toBeNull();
+    unmount();
+    const next = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
+    await waitFor(() => expect(next.result.current.onboardingComplete).toBe(true));
+  });
+
+  it('uses setup estimates until there is recorded history and does not record estimated bleeding days', async () => {
+    const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.completeOnboarding('cycle', {
+        date: '2026-06-01', cycleLength: 31, periodLength: 4,
+      });
+    });
+    expect(result.current.cycles[0].endDate).toBeUndefined();
+    expect(result.current.prediction).toMatchObject({nextPeriodStart: '2026-07-02', predictedPeriodLength: 4, confidence: 'low'});
+    await act(async () => { await result.current.startPeriod('2026-06-28'); });
+    expect(result.current.prediction?.nextPeriodStart).toBe('2026-07-25');
+  });
+
   it('re-onboarding as cycle clears a prior pregnancy stage', async () => {
     const { result } = renderHook(() => useHealthData(), { wrapper: HealthDataProvider });
     await waitFor(() => expect(result.current.loading).toBe(false));

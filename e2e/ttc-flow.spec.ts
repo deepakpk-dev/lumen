@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding';
 
 // End-to-end TTC ("Trying to conceive") user journey in one browser context:
 // onboarding with the TTC goal, landing on the fertility space, the TTC-aware
@@ -19,11 +20,11 @@ test('TTC journey: onboard, log signals, see fertility guidance react', async ({
   });
 
   // Onboarding: pick the TTC goal.
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await openOnboarding(page);
   await page.getByRole('radio', { name: /Trying to conceive/ }).click();
+  await continueSetup(page);
   await page.getByLabel('last period start').fill(lastPeriod);
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await finishSetupFromDate(page);
 
   // TTC onboarding lands directly on the fertility space.
   await page.waitForURL('**/fertility');
@@ -32,7 +33,7 @@ test('TTC journey: onboard, log signals, see fertility guidance react', async ({
   await expect(page.getByRole('heading', { name: 'Ovulation status' })).toBeVisible();
 
   // Home is TTC-aware: fertility nav link + conception guidance card.
-  await page.getByRole('link', { name: 'Home' }).click();
+  await page.getByRole('link', { name: 'Back to Home', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Fertility' })).toBeVisible();
   await expect(
     page.getByText('Lumen is not a contraceptive', { exact: false }).first(),

@@ -1,0 +1,116 @@
+.welcome-screen{
+  container-type:inline-size;
+  min-height:calc(100dvh - env(safe-area-inset-top));
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  text-align:center;
+  background:radial-gradient(ellipse at -18% 94%,#ebafc765,transparent 52%),
+    linear-gradient(157deg,#f8eaf0 3%,#f6e1ea 45%,#f8ebe6 100%);
+}
+.welcome-copy p,.welcome-caption{margin-bottom:0}
+.welcome-screen::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:138cqw;
+  aspect-ratio:1;
+  top:-66cqw;
+  right:-76cqw;
+  border:1px solid #ffffff96;
+  border-radius:50%;
+  box-shadow:0 0 0 13cqw #ffffff32,0 0 0 27cqw #ffffff24;
+}
+.welcome-screen::after,.welcome-art::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:42%;
+  top:48%;
+  width:112cqw;
+  height:109cqw;
+  border:1px solid #ffffffb0;
+  border-radius:49%;
+  transform:rotate(-38deg);
+}
+.welcome-art::before{left:23%;top:50%;width:145cqw;height:139cqw;border-color:#ffffff70}
+.welcome-copy{padding:15cqw 18px 0;animation:welcome-enter .26s cubic-bezier(.23,1,.32,1) both}
+.welcome-kicker,.welcome-wordmark span{
+  color:#914866;
+  font-size:clamp(9px,2.2cqw,10px);
+  font-weight:750;
+  letter-spacing:.19em;
+  text-transform:uppercase;
+}
+.welcome-copy h1{
+  font-family:var(--lumen-serif);
+  font-weight:700;
+  color:#532a47;
+  font-size:clamp(27px,8.25cqw,37px);
+  line-height:1.07;
+  letter-spacing:-.045em;
+  margin:3cqw auto 2.6cqw;
+}
+.welcome-description{
+  max-width:44ch;
+  margin:0 auto;
+  color:#77566b;
+  font-size:clamp(11px,2.85cqw,13px);
+  line-height:1.53;
+}
+.welcome-art{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:80%;
+  aspect-ratio:380/345;
+  margin:4.7cqw auto 0;
+}
+.welcome-orb,.welcome-orbit{position:absolute;aspect-ratio:1;border-radius:50%}
+.welcome-orb{
+  width:69.7%;
+  background:radial-gradient(circle at 36% 31%,#fffdfd 0%,#ffebf0 30%,#eaa5bc 66%,#c95189 100%);
+  box-shadow:0 6cqw 12cqw #b45a8f24,inset -4cqw -5cqw 8cqw #ac3e7520,inset 3cqw 4cqw 5cqw #ffffffd0;
+}
+.welcome-orb::before,.welcome-orb::after{content:"";position:absolute;inset:6.4%;border:1px solid #ffffffaa;border-radius:50%}
+.welcome-orb::after{inset:12%;border-color:#ffffff80}
+.welcome-orbit{width:86.8%;border:1px dashed #d88cae99;transform:rotate(-100deg);animation:welcome-orbit 60s linear infinite}
+.welcome-orbit span{position:absolute;width:3.1%;aspect-ratio:1;left:50%;top:0;translate:-50% -50%;border-radius:50%;background:#ab3c77}
+.welcome-orbit span + span{top:100%;background:#e8a0b7}
+.welcome-petals{position:absolute;width:33.7%;height:auto;stroke:none;filter:drop-shadow(0 8px 8px #bc639323)}
+.welcome-petals.bottom{left:15%;bottom:15%;transform:rotate(-24deg)}
+.welcome-petals.top{right:0;top:10%;transform:rotate(44deg)}
+.welcome-wordmark{position:relative;display:grid;justify-items:center;color:#77264f}
+.welcome-wordmark strong{font:700 clamp(39px,13.4cqw,59px)/1 Georgia,serif;letter-spacing:-.035em}
+.welcome-wordmark small{margin-top:1.1cqw;color:#774760;font-size:clamp(10px,2.7cqw,12px);font-weight:600}
+.welcome-callout{
+  position:absolute;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  gap:2cqw;
+  padding:2.4cqw 3cqw;
+  border:1px solid #fff;
+  border-radius:3.2cqw;
+  background:#ffffffef;
+  box-shadow:0 12px 26px #8b486222;
+  color:#57334d;
+  text-align:left;
+  line-height:1.3;
+}
+.welcome-callout.first{left:-2%;top:20%;transform:rotate(-6deg)}
+.welcome-callout.second{right:-2%;bottom:10.7%;transform:rotate(5deg)}
+.welcome-callout svg{width:4.5cqw;height:4.5cqw;color:#832750}
+.welcome-callout b,.welcome-callout small{display:block}
+.welcome-callout b{font-size:clamp(9px,2.47cqw,11px)}
+.welcome-callout small{margin-top:2px;color:#785a6e;font-size:clamp(8px,2.12cqw,10px)}
+.welcome-caption{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:4cqw;color:#78586a;font-size:clamp(10px,2.6cqw,12px)}
+.welcome-caption svg{width:13px;height:13px}
+.welcome-actions{display:grid;gap:8px;padding:5cqw 24px max(18px,env(safe-area-inset-bottom));margin:0 auto;width:min(100%,360px)}
+.welcome-actions .lumen-text-link{justify-content:center;color:#76324f}
+.welcome-disclaimer{color:#77566b;font-size:.75rem;line-height:1.55;margin:4px 0}
+@keyframes welcome-orbit{to{transform:rotate(260deg)}}
+@keyframes welcome-enter{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-copy, .welcome-orbit { animation: none; }
+}

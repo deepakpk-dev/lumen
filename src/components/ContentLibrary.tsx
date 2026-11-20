@@ -1,121 +1,71 @@
-// src/components/ContentLibrary.tsx
 'use client';
 
 import { useMemo, useState } from 'react';
 import type { ContentArticle, ScoredArticle } from '@/src/domain/content/types';
 import type { CyclePhase } from '@/src/domain/types';
 import { ContentCard } from './ContentCard';
+import { LumenIcon } from './LumenIcon';
 
-const CYCLE_PHASES: CyclePhase[] = ['menstrual', 'follicular', 'ovulation', 'luteal'];
+const phases: CyclePhase[] = ['menstrual', 'follicular', 'ovulation', 'luteal'];
+const labels: Record<ContentArticle['topics'][number], string> = {
+  'getting-started': 'Getting started', menstruation: 'Your cycle', fertility: 'Fertility',
+  pms: 'PMS', symptoms: 'Symptoms', 'irregular-cycles': 'Irregular cycles', wellbeing: 'Wellbeing',
+  pregnancy: 'Pregnancy', postpartum: 'Postpartum', menopause: 'Perimenopause',
+};
 
-const FOR_YOU_COUNT = 3;
-
-export function ContentLibrary({
-  feed,
-  all,
-}: {
+export function ContentLibrary({ feed, all, saved = [] }: {
   feed: ScoredArticle[];
   all: ContentArticle[];
+  saved?: string[];
 }) {
   const [query, setQuery] = useState('');
   const [topic, setTopic] = useState('all');
   const [phase, setPhase] = useState('all');
-
-  const topics = useMemo(() => {
-    const set = new Set<string>();
-    for (const a of all) for (const t of a.topics) set.add(t);
-    return [...set].sort();
-  }, [all]);
-
-  const forYou = feed.slice(0, FOR_YOU_COUNT);
-
-  const browse = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return all.filter((a) => {
-      const matchesTopic = topic === 'all' || a.topics.includes(topic as ContentArticle['topics'][number]);
-      const matchesPhase = phase === 'all' || a.phases.includes(phase as CyclePhase);
-      const matchesQuery =
-        q === '' ||
-        a.title.toLowerCase().includes(q) ||
-        a.summary.toLowerCase().includes(q);
-      return matchesTopic && matchesPhase && matchesQuery;
-    });
-  }, [all, query, topic, phase]);
+  const topics = useMemo(() => [...new Set(all.flatMap((article) => article.topics))].sort(), [all]);
+  const forYou = feed.slice(0, 3);
+  const q = query.trim().toLowerCase();
+  const browse = all.filter((article) => {
+    const matchesTopic = topic === 'all' || (topic === 'saved' ? saved.includes(article.slug) : article.topics.includes(topic as ContentArticle['topics'][number]));
+    const matchesPhase = phase === 'all' || article.phases.includes(phase as CyclePhase);
+    return matchesTopic && matchesPhase && (article.title.toLowerCase().includes(q) || article.summary.toLowerCase().includes(q));
+  });
 
   return (
-    <div className="space-y-6">
-      {forYou.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold">For you</h2>
-          {forYou.map((f) => (
-            <ContentCard
-              key={f.article.slug}
-              article={f.article}
-              reason={f.matchReasons[0]}
-            />
-          ))}
+    <div className="lumen-stack">
+      <div className="lumen-search">
+        <LumenIcon name="search" size={19} />
+        <label className="sr-only" htmlFor="library-search">Search the library</label>
+        <input id="library-search" type="search" className="lumen-field" placeholder="Search the library" value={query} onChange={(e) => setQuery(e.target.value)} />
+      </div>
+      <div className="lumen-filters" aria-label="Article topics" role="group">
+        {[['all', 'All'], ...topics.map((key) => [key, labels[key]]), ['saved', 'Saved']].map(([key, label]) => (
+          <button type="button" key={key} className="lumen-chip" aria-pressed={topic === key} onClick={() => setTopic(key)}>{label}</button>
+        ))}
+      </div>
+      {all.some((article) => article.phases.length > 0) && (
+        <details className="text-sm lumen-muted">
+          <summary className="cursor-pointer py-2">Filter by cycle phase{phase !== 'all' ? ` · ${phase}` : ''}</summary>
+          <label className="setup-label">Phase
+            <select className="lumen-field mt-1" value={phase} onChange={(e) => setPhase(e.target.value)}>
+              <option value="all">All phases</option>
+              {phases.map((item) => <option key={item} value={item}>{item[0].toUpperCase() + item.slice(1)}</option>)}
+            </select>
+          </label>
+        </details>
+      )}
+      {forYou.length > 0 && topic === 'all' && phase === 'all' && (
+        <section className="lumen-stack">
+          <h2 className="lumen-card-title">For you</h2>
+          {forYou.map((entry) => <ContentCard key={entry.article.slug} article={entry.article} reason={entry.matchReasons[0]} />)}
         </section>
       )}
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Browse</h2>
-        <div className="space-y-2">
-          <input
-            type="search"
-            placeholder="Search articles"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
-          <div className="flex gap-2">
-            <label className="sr-only" htmlFor="topic-filter">
-              Topic
-            </label>
-            <select
-              id="topic-filter"
-              aria-label="Topic"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border px-3 py-2 text-sm"
-            >
-              <option value="all">All topics</option>
-              {topics.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <label className="sr-only" htmlFor="phase-filter">
-              Phase
-            </label>
-            <select
-              id="phase-filter"
-              aria-label="Phase"
-              value={phase}
-              onChange={(e) => setPhase(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border px-3 py-2 text-sm"
-            >
-              <option value="all">All phases</option>
-              {CYCLE_PHASES.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
+      <section className="lumen-stack">
+        <h2 className="lumen-card-title">{topic === 'saved' ? 'Saved reads' : 'Browse'}</h2>
         {browse.length === 0 ? (
-          <p className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
-            No articles match your search.
+          <p className="lumen-card lumen-muted text-sm" role="status">
+            {topic === 'saved' && !q && phase === 'all' ? 'No saved articles for this stage. Save an article to find it here.' : 'No articles match your search.'}
           </p>
-        ) : (
-          <div className="space-y-3">
-            {browse.map((a) => (
-              <ContentCard key={a.slug} article={a} />
-            ))}
-          </div>
-        )}
+        ) : browse.map((article) => <ContentCard key={article.slug} article={article} />)}
       </section>
     </div>
   );

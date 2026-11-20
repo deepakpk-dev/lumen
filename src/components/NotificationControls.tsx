@@ -55,6 +55,8 @@ export function NotificationControls() {
       <label className="flex items-center justify-between gap-3 text-sm">
         <span>Show device notifications</span>
         <input
+          className="setup-switch"
+          role="switch"
           type="checkbox"
           checked={prefs.notifications}
           onChange={(e) => void toggleNotifications(e.target.checked)}
@@ -77,6 +79,8 @@ export function NotificationControls() {
           <label key={t.key} className="flex items-center justify-between gap-3 text-sm">
             <span>{t.label}</span>
             <input
+              className="setup-switch"
+              role="switch"
               type="checkbox"
               checked={prefs[t.key]}
               onChange={(e) => update({ [t.key]: e.target.checked })}

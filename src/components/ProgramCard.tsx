@@ -6,10 +6,10 @@ export function ProgramCard({ status }: { status: ProgramStatus }) {
   return (
     <Link
       href={`/programs/${program.slug}`}
-      className="block rounded-2xl border border-neutral-200 bg-white p-4 transition hover:border-rose-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-rose-700"
+      className="lumen-card"
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-semibold">{program.title}</h3>
+        <h3 className="lumen-editorial-title">{program.title}</h3>
         {isComplete && (
           <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-950 dark:text-rose-300">
             Complete

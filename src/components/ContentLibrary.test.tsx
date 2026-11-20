@@ -47,9 +47,7 @@ describe('ContentLibrary', () => {
 
   it('filters the browse list by topic', () => {
     render(<ContentLibrary feed={[]} all={all} />);
-    fireEvent.change(screen.getByLabelText(/topic/i), {
-      target: { value: 'fertility' },
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Fertility' }));
     expect(screen.getByText('Ovulation and your fertile window')).toBeInTheDocument();
     expect(screen.queryByText('Managing period cramps')).not.toBeInTheDocument();
   });

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding';
 
 // End-to-end cycle-tracking user journey in one browser context: onboarding
 // with the default cycle goal, the predicting home screen, the period arriving
@@ -18,15 +19,15 @@ test('cycle journey: onboard, prediction, period arrives, cycle rolls over', asy
   });
 
   // Onboarding: the default goal is already "Track my cycle".
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await openOnboarding(page);
+  await continueSetup(page);
   await page.getByLabel('last period start').fill(lastPeriod);
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await finishSetupFromDate(page);
 
   // Home predicts from the seeded cycle: day 28, period due, honest confidence.
-  await expect(page.getByText('Day 28')).toBeVisible();
+  await expect(page.getByText('Day 28 of your cycle')).toBeVisible();
+  await page.getByText(/Confidence: (low|medium|high)/).click();
   await expect(page.getByText(/Next period in ~1 day|Next period today/)).toBeVisible();
-  await expect(page.getByText(/Confidence: (low|medium|high)/)).toBeVisible();
 
   // Calendar shows the full cycle-mode legend, including fertile markers.
   await page.goto('/calendar');
@@ -43,7 +44,7 @@ test('cycle journey: onboard, prediction, period arrives, cycle rolls over', asy
   // Home flips to day 1 of the new cycle.
   await page.goto('/');
   await expect(page.getByText('Menstrual phase', { exact: true })).toBeVisible();
-  await expect(page.getByText('Day 1', { exact: true })).toBeVisible();
+  await expect(page.getByText('Day 1 of your cycle', { exact: true })).toBeVisible();
 
   // History records the completed 27-day cycle alongside the current one.
   await page.goto('/history');

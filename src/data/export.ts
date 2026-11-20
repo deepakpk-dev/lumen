@@ -7,6 +7,7 @@ import type {
   PostpartumProfile,
   EpdsEntry,
   ProgramProgress,
+  Personalization,
 } from '@/src/domain/types';
 import { todayISO } from '@/src/domain/dates';
 import type { PreferencesSnapshot } from '@/src/settings/preferences';
@@ -20,6 +21,7 @@ export function buildExportBlob(data: {
   postpartumProfile?: PostpartumProfile | null;
   epdsEntries?: EpdsEntry[];
   programProgress?: ProgramProgress[];
+  personalization?: Personalization | null;
   preferences?: PreferencesSnapshot | null;
 }): { filename: string; json: string } {
   const payload = {
@@ -33,6 +35,7 @@ export function buildExportBlob(data: {
     postpartumProfile: data.postpartumProfile ?? null,
     epdsEntries: data.epdsEntries ?? [],
     programProgress: data.programProgress ?? [],
+    ...(data.personalization ? { personalization: data.personalization } : {}),
     // Life stage, units, reminder settings — restored so a backup carries the
     // full app state, not just records.
     preferences: data.preferences ?? null,
@@ -52,6 +55,7 @@ export interface ImportedData {
   postpartumProfile: PostpartumProfile | null;
   epdsEntries: EpdsEntry[];
   programProgress: ProgramProgress[];
+  personalization?: Personalization;
   preferences: PreferencesSnapshot | null;
 }
 
@@ -94,6 +98,9 @@ export function parseImport(json: string): ImportedData {
     postpartumProfile: one(o.postpartumProfile) as unknown as PostpartumProfile | null,
     epdsEntries: rows(o.epdsEntries, 'id') as unknown as EpdsEntry[],
     programProgress: rows(o.programProgress, 'programSlug') as unknown as ProgramProgress[],
+    ...(one(o.personalization)?.id === 'current'
+      ? { personalization: o.personalization as Personalization }
+      : {}),
     // Preferences are a plain object (absent in pre-v5 exports → null, skipped
     // on restore); importPreferences ignores unknown/missing fields.
     preferences: one(o.preferences) as unknown as PreferencesSnapshot | null,
