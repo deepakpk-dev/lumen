@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding';
 
 // End-to-end postpartum user journey in one browser context: onboarding as
 // pregnant, ending the pregnancy with "Baby arrived", landing in postpartum
@@ -17,22 +18,22 @@ test('postpartum journey: birth, recovery home, mood check-in, log, exit', async
   });
 
   // Onboarding: pick the pregnancy goal and enter a due date.
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('radio', { name: /I'm pregnant/ }).click();
-  await page.getByLabel('due date', { exact: true }).fill(dueDate);
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await openOnboarding(page);
+  await page.getByRole('radio', { name: /^Pregnancy\b/ }).click();
+  await continueSetup(page);
+  await page.getByLabel('Due date', { exact: true }).fill(dueDate);
+  await finishSetupFromDate(page, false);
 
   // Pregnant onboarding lands on the week-by-week pregnancy space.
   await page.waitForURL('**/pregnancy');
   await expect(page.getByRole('heading', { name: 'Pregnancy' })).toBeVisible();
 
   // Baby arrives: the end-of-pregnancy flow lives in Settings.
-  await page.getByRole('link', { name: 'Home' }).click();
+  await page.getByRole('link', { name: 'Back to Today', exact: true }).click();
   await page.getByRole('link', { name: 'Settings' }).click();
   await page.getByRole('button', { name: 'Manage pregnancy' }).click();
   await page.getByRole('button', { name: 'Baby arrived' }).click();
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Start postpartum recovery' }).click();
 
   // Home is now postpartum-aware: week-1 recovery card + Postpartum nav tile.
   await expect(page.getByRole('heading', { name: 'Postpartum · week 1' })).toBeVisible();
@@ -55,7 +56,7 @@ test('postpartum journey: birth, recovery home, mood check-in, log, exit', async
   await expect(page.getByText('Support is available')).not.toBeVisible();
 
   // Recovery logging: the daily log speaks lochia, never period flow.
-  await page.getByRole('link', { name: 'Postpartum' }).click();
+  await page.getByRole('link', { name: 'Back to Postpartum', exact: true }).click();
   await page.getByRole('link', { name: 'Log recovery' }).click();
   await expect(page.getByRole('heading', { name: 'Lochia' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Flow', exact: true })).not.toBeVisible();

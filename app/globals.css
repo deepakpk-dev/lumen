@@ -22,7 +22,7 @@
 }
 
 body {
-  background: var(--background);
+  background: var(--lumen-surround, var(--background));
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   /* Keep content clear of the notch / rounded corners on installed PWAs.
@@ -50,5 +50,9 @@ body {
   }
   .print-full {
     max-width: none !important;
+  }
+  .lumen-app:has(.print-full) {
+    width: 100%;
+    min-height: 0;
   }
 }

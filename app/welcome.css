@@ -1,0 +1,64 @@
+.welcome-screen{
+  container-type:inline-size;
+  min-height:calc(100dvh - env(safe-area-inset-top));
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  text-align:center;
+  background:radial-gradient(ellipse at -18% 94%,#ebafc765,transparent 52%),
+    linear-gradient(157deg,#f8eaf0 3%,#f6e1ea 45%,#f8ebe6 100%);
+}
+.welcome-copy p{margin-bottom:0}
+.welcome-screen::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:138cqw;
+  aspect-ratio:1;
+  top:-66cqw;
+  right:-76cqw;
+  border:1px solid #ffffff96;
+  border-radius:50%;
+  box-shadow:0 0 0 13cqw #ffffff32,0 0 0 27cqw #ffffff24;
+}
+.welcome-screen::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:42%;
+  top:48%;
+  width:112cqw;
+  height:109cqw;
+  border:1px solid #ffffffb0;
+  border-radius:49%;
+  transform:rotate(-38deg);
+}
+.welcome-brand{display:grid;justify-items:center;gap:6px;padding-top:clamp(32px,11cqw,50px)}
+.welcome-logo{width:min(47cqw,164px);height:auto;filter:drop-shadow(0 8px 12px #83275024)}
+.welcome-wordmark{color:#832750;font-size:clamp(1.35rem,6cqw,1.65rem);font-weight:800;letter-spacing:-.07em}
+.welcome-copy{padding:0 18px;animation:welcome-enter .26s cubic-bezier(.23,1,.32,1) both}
+.welcome-copy h1{
+  font-family:var(--lumen-serif);
+  font-weight:700;
+  color:#532a47;
+  font-size:clamp(27px,8.25cqw,37px);
+  line-height:1.07;
+  letter-spacing:-.045em;
+  margin:3cqw auto 2.6cqw;
+  max-width:16ch;
+  text-wrap:balance;
+}
+.welcome-description{
+  max-width:44ch;
+  margin:0 auto;
+  color:#77566b;
+  font-size:clamp(11px,2.85cqw,13px);
+  line-height:1.53;
+}
+.welcome-actions{display:grid;gap:8px;padding:5cqw 24px max(18px,env(safe-area-inset-bottom));margin:0 auto;width:min(100%,360px)}
+.welcome-actions .lumen-text-link{justify-content:center;color:#76324f}
+.welcome-disclaimer{color:#77566b;font-size:.75rem;line-height:1.55;margin:4px 0}
+@keyframes welcome-enter{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-copy { animation: none; }
+}

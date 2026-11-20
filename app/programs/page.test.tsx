@@ -40,6 +40,7 @@ describe('ProgramsPage', () => {
   it('shows a friendly message when no program is available', () => {
     mockState = { programs: [], loading: false };
     render(<ProgramsPage />);
-    expect(screen.getByText(/on its way/i)).toBeTruthy();
+    expect(screen.getByText(/no programs for this tracking mode/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browse the Library' })).toHaveAttribute('href', '/library');
   });
 });

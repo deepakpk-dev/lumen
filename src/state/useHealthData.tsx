@@ -12,6 +12,9 @@ import type {
   DueDateSource,
   KickSession,
   ContractionSession,
+  Personalization,
+  CycleEstimates,
+  TrackingGroup,
 } from '@/src/domain/types';
 import type { LifeStage } from '@/src/domain/types';
 import {
@@ -34,6 +37,8 @@ import {
   getEpdsEntries,
   getProgramProgress,
   saveProgramProgress,
+  getPersonalization,
+  savePersonalization,
 } from '@/src/data/repository';
 import { PROGRAMS } from '@/src/content/programs';
 import {
@@ -89,6 +94,9 @@ import {
   setLifeStage,
   setBbtUnit as setBbtUnitPref,
   type BbtUnit,
+  type ReminderPrefs,
+  getReminderPrefs,
+  setReminderPrefs,
 } from '@/src/settings/preferences';
 
 function newId(): string {
@@ -104,6 +112,8 @@ function useHealthDataState() {
   const [postpartumProfile, setPostpartumProfile] = useState<PostpartumProfile | null>(null);
   const [epdsEntries, setEpdsEntries] = useState<EpdsEntry[]>([]);
   const [programProgress, setProgramProgress] = useState<ProgramProgress[]>([]);
+  const [personalization, setPersonalization] = useState<Personalization>();
+  const [draftMood, setDraftMood] = useState<{ date: ISODate; mood: string }>();
   const [loading, setLoading] = useState(true);
   const [lifeStage, setLifeStageState] = useState<LifeStage>('cycle');
   const [bbtUnit, setBbtUnit] = useState<BbtUnit>('C');
@@ -178,7 +188,7 @@ function useHealthDataState() {
   );
 
   const refresh = useCallback(async () => {
-    const [c, l, p, ks, cs, pp, ep, prog] = await Promise.all([
+    const [c, l, p, ks, cs, pp, ep, prog, person] = await Promise.all([
       getCycles(),
       getAllDailyLogs(),
       getPregnancyProfile(),
@@ -187,6 +197,7 @@ function useHealthDataState() {
       getPostpartumProfile(),
       getEpdsEntries(),
       getProgramProgress(),
+      getPersonalization(),
     ]);
     setCycles(c);
     setDailyLogs(l);
@@ -196,6 +207,7 @@ function useHealthDataState() {
     setPostpartumProfile(pp ?? null);
     setEpdsEntries(ep);
     setProgramProgress(prog);
+    setPersonalization(person);
     setLoading(false);
   }, []);
 
@@ -230,7 +242,13 @@ function useHealthDataState() {
     [refresh],
   );
 
-  const stats: CycleStats = useMemo(() => computeCycleStats(cycles), [cycles]);
+  const stats: CycleStats = useMemo(() => computeCycleStats(cycles, personalization), [cycles, personalization]);
+
+  const updatePersonalization = useCallback(async (patch: Partial<Omit<Personalization, 'id'>>) => {
+    const current = await getPersonalization();
+    await savePersonalization({ ...current, ...patch, id: 'current' });
+    await refresh();
+  }, [refresh]);
 
   const startPregnancyMode = useCallback(
     async (input: { dueDate?: ISODate; lmp?: ISODate; source?: DueDateSource; useCycleLength?: boolean }) => {
@@ -259,20 +277,36 @@ function useHealthDataState() {
   // in OnboardingForm; kept inline to avoid a component→state import cycle.)
   const completeOnboarding = useCallback(
     async (
-      goal: 'cycle' | 'ttc' | 'pregnant' | 'menopause',
-      input: { date?: ISODate; dueDate?: ISODate },
+      goal: 'cycle' | 'ttc' | 'pregnant' | 'postpartum' | 'menopause',
+      input: CycleEstimates & { date?: ISODate; dueDate?: ISODate; birthDate?: ISODate;
+        tracking?: TrackingGroup[]; reminders?: Partial<ReminderPrefs> },
     ) => {
+      const pregnancy = goal === 'pregnant' ? startPregnancy({
+        today: todayISO(), dueDate: input.dueDate, source: input.date ? 'lmp' : undefined,
+      }) : null;
+      if (goal === 'postpartum' && !input.birthDate) throw new Error('A birth date is required.');
       await clearPregnancyProfile();
       await clearPostpartumProfile();
-      if (goal === 'pregnant') {
-        await savePregnancyProfile(startPregnancy({ today: todayISO(), dueDate: input.dueDate }));
+      if (pregnancy) {
+        await savePregnancyProfile(pregnancy);
         setLifeStage('pregnancy', todayISO());
+      } else if (goal === 'postpartum' && input.birthDate) {
+        await savePostpartumProfile(startPostpartum({ birthDate: input.birthDate, today: todayISO() }));
+        setLifeStage('postpartum', todayISO());
       } else {
         // Cycle, TTC, and perimenopause all seed a cycle so predictions work
         // from day one; TTC lands in fertility mode, peri in menopause stage.
-        if (input.date) await addCycle({ id: newId(), startDate: input.date });
+        if (input.date && !(await getCycles()).some((cycle) => cycle.startDate === input.date)) {
+          await addCycle({ id: newId(), startDate: input.date });
+        }
         setLifeStage(goal === 'ttc' ? 'ttc' : goal === 'menopause' ? 'menopause' : 'cycle', todayISO());
       }
+      const current = await getPersonalization();
+      await savePersonalization({
+        ...current, id: 'current', onboardingComplete: true,
+        cycleLength: input.cycleLength, periodLength: input.periodLength, tracking: input.tracking,
+      });
+      if (input.reminders) setReminderPrefs({ ...getReminderPrefs(), ...input.reminders });
       refreshSettings();
       await refresh();
     },
@@ -438,8 +472,8 @@ function useHealthDataState() {
   }, [isTtc, confirmations, cycles, ovulationConfirmation]);
 
   const prediction: Prediction | null = useMemo(
-    () => generatePrediction(cycles, observed),
-    [cycles, observed],
+    () => generatePrediction(cycles, observed, personalization),
+    [cycles, observed, personalization],
   );
 
   const conceptionToday: ConceptionGuidance | null = useMemo(() => {
@@ -540,6 +574,11 @@ function useHealthDataState() {
     loading,
     startPeriod,
     completeOnboarding,
+    onboardingComplete: personalization?.onboardingComplete === true,
+    personalization,
+    updatePersonalization,
+    draftMood,
+    setDraftMood,
     endPeriod,
     saveLog,
     refresh,

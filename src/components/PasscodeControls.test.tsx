@@ -42,7 +42,7 @@ describe('PasscodeControls', () => {
     await userEvent.type(await screen.findByLabelText('new passcode'), '1234');
     await userEvent.click(screen.getByRole('button', { name: /turn on encryption/i }));
 
-    expect(await screen.findByText(/at least 16 characters/i)).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(/at least 16 characters/i);
     expect(hasVault()).toBe(false);
   });
 

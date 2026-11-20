@@ -7,6 +7,22 @@ export type MucusType = 'dry' | 'sticky' | 'creamy' | 'watery' | 'egg-white';
 
 export type LifeStage = 'cycle' | 'ttc' | 'pregnancy' | 'postpartum' | 'menopause';
 
+export type TrackingGroup = 'mood' | 'symptoms' | 'flow' | 'notes' | 'fertility';
+
+export interface CycleEstimates {
+  cycleLength?: number;
+  periodLength?: number;
+}
+
+export interface Personalization extends CycleEstimates {
+  id: 'current';
+  onboardingComplete?: boolean;
+  preferredName?: string;
+  tracking?: TrackingGroup[];
+  savedArticles?: string[];
+  reviewedReminders?: { date: ISODate; kinds: string[] };
+}
+
 export interface DailyLog {
   date: ISODate;
   flow?: FlowIntensity;

@@ -17,6 +17,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false, // don't advertise the framework/version
+  devIndicators: false, // the dev badge overlays the Today tab on phones
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

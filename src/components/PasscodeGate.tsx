@@ -6,6 +6,7 @@ import { unlockVault, restoreVault } from '@/src/crypto/vault';
 import { setStorageKeys } from '@/src/data/storage';
 import { isSyncEnabled, startSyncTracking } from '@/src/data/sync-engine';
 import { hasPasscode, verifyPasscode } from '@/src/security/passcode';
+import { LumenMark } from './LumenBrand';
 
 // 'loading' until we know which lock (if any) applies; 'open' renders the app.
 // 'vault' = encrypted device (unlock installs the key before children mount).
@@ -135,15 +136,15 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
   if (mode === 'loading') return null;
   if (mode === 'open') return <>{children}</>;
 
-  const inputClass =
-    'w-full rounded-md border border-neutral-300 px-3 py-2 text-center dark:border-neutral-700';
+  const inputClass = 'lumen-field text-center';
 
   if (mode === 'vault' && recovering) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col justify-center p-6">
-        <form onSubmit={handleRestore} className="space-y-4">
-          <h1 className="text-center text-lg font-semibold">Restore with recovery phrase</h1>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+      <main className="lumen-app lumen-page lumen-lock">
+        <form onSubmit={handleRestore} className="lumen-card space-y-4">
+          <LumenMark className="lumen-lock-mark" alt="Lumen" />
+          <h1 className="lumen-title text-center">Restore with recovery phrase</h1>
+          <p className="lumen-help">
             Enter your 12-word recovery phrase and choose a new passcode.
           </p>
           <textarea
@@ -151,7 +152,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
             value={phrase}
             onChange={(e) => setPhrase(e.target.value)}
             rows={3}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+            className="lumen-field"
           />
           <input
             aria-label="new passcode"
@@ -161,8 +162,8 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
             placeholder="New passphrase (16+ characters)"
             className={inputClass}
           />
-          {error && <p className="text-center text-sm text-red-600 dark:text-red-400">{error}</p>}
-          <button type="submit" className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
+          {error && <p className="lumen-note lumen-danger text-center" role="alert">{error}</p>}
+          <button type="submit" className="lumen-button w-full">
             Restore
           </button>
           <button
@@ -171,7 +172,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
               setRecovering(false);
               setError('');
             }}
-            className="w-full text-center text-sm text-neutral-500 underline"
+            className="lumen-text-link w-full justify-center"
           >
             Back to passcode
           </button>
@@ -182,9 +183,10 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
 
   const onUnlock = mode === 'vault' ? handleVaultUnlock : handleLegacyUnlock;
   return (
-    <main className="mx-auto flex min-h-screen max-w-xs flex-col justify-center p-6">
-      <form onSubmit={onUnlock} className="space-y-4">
-        <h1 className="text-center text-lg font-semibold">Enter passcode</h1>
+    <main className="lumen-app lumen-page lumen-lock">
+      <form onSubmit={onUnlock} className="lumen-card space-y-4">
+        <LumenMark className="lumen-lock-mark" alt="Lumen" />
+        <h1 className="lumen-title text-center">Enter passcode</h1>
         <input
           aria-label="passcode"
           type="password"
@@ -196,8 +198,8 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
           }}
           className={inputClass}
         />
-        {error && <p className="text-center text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <button type="submit" className="w-full rounded-md bg-rose-600 px-4 py-3 text-white">
+        {error && <p className="lumen-note lumen-danger text-center" role="alert">{error}</p>}
+        <button type="submit" className="lumen-button w-full">
           Unlock
         </button>
         {mode === 'vault' && (
@@ -207,7 +209,7 @@ export function PasscodeGate({ children }: { children: React.ReactNode }) {
               setRecovering(true);
               setError('');
             }}
-            className="w-full text-center text-sm text-neutral-500 underline"
+            className="lumen-text-link w-full justify-center"
           >
             Forgot passcode?
           </button>

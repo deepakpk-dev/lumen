@@ -7,6 +7,7 @@ import type {
   PostpartumProfile,
   EpdsEntry,
   ProgramProgress,
+  Personalization,
 } from '@/src/domain/types';
 import { todayISO } from '@/src/domain/dates';
 import type { PreferencesSnapshot } from '@/src/settings/preferences';
@@ -20,6 +21,7 @@ export function buildExportBlob(data: {
   postpartumProfile?: PostpartumProfile | null;
   epdsEntries?: EpdsEntry[];
   programProgress?: ProgramProgress[];
+  personalization?: Personalization | null;
   preferences?: PreferencesSnapshot | null;
 }): { filename: string; json: string } {
   const payload = {
@@ -33,6 +35,7 @@ export function buildExportBlob(data: {
     postpartumProfile: data.postpartumProfile ?? null,
     epdsEntries: data.epdsEntries ?? [],
     programProgress: data.programProgress ?? [],
+    ...(data.personalization ? { personalization: data.personalization } : {}),
     // Life stage, units, reminder settings — restored so a backup carries the
     // full app state, not just records.
     preferences: data.preferences ?? null,
@@ -52,6 +55,7 @@ export interface ImportedData {
   postpartumProfile: PostpartumProfile | null;
   epdsEntries: EpdsEntry[];
   programProgress: ProgramProgress[];
+  personalization?: Personalization;
   preferences: PreferencesSnapshot | null;
 }
 
@@ -69,14 +73,14 @@ export function parseImport(json: string): ImportedData {
   try {
     raw = JSON.parse(json);
   } catch {
-    throw new Error("This file isn't valid JSON — pick a Lumen export file.");
+    throw new Error('Couldn’t read this file. Choose a Lumen backup file ending in .json.');
   }
   if (!raw || typeof raw !== 'object') {
-    throw new Error("This doesn't look like a Lumen export.");
+    throw new Error('Choose a backup file exported from Lumen.');
   }
   const o = raw as Record<string, unknown>;
   if (typeof o.version !== 'number') {
-    throw new Error("This doesn't look like a Lumen export.");
+    throw new Error('Choose a backup file exported from Lumen.');
   }
   if (o.version > EXPORT_VERSION) {
     throw new Error('This export was made by a newer version of Lumen. Update the app, then try again.');
@@ -94,6 +98,9 @@ export function parseImport(json: string): ImportedData {
     postpartumProfile: one(o.postpartumProfile) as unknown as PostpartumProfile | null,
     epdsEntries: rows(o.epdsEntries, 'id') as unknown as EpdsEntry[],
     programProgress: rows(o.programProgress, 'programSlug') as unknown as ProgramProgress[],
+    ...(one(o.personalization)?.id === 'current'
+      ? { personalization: o.personalization as Personalization }
+      : {}),
     // Preferences are a plain object (absent in pre-v5 exports → null, skipped
     // on restore); importPreferences ignores unknown/missing fields.
     preferences: one(o.preferences) as unknown as PreferencesSnapshot | null,

@@ -4,13 +4,12 @@ import { getDayMarker, type DayMarker } from '@/src/domain/calendar';
 import { parseISODate, toISODate } from '@/src/domain/dates';
 
 const MARKER_STYLE: Record<DayMarker, string> = {
-  period: 'bg-rose-600 text-white',
+  period: 'lumen-marker-period',
   // Dashed outline (not a paler fill) so a forecast day is unmistakable from a
   // logged period day — the two pinks were near-identical at a glance.
-  'predicted-period':
-    'border border-dashed border-rose-500 bg-rose-50 text-rose-700 dark:border-rose-400 dark:bg-rose-950/40 dark:text-rose-200',
-  fertile: 'bg-emerald-100 text-emerald-900',
-  ovulation: 'bg-emerald-500 text-white',
+  'predicted-period': 'lumen-marker-predicted',
+  fertile: 'lumen-marker-fertile',
+  ovulation: 'lumen-marker-ovulation',
   none: '',
 };
 
@@ -44,7 +43,7 @@ export function CycleCalendar({
   const m = first.getMonth();
   const firstOfMonth = new Date(year, m, 1);
   const daysInMonth = new Date(year, m + 1, 0).getDate();
-  const leadingBlanks = firstOfMonth.getDay();
+  const leadingBlanks = (firstOfMonth.getDay() + 6) % 7;
 
   const cells: (ISODate | null)[] = [
     ...Array.from({ length: leadingBlanks }, () => null),
@@ -56,7 +55,7 @@ export function CycleCalendar({
   return (
     <div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-neutral-500 dark:text-neutral-400">
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+        {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d, i) => (
           <div key={i}>{d}</div>
         ))}
       </div>
@@ -72,9 +71,7 @@ export function CycleCalendar({
           if (MARKER_LABEL[marker]) parts.push(MARKER_LABEL[marker]);
           if (isToday) parts.push('today');
           const label = parts.join(', ');
-          const className = `flex aspect-square items-center justify-center rounded-md text-sm ${MARKER_STYLE[marker]} ${
-            isToday ? 'ring-2 ring-rose-500 ring-offset-1 font-semibold' : ''
-          }`;
+          const className = `lumen-calendar-day ${MARKER_STYLE[marker]}`;
           // Only past/today cells open the log — logging a future day would
           // corrupt cycle detection. Needs `today` to know which side we're on.
           const navigable = today !== undefined && date <= today;
@@ -86,7 +83,7 @@ export function CycleCalendar({
                 aria-label={label}
                 aria-current={isToday ? 'date' : undefined}
                 title={MARKER_LABEL[marker] || undefined}
-                className={`${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500`}
+                className={className}
               >
                 {day}
               </Link>

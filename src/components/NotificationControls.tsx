@@ -14,9 +14,9 @@ import {
 import { useHealthData } from '@/src/state/useHealthData';
 
 const TOGGLES: { key: keyof ReminderPrefs; label: string }[] = [
-  { key: 'periodReminder', label: 'Period is coming up' },
-  { key: 'fertileReminder', label: 'Fertile window & ovulation' },
-  { key: 'logReminder', label: 'Reminder to log today' },
+  { key: 'periodReminder', label: 'Period reminders' },
+  { key: 'fertileReminder', label: 'Fertile window reminders' },
+  { key: 'logReminder', label: 'Daily log reminder' },
 ];
 
 export function NotificationControls() {
@@ -52,31 +52,36 @@ export function NotificationControls() {
 
   return (
     <div className="space-y-3">
-      <label className="flex items-center justify-between gap-3 text-sm">
+      <label className="lumen-choice-row justify-between">
         <span>Show device notifications</span>
         <input
+          className="setup-switch"
+          role="switch"
           type="checkbox"
           checked={prefs.notifications}
           onChange={(e) => void toggleNotifications(e.target.checked)}
         />
       </label>
       {perm === 'denied' && (
-        <p className="text-xs text-amber-700 dark:text-amber-300">
-          Notifications are blocked in your browser settings. Reminders still show inside the app.
+        <p className="lumen-note lumen-warning">
+          To see device notifications, allow them for Lumen in your browser settings.
+          Your reminders still appear in the app.
         </p>
       )}
       {perm === 'unsupported' && (
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="lumen-help">
           This browser can&apos;t show device notifications. Reminders still show inside the app.
         </p>
       )}
-      <div className="space-y-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+      <div className="lumen-divider border-t pt-2">
         {/* The fertile-window reminder never fires in perimenopause (see
             src/domain/reminders.ts), so don't show a toggle that does nothing. */}
         {TOGGLES.filter((t) => t.key !== 'fertileReminder' || lifeStage !== 'menopause').map((t) => (
-          <label key={t.key} className="flex items-center justify-between gap-3 text-sm">
+          <label key={t.key} className="lumen-choice-row justify-between">
             <span>{t.label}</span>
             <input
+              className="setup-switch"
+              role="switch"
               type="checkbox"
               checked={prefs[t.key]}
               onChange={(e) => update({ [t.key]: e.target.checked })}

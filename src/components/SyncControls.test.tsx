@@ -66,7 +66,7 @@ afterEach(() => {
 describe('SyncControls', () => {
   it('requires encryption before sync can be enabled', () => {
     render(<SyncControls />);
-    expect(screen.getByText(/sync needs encryption/i)).toBeDefined();
+    expect(screen.getByText(/set a passcode to turn on sync/i)).toBeDefined();
     expect(screen.queryByRole('button', { name: /turn on sync/i })).toBeNull();
   });
 
@@ -80,7 +80,7 @@ describe('SyncControls', () => {
     render(<SyncControls onSynced={onSynced} />);
     await userEvent.click(await screen.findByRole('button', { name: /turn on sync/i }));
 
-    await screen.findByText(/sync is/i);
+    await screen.findByRole('button', { name: 'Sync now' });
     expect(isSyncEnabled()).toBe(true);
     expect(onSynced).toHaveBeenCalled();
     // The cycle and the prefs pseudo-record reached the (blind) server.
@@ -107,8 +107,8 @@ describe('SyncControls', () => {
     await userEvent.click(screen.getByRole('button', { name: /restore from another device/i }));
     await userEvent.click(screen.getByLabelText(/recovery phrase/i));
     await userEvent.paste(mnemonic);
-    await userEvent.type(screen.getByLabelText(/new passcode/i), 'sync-restore-passphrase');
-    await userEvent.click(screen.getByRole('button', { name: /restore my data/i }));
+    await userEvent.type(screen.getByLabelText(/new passphrase/i), 'sync-restore-passphrase');
+    await userEvent.click(screen.getByRole('button', { name: /restore synced data/i }));
 
     await waitFor(() => expect(onRestored).toHaveBeenCalled(), { timeout: 20_000 });
     expect(isSyncEnabled()).toBe(true);
@@ -138,7 +138,7 @@ describe('SyncControls', () => {
 
   it('reflects a vault created elsewhere on the same page', async () => {
     render(<SyncControls />);
-    await screen.findByText(/sync needs encryption/i); // 'novault'
+    await screen.findByText(/set a passcode to turn on sync/i); // 'novault'
     act(() => saveVault({} as WrappedVault)); // e.g. the Passcode section enabling
     await screen.findByRole('button', { name: /turn on sync/i }); // now 'off'
   });

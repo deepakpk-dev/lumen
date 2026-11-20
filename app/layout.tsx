@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./lumen.css";
+import "./welcome.css";
+import "./onboarding.css";
 import { ServiceWorkerRegistrar } from '@/src/components/ServiceWorkerRegistrar';
 import { PasscodeGate } from '@/src/components/PasscodeGate';
 import { SyncRunner } from '@/src/components/SyncRunner';
 import { HealthDataProvider } from '@/src/state/useHealthData';
+import { LumenShell } from '@/src/components/LumenShell';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,13 +21,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const description =
+  "Track your cycle, fertility, pregnancy, postpartum recovery, or perimenopause. Your logs stay on this device by default, with optional encrypted sync.";
+const socialTitle = "Lumen | Private reproductive health tracking";
+const socialImage = { url: "/icon-512.png", width: 512, height: 512, alt: "Lumen logo" };
+
 export const metadata: Metadata = {
+  metadataBase: new URL(`https://${process.env.VERCEL_URL ?? "lumen-pi-one.vercel.app"}`),
   title: {
-    default: "Lumen — Private Cycle & Health Tracker",
+    default: socialTitle,
     template: "%s · Lumen",
   },
-  description:
-    "Track your menstrual cycle, symptoms, and health privately. Lumen is offline-first and stores everything on your device — no accounts, no cloud, no data selling.",
+  description,
   applicationName: "Lumen",
   keywords: [
     "period tracker",
@@ -45,19 +53,18 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Lumen",
-    title: "A private, offline-first companion for your whole reproductive life",
-    description:
-      "Offline-first cycle and health tracking that keeps your data on your device.",
+    title: socialTitle,
+    description,
+    images: [socialImage],
     locale: "en_US",
   },
   twitter: {
     card: "summary",
-    title: "A private, offline-first companion for your whole reproductive life",
-    description:
-      "Offline-first cycle and health tracking that keeps your data on your device.",
+    title: socialTitle,
+    description,
+    images: [socialImage],
   },
   icons: {
-    icon: "/icon.svg",
     apple: "/apple-touch-icon.png",
   },
   appleWebApp: {
@@ -74,8 +81,8 @@ export const viewport: Viewport = {
   // back with env(safe-area-inset-*); required for installed (standalone) PWAs.
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#faf8f9" },
+    { media: "(prefers-color-scheme: dark)", color: "#201820" },
   ],
 };
 
@@ -96,14 +103,9 @@ export default async function RootLayout({
         <PasscodeGate>
           <HealthDataProvider>
             <SyncRunner />
-            {children}
+            <LumenShell>{children}</LumenShell>
           </HealthDataProvider>
         </PasscodeGate>
-        <footer className="no-print mt-auto border-t border-neutral-200 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-center text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
-          <Link href="/privacy" className="underline">
-            Privacy &amp; your data
-          </Link>
-        </footer>
       </body>
     </html>
   );

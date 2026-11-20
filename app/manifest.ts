@@ -2,16 +2,15 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Lumen — Private Cycle & Health Tracker',
+    name: 'Lumen',
     short_name: 'Lumen',
     description:
-      'Track your menstrual cycle, symptoms, and health privately. Offline-first — your data stays on your device.',
+      'Track your cycle, fertility, pregnancy, postpartum recovery, or perimenopause. Your logs stay on this device by default.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#e11d48',
+    background_color: '#faf8f9',
+    theme_color: '#832750',
     icons: [
-      { src: '/icon.svg', type: 'image/svg+xml', sizes: 'any', purpose: 'any' },
       { src: '/icon-192.png', type: 'image/png', sizes: '192x192', purpose: 'any' },
       { src: '/icon-512.png', type: 'image/png', sizes: '512x512', purpose: 'any' },
       {

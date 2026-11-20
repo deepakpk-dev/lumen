@@ -42,29 +42,29 @@ export function ContractionTimer() {
       </p>
 
       {openStart ? (
-        <button type="button" onClick={stopContraction} className="w-full rounded-md bg-neutral-700 px-4 py-6 text-lg text-white">
+        <button type="button" onClick={stopContraction} className="lumen-outline lumen-timer-button w-full">
           Stop contraction
         </button>
       ) : (
-        <button type="button" onClick={startContraction} className="w-full rounded-md bg-rose-600 px-4 py-6 text-lg text-white">
+        <button type="button" onClick={startContraction} className="lumen-button lumen-timer-button w-full">
           Start contraction
         </button>
       )}
 
       {status.meetsCriteria && (
-        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="lumen-panel lumen-warning text-sm">
           {status.message}
         </p>
       )}
 
-      <button type="button" onClick={save} className="w-full rounded-md border px-4 py-3">
+      <button type="button" onClick={save} className="lumen-outline w-full">
         Save session
       </button>
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Recent sessions</h2>
+      <section className="lumen-card space-y-2">
+        <h2 className="lumen-card-title">Recent sessions</h2>
         {contractionSessions.length === 0 ? (
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">No sessions yet.</p>
+          <p className="lumen-help">No sessions yet.</p>
         ) : (
           <ul className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
             {contractionSessions.map((s: ContractionSession) => (

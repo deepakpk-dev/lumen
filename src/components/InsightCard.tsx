@@ -12,7 +12,7 @@ const CATEGORY_STYLE: Record<Insight['category'], string> = {
 export function InsightCard({ insight }: { insight: Insight }) {
   const attention = insight.severity === 'attention';
   return (
-    <article className={`rounded-2xl border p-4 ${CATEGORY_STYLE[insight.category]}`}>
+    <article className={`lumen-card ${attention ? CATEGORY_STYLE[insight.category] : ''}`}>
       {attention && (
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
           ⚠ Worth noting

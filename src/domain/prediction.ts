@@ -1,5 +1,6 @@
 import type {
   Cycle,
+  CycleEstimates,
   CycleStats,
   Confidence,
   CyclePhase,
@@ -42,9 +43,11 @@ function lastStart(cycles: Cycle[]): ISODate {
     .at(-1) as ISODate;
 }
 
-function buildExplanation(stats: CycleStats, confidence: Confidence): string {
+function buildExplanation(stats: CycleStats, confidence: Confidence, hasCycleEstimate: boolean): string {
   if (stats.cycleCount === 0) {
-    return 'Based on a typical 28-day cycle. Predictions improve as you log more.';
+    return hasCycleEstimate
+      ? `Based on your ${stats.averageCycleLength}-day setup estimate. Predictions improve as you log more.`
+      : `Based on a typical ${stats.averageCycleLength}-day cycle. Predictions improve as you log more.`;
   }
   const base = `Based on your last ${stats.cycleCount} cycle${
     stats.cycleCount === 1 ? '' : 's'
@@ -58,10 +61,11 @@ function buildExplanation(stats: CycleStats, confidence: Confidence): string {
 export function generatePrediction(
   cycles: Cycle[],
   observed?: ObservedFertility,
+  estimates?: CycleEstimates,
 ): Prediction | null {
   if (cycles.length === 0) return null;
 
-  const stats = computeCycleStats(cycles);
+  const stats = computeCycleStats(cycles, estimates);
   const confidence = predictionConfidence(stats);
   const start = lastStart(cycles);
 
@@ -72,6 +76,7 @@ export function generatePrediction(
   const refinedOvulation = observed?.currentCycleOvulation?.ovulationDate;
   const ovulationDate = refinedOvulation ?? addDays(nextPeriodStart, -luteal);
   const refined = Boolean(refinedOvulation || observed?.lutealLength);
+  const explanation = buildExplanation(stats, confidence, estimates?.cycleLength !== undefined);
 
   return {
     nextPeriodStart,
@@ -86,8 +91,6 @@ export function generatePrediction(
     },
     ovulationDate,
     confidence,
-    explanation: refined
-      ? `${buildExplanation(stats, confidence)} Refined using your logged ovulation signals.`
-      : buildExplanation(stats, confidence),
+    explanation: refined ? `${explanation} Refined using your logged ovulation signals.` : explanation,
   };
 }

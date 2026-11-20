@@ -15,18 +15,18 @@ export function TtcControls({ onEnabled }: { onEnabled?: () => void }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-neutral-700 dark:text-neutral-300">
+      <p className="lumen-help">
         TTC mode is <span className="font-medium">{ttc ? 'on' : 'off'}</span>.
       </p>
       <button
         type="button"
         onClick={toggleTtc}
-        className={`w-full rounded-md px-4 py-3 text-white ${ttc ? 'bg-neutral-600' : 'bg-rose-600'}`}
+        className={`w-full ${ttc ? 'lumen-outline' : 'lumen-button'}`}
       >
         {ttc ? 'Turn off TTC mode' : 'Turn on TTC mode'}
       </button>
       {ttc && (
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
           <span>Temperature unit:</span>
           {(['C', 'F'] as BbtUnit[]).map((u) => (
             <button
@@ -34,7 +34,7 @@ export function TtcControls({ onEnabled }: { onEnabled?: () => void }) {
               type="button"
               aria-pressed={bbtUnit === u}
               onClick={() => setBbtUnitPreference(u)}
-              className={`inline-flex min-h-[44px] items-center rounded-full border px-4 ${bbtUnit === u ? 'border-rose-600 bg-rose-600 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
+              className="lumen-chip"
             >
               °{u}
             </button>

@@ -38,7 +38,7 @@ export function BbtImport() {
   }
 
   return (
-    <div className="space-y-2 rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+    <div className="lumen-panel space-y-2">
       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
         Import temperatures from a CSV
       </p>
@@ -48,15 +48,15 @@ export function BbtImport() {
         aria-label="import temperatures"
         disabled={busy}
         onChange={handleFile}
-        className="block w-full text-sm text-neutral-600 file:mr-3 file:rounded-md file:border file:border-neutral-300 file:bg-transparent file:px-3 file:py-1.5 file:text-neutral-700 dark:text-neutral-400 dark:file:border-neutral-700 dark:file:text-neutral-300"
+        className="lumen-file"
       />
       <p className="text-xs text-neutral-500 dark:text-neutral-400">
         CSV with a date and a temperature per line. °F is converted automatically. Days you&apos;ve
         already logged a temperature keep your value.
       </p>
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
       {status && (
-        <p className="text-sm text-green-700 dark:text-green-400" role="status">
+        <p className="lumen-note lumen-success" role="status">
           {status}
         </p>
       )}

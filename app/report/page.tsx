@@ -42,20 +42,20 @@ export default function ReportPage() {
     .slice(0, 60);
 
   return (
-    <main className="print-full mx-auto max-w-2xl space-y-6 p-6">
-      <div className="no-print flex items-center justify-between">
+    <main className="print-full lumen-page lumen-report space-y-6">
+      <div className="no-print flex flex-wrap items-center justify-between gap-2">
         <BackLink href="/settings">Settings</BackLink>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-md border px-4 py-2 text-sm font-medium"
+          className="lumen-outline"
         >
           Print / Save as PDF
         </button>
       </div>
 
       <header className="space-y-1 border-b border-neutral-300 pb-4 dark:border-neutral-700">
-        <h1 className="text-2xl font-semibold">Cycle Health Summary</h1>
+        <h1 className="lumen-title">Cycle Health Summary</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Generated {rangeEnd}
           {rangeStart ? ` · covers ${fmt(rangeStart)} – ${rangeEnd}` : ''}

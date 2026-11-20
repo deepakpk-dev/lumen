@@ -12,6 +12,7 @@ import { SyncControls } from '@/src/components/SyncControls';
 import { PregnancyControls } from '@/src/components/PregnancyControls';
 import { TtcControls } from '@/src/components/TtcControls';
 import { MenopauseControls } from '@/src/components/MenopauseControls';
+import { PersonalizationControls } from '@/src/components/PersonalizationControls';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -23,19 +24,19 @@ export default function SettingsPage() {
   const inJourney = isPregnant || isPostpartum;
   return (
     <PageShell title="Settings">
+      <div className="lumen-settings">
       <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Passcode lock</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Encrypt your on-device health records with AES-256 behind a passcode — without one, your
-          records are stored unencrypted in this browser. Everything still stays local to this device.
-        </p>
+        <h2>Tracking preferences</h2>
+        <PersonalizationControls />
+      </section>
+      <section className="space-y-3" id="passcode">
+        <h2 className="lumen-card-title">Passcode lock</h2>
         <PasscodeControls />
       </section>
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Sync across devices</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Optional. Your data is encrypted with your recovery phrase before it leaves this device,
-          and the key never reaches the server — so it only ever holds ciphertext.
+      <section className="space-y-3" id="restore">
+        <h2 className="lumen-card-title">Sync across devices</h2>
+        <p className="lumen-help">
+          Sync is optional. Lumen encrypts your records before uploading them.
         </p>
         <SyncControls
           onSynced={async () => {
@@ -51,20 +52,19 @@ export default function SettingsPage() {
           }}
         />
       </section>
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Reminders</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Lumen can nudge you about your period, fertile window, and daily logging.
-          Because everything stays on this device, notifications appear when you open
-          Lumen — there is no server sending you push messages.
+      <section className="space-y-3" id="reminders">
+        <h2 className="lumen-card-title">Reminders</h2>
+        <p className="lumen-help">
+          Reminders appear when you open Lumen. You can also let your browser show them
+          as device notifications.
         </p>
-        <NotificationControls />
+          <NotificationControls />
       </section>
       {!inJourney && (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Trying to conceive</h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Turn on TTC mode to log BBT, LH tests, and cervical mucus, and get daily
+          <h2 className="lumen-card-title">Trying to conceive</h2>
+          <p className="lumen-help">
+            Log basal body temperature, ovulation test results, and cervical mucus to get daily
             conception guidance. Lumen is not a contraceptive and not a substitute for
             fertility treatment or medical advice.
           </p>
@@ -73,50 +73,45 @@ export default function SettingsPage() {
       )}
       {!inJourney && (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Perimenopause</h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Track the transition: irregular cycles are expected here, so Lumen reframes
-            predictions instead of alarming you, and adds symptoms like hot flashes and sleep
-            changes. Pregnancy is still possible until you&apos;ve gone 12 months without a period.
+          <h2 className="lumen-card-title">Perimenopause</h2>
+          <p className="lumen-help">
+            Log symptoms such as hot flashes and night sweats. Period estimates may be less
+            reliable when cycles are irregular. Pregnancy is still possible until you&apos;ve
+            gone 12 months without a period.
           </p>
           <MenopauseControls onEnabled={() => router.push('/')} />
         </section>
       )}
       {!isPostpartum && (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Pregnancy</h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Switch on pregnancy mode for week-by-week tracking, a kick counter, and a
-            contraction timer. Educational only — not a substitute for medical care.
+          <h2 className="lumen-card-title">Pregnancy</h2>
+          <p className="lumen-help">
+            Follow your pregnancy week by week, count kicks, and time contractions.
+            Use these tools alongside professional medical care.
           </p>
           <PregnancyControls onStarted={() => router.push('/')} onEnded={() => router.push('/')} />
         </section>
       )}
       {isPostpartum && (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Postpartum</h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            After birth, Lumen supports your recovery with weekly guidance and a mood check-in.
+          <h2 className="lumen-card-title">Postpartum</h2>
+          <p className="lumen-help">
+            See weekly recovery guidance and review your mood check-ins.
           </p>
           <PostpartumControls />
         </section>
       )}
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Your data</h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Your health data lives on this device. Unless you turn on encrypted sync above, nothing
-          ever leaves it — and even then the server can only hold ciphertext.
-        </p>
-        <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-          Because it lives only here, clearing your browser data, using private mode, or losing
-          this device will erase it. Export regularly, then use “Restore from a backup” on a new
-          device or after clearing data.
+      <section className="space-y-3" id="data">
+        <h2 className="lumen-card-title">Your data</h2>
+        <p className="lumen-note lumen-warning">
+          Clearing browser data or losing this device can erase your local records. Export a
+          backup, then use “Restore from a backup” to load the file when you need it.
         </p>
         <Link
           href="/report"
-          className="block w-full rounded-md border px-4 py-3 text-center"
+          className="lumen-outline w-full"
         >
-          Doctor summary (print / PDF)
+          View doctor summary
         </Link>
         <DataControls
           onDeleted={async () => {
@@ -136,6 +131,7 @@ export default function SettingsPage() {
           }}
         />
       </section>
+      </div>
     </PageShell>
   );
 }

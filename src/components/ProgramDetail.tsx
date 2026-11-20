@@ -20,14 +20,14 @@ export function ProgramDetail({ slug }: { slug: string }) {
         <>
           <header className="space-y-2">
             <div
-              className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
+              className="lumen-progress"
               role="progressbar"
               aria-valuenow={status.percentComplete}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-label="Program progress"
             >
-              <div className="h-full rounded-full bg-rose-500" style={{ width: `${status.percentComplete}%` }} />
+              <div style={{ width: `${status.percentComplete}%` }} />
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {status.isComplete
@@ -44,22 +44,18 @@ export function ProgramDetail({ slug }: { slug: string }) {
               return (
                 <li
                   key={step.articleSlug}
-                  className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                  className="lumen-card"
                 >
                   <div className="flex items-start gap-3">
                     <span
                       aria-hidden="true"
-                      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                        done
-                          ? 'bg-rose-500 text-white'
-                          : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
-                      }`}
+                      className="lumen-icon-box mt-0.5 text-xs font-semibold"
                     >
                       {done ? '✓' : i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
                       <Link href={`/library/${article.slug}`} className="block">
-                        <h3 className="font-semibold">{article.title}</h3>
+                        <h2 className="lumen-card-title">{article.title}</h2>
                         <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
                           {article.summary}
                         </p>
@@ -71,11 +67,7 @@ export function ProgramDetail({ slug }: { slug: string }) {
                         type="button"
                         onClick={() => setProgramStepDone(status.program.slug, step.articleSlug, !done)}
                         aria-pressed={done}
-                        className={`mt-3 rounded-md border px-3 py-1.5 text-sm transition ${
-                          done
-                            ? 'border-rose-300 text-rose-700 dark:border-rose-800 dark:text-rose-300'
-                            : 'border-neutral-300 text-neutral-700 dark:border-neutral-700 dark:text-neutral-200'
-                        }`}
+                        className="lumen-chip mt-3"
                       >
                         {done ? 'Completed ✓' : 'Mark complete'}
                       </button>
@@ -87,7 +79,7 @@ export function ProgramDetail({ slug }: { slug: string }) {
           </ol>
         </>
       ) : (
-        <p className="rounded-2xl bg-neutral-50 p-6 text-center text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
+        <p className="lumen-card lumen-help text-center">
           Program not found.
         </p>
       )}

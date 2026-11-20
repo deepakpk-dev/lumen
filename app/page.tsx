@@ -14,7 +14,14 @@ import { ConceptionCard } from '@/src/components/ConceptionCard';
 import { PregnancyCard } from '@/src/components/PregnancyCard';
 import { PostLossCard } from '@/src/components/PostLossCard';
 import { PostpartumCard } from '@/src/components/PostpartumCard';
+import { LumenIcon } from '@/src/components/LumenIcon';
+import { MOOD_OPTIONS } from '@/src/domain/log-options';
 import { topInsight } from '@/src/domain/insights/insights';
+
+const stageLabel = {
+  cycle: 'Cycle tracking', ttc: 'Trying to conceive', pregnancy: 'Pregnancy',
+  postpartum: 'Postpartum recovery', menopause: 'Perimenopause',
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -24,14 +31,15 @@ export default function HomePage() {
     isPregnant, gestation, currentTrimester, daysToDue, weekContentToday,
     pregnancyProfile, postpartumProfile,
     isPostpartum, postpartumWeekNumber, recoveryStageToday, latestEpds,
+    onboardingComplete, personalization, setDraftMood,
   } = useHealthData();
 
+  const needsOnboarding = !onboardingComplete && cycles.length === 0 && !pregnancyProfile && !postpartumProfile;
   useEffect(() => {
-    if (!loading && cycles.length === 0 && !pregnancyProfile && !postpartumProfile)
-      router.replace('/onboarding');
-  }, [loading, cycles.length, pregnancyProfile, postpartumProfile, router]);
+    if (!loading && needsOnboarding) router.replace('/onboarding');
+  }, [loading, needsOnboarding, router]);
 
-  if (loading) return <main className="p-6">Loading…</main>;
+  if (loading || needsOnboarding) return <main className="lumen-page" aria-busy="true">Loading…</main>;
 
   const lastPeriodStart = cycles.at(-1)?.startDate ?? null;
   const highlight = topInsight(insights);
@@ -45,12 +53,11 @@ export default function HomePage() {
   return (
     <PageShell
       backHref={null}
-      title="Today"
-      subtitle={parseISODate(today).toLocaleDateString(undefined, {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-      })}
+      title={personalization?.preferredName ? <>Welcome back,<br />{personalization.preferredName}.</> : 'Today'}
+      eyebrow={parseISODate(today).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+      action={endedByLoss ? undefined : (
+        <Link href="/profile" className="lumen-badge" aria-label={`${stageLabel[lifeStage]} preferences`}><LumenIcon name="heart" size={14} />{stageLabel[lifeStage]}</Link>
+      )}
     >
       {isPostpartum && postpartumWeekNumber !== null && recoveryStageToday ? (
         <PostpartumCard
@@ -73,48 +80,52 @@ export default function HomePage() {
           stats={stats}
           lastPeriodStart={lastPeriodStart}
           today={today}
+          showPhase={lifeStage !== 'menopause'}
         />
       )}
       {lifeStage === 'menopause' && (
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Cycles often become irregular in perimenopause — predictions carry extra uncertainty.
+          Cycles often become irregular in perimenopause, so period estimates may be less reliable.
         </p>
       )}
-      <ReminderBanner />
-      {/* Cycle insight + daily reads are cycle-stage content; hide them while
-          pregnancy mode is the active context to avoid surfacing period/PMS
-          material to a pregnant user. */}
-      {!isPregnant && !isPostpartum && highlight && <InsightCard insight={highlight} />}
+      {!endedByLoss && <ReminderBanner />}
       {lifeStage === 'ttc' && (
         <ConceptionCard
           guidance={conceptionToday}
           confirmation={ovulationConfirmation}
           hasCycleHistory={stats.cycleCount > 0}
+          estimatedCycleLength={stats.averageCycleLength}
         />
       )}
-      {/* The daily read is now scoped to the active life stage by the content
-          engine (the feed filters by lifeStage), so each stage surfaces its own
-          guidance. Renders nothing when there is no article for today. Held
-          back after a pregnancy loss: cycle reads next to the loss card would
-          break the no-period-prompts promise. */}
+      <section className="lumen-card lumen-checkin-card">
+        <h2 className="lumen-editorial-title">Daily log</h2>
+        <p className="lumen-subtitle">{dailyLogs.some((log) => log.date === today) ? 'You’ve logged today. You can add to or edit your entry.' : 'Record your mood, symptoms, or anything you want to remember.'}</p>
+        {!isPregnant && !isPostpartum && !endedByLoss && lifeStage !== 'menopause' && (
+          <div className="lumen-quick-moods" aria-label="Choose a mood to log" role="group">
+            {MOOD_OPTIONS.filter((mood) => ['Calm', 'Happy', 'Anxious', 'Energetic'].includes(mood)).map((mood) => (
+              <button key={mood} type="button" className="lumen-chip" onClick={() => {
+                setDraftMood({ date: today, mood });
+                router.push('/log');
+              }}>{mood}</button>
+            ))}
+          </div>
+        )}
+        <Link href="/log" className="lumen-button mt-4 w-full">
+          {dailyLogs.some((log) => log.date === today) ? 'Edit today’s log' : 'Log today'}
+          <LumenIcon name="arrow" size={17} />
+        </Link>
+      </section>
+      {!isPregnant && !isPostpartum && !endedByLoss && highlight && <InsightCard insight={highlight} />}
+      {/* The provider picks a stage-specific read. Skip it on the loss path. */}
       {!endedByLoss && <DailyContentCard article={dailyContent} />}
-      <Link
-        href="/log"
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-4 font-semibold text-white shadow-[0_12px_32px_-8px_rgba(225,29,72,0.55)] transition-all duration-200 hover:shadow-[0_16px_40px_-8px_rgba(225,29,72,0.65)] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
-      >
-        {dailyLogs.some((l) => l.date === today) ? '✓ Edit today’s log' : 'Log today'}
-      </Link>
-      <nav className="grid grid-cols-2 gap-3 text-center text-sm">
-        <NavTile href="/calendar">Calendar</NavTile>
-        <NavTile href="/history">History</NavTile>
-        <NavTile href="/settings">Settings</NavTile>
-        <NavTile href="/insights">Insights</NavTile>
-        <NavTile href="/library">Library</NavTile>
-        <NavTile href="/programs">Programs</NavTile>
+      <div className="grid grid-cols-2 gap-2">
         {lifeStage === 'ttc' && <NavTile href="/fertility">Fertility</NavTile>}
         {isPregnant && <NavTile href="/pregnancy">Pregnancy</NavTile>}
         {isPostpartum && <NavTile href="/postpartum">Postpartum</NavTile>}
-      </nav>
+        <NavTile href="/programs">Programs</NavTile>
+        {!isPregnant && !isPostpartum && <NavTile href="/history">History</NavTile>}
+        <NavTile href="/settings">Settings</NavTile>
+      </div>
     </PageShell>
   );
 }

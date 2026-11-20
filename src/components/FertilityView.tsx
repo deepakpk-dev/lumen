@@ -41,19 +41,20 @@ export function FertilityView() {
   return (
     <PageShell
       title="Fertility"
-      subtitle="Your fertile window, temperatures, and ovulation signals — all in one place."
+      subtitle="See your estimated fertile window and what your logs suggest about ovulation."
     >
       <ConceptionCard
         guidance={conceptionToday}
         confirmation={ovulationConfirmation}
         hasCycleHistory={stats.cycleCount > 0}
+        estimatedCycleLength={stats.averageCycleLength}
       />
 
       {/* Logging is the primary action here: BBT, LH, and mucus entry all
           live on the daily log, so give it the flow's signature CTA. */}
       <Link
         href="/log"
-        className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-4 font-semibold text-white shadow-[0_12px_32px_-8px_rgba(225,29,72,0.55)] transition-all duration-200 hover:shadow-[0_16px_40px_-8px_rgba(225,29,72,0.65)] hover:brightness-105 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
+        className="lumen-button w-full"
       >
         Log today
         <svg
@@ -76,7 +77,7 @@ export function FertilityView() {
       {/* Informational sections stay flat and quiet — elevation is reserved
           for the guidance card and CTA so the hierarchy reads at a glance
           and the page stays short on phones. */}
-      <section className="space-y-2">
+      <section className="lumen-card space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">BBT chart</h2>
         <BbtChart
           points={points}
@@ -86,7 +87,7 @@ export function FertilityView() {
         <BbtImport />
       </section>
 
-      <section className="space-y-1">
+      <section className="lumen-card space-y-1">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
           Ovulation status
         </h2>
@@ -98,7 +99,7 @@ export function FertilityView() {
       </section>
 
       {showNote && !dismissed && (
-        <section className="space-y-2">
+        <section className="lumen-card space-y-2">
           <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
             You&apos;ve been tracking for a while. If you have questions about
             conceiving, it can help to talk with a healthcare provider — this is

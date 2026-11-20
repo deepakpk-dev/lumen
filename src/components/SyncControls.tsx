@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { hasVault, saveVault, VAULT_CHANGED_EVENT } from '@/src/security/vault-store';
-import { restoreVault } from '@/src/crypto/vault';
+import { MIN_VAULT_PASSPHRASE_LENGTH, restoreVault } from '@/src/crypto/vault';
 import { encryptExistingData } from '@/src/data/repository';
 import { getStorageKeys } from '@/src/data/storage';
 import {
@@ -73,13 +73,13 @@ export function SyncControls({
       await enableSync(keys);
       await onSynced?.();
       setView('on');
-    }, 'Could not turn on sync.');
+    }, 'Couldn’t turn on sync. Check your connection and try again.');
   }
 
   function handleRestore(e: React.FormEvent) {
     e.preventDefault();
     void run(async () => {
-      if (!newCode.trim()) throw new Error('Please choose a passcode.');
+      if (!newCode.trim()) throw new Error('Choose a passphrase for this device.');
       const { vault, unlocked } = await restoreVault(
         phrase.trim().toLowerCase().replace(/\s+/g, ' '),
         newCode,
@@ -92,7 +92,7 @@ export function SyncControls({
       setNewCode('');
       await onRestored?.();
       setView('on');
-    }, 'Could not restore.');
+    }, 'Couldn’t restore synced data. Check your recovery phrase and connection, then try again.');
   }
 
   function handleSyncNow() {
@@ -101,15 +101,15 @@ export function SyncControls({
       if (!keys) throw new Error('Unlock with your passcode first.');
       const { applied } = await syncNow(keys);
       if (applied > 0) await onSynced?.();
-      setStatus('Up to date.');
-    }, 'Sync failed — check your connection.');
+      setStatus('Data synced.');
+    }, 'Couldn’t sync. Check your connection and try again.');
   }
 
   function handleDisable(deleteServerCopy: boolean) {
     void run(async () => {
       await disableSync(getStorageKeys(), { deleteServerCopy });
       setView('off');
-    }, 'Could not turn off sync.');
+    }, 'Couldn’t turn off sync. Try again.');
   }
 
   if (view === 'loading') return null;
@@ -117,14 +117,14 @@ export function SyncControls({
   if (view === 'novault') {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Sync needs encryption: turn on a passcode above first. Your recovery phrase becomes the
-          only key to your synced data, and it never reaches our servers.
+        <p className="lumen-help">
+          Set a passcode to turn on sync. If you already sync on another device, you can
+          restore your data using its recovery phrase.
         </p>
         <button
           type="button"
           onClick={() => setView('restore')}
-          className="w-full rounded-md border px-4 py-3"
+          className="lumen-outline w-full"
         >
           Restore from another device
         </button>
@@ -135,33 +135,34 @@ export function SyncControls({
   if (view === 'restore') {
     return (
       <form onSubmit={handleRestore} className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Enter the 12-word recovery phrase from your other device and choose a passcode for this
-          one.
+        <p className="lumen-help">
+          Enter the 12-word recovery phrase from your other device. Choose a new passphrase
+          of at least {MIN_VAULT_PASSPHRASE_LENGTH} characters to lock Lumen on this device.
         </p>
+        <label className="setup-label" htmlFor="sync-recovery-phrase">Recovery phrase</label>
         <textarea
-          aria-label="recovery phrase"
+          id="sync-recovery-phrase"
           value={phrase}
           onChange={(e) => setPhrase(e.target.value)}
           rows={3}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          className="lumen-field"
         />
+        <label className="setup-label" htmlFor="sync-passphrase">New passphrase</label>
         <input
-          aria-label="new passcode"
+          id="sync-passphrase"
           type="password"
           value={newCode}
           onChange={(e) => setNewCode(e.target.value)}
-          placeholder="Choose a passcode"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          className="lumen-field"
         />
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <div className="flex gap-2">
+        {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
+        <div className="lumen-actions">
           <button
             type="submit"
             disabled={busy}
-            className="flex-1 rounded-md bg-rose-600 px-4 py-3 text-white disabled:opacity-60"
+            className="lumen-button"
           >
-            {busy ? 'Restoring…' : 'Restore my data'}
+            {busy ? 'Restoring synced data…' : 'Restore synced data'}
           </button>
           <button
             type="button"
@@ -169,7 +170,7 @@ export function SyncControls({
               setView('novault');
               setError('');
             }}
-            className="flex-1 rounded-md border px-4 py-3"
+            className="lumen-outline"
           >
             Cancel
           </button>
@@ -180,18 +181,18 @@ export function SyncControls({
 
   if (view === 'confirm-off') {
     return (
-      <div className="space-y-2 rounded-md border border-red-300 p-3 dark:border-red-900">
-        <p className="text-sm text-red-700 dark:text-red-400">
-          Stop syncing this device? Your data here is untouched. You can also delete the encrypted
-          copy from the server.
+      <div className="lumen-panel lumen-warning space-y-3">
+        <p className="text-sm">
+          Turn off sync on this device? Your local data stays here. If you also delete the
+          encrypted server copy, you won’t be able to restore from that copy.
         </p>
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
         <div className="flex flex-col gap-2">
           <button
             type="button"
             disabled={busy}
             onClick={() => handleDisable(false)}
-            className="w-full rounded-md border px-4 py-3 disabled:opacity-60"
+            className="lumen-outline w-full"
           >
             Turn off sync
           </button>
@@ -199,7 +200,7 @@ export function SyncControls({
             type="button"
             disabled={busy}
             onClick={() => handleDisable(true)}
-            className="w-full rounded-md bg-red-600 px-4 py-3 text-white disabled:opacity-60"
+            className="lumen-button lumen-button-danger w-full"
           >
             Turn off and delete server copy
           </button>
@@ -209,7 +210,7 @@ export function SyncControls({
               setView('on');
               setError('');
             }}
-            className="w-full rounded-md border px-4 py-3"
+            className="lumen-outline w-full"
           >
             Cancel
           </button>
@@ -222,18 +223,17 @@ export function SyncControls({
     const synced = lastSyncedAt();
     return (
       <div className="space-y-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Sync is <span className="font-medium text-green-700 dark:text-green-400">on</span>. Your
-          key stays on your devices, so the server only ever holds encrypted data.
+        <p className="lumen-help">
+          Sync is <span className="font-semibold">on</span>.
           {synced && (
-            <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+            <span className="block text-xs lumen-muted">
               Last synced {new Date(synced).toLocaleString()}
             </span>
           )}
         </p>
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
         {status && (
-          <p className="text-sm text-green-700 dark:text-green-400" role="status">
+          <p className="lumen-note lumen-success" role="status">
             {status}
           </p>
         )}
@@ -241,7 +241,7 @@ export function SyncControls({
           type="button"
           disabled={busy}
           onClick={handleSyncNow}
-          className="w-full rounded-md border px-4 py-3 disabled:opacity-60"
+          className="lumen-outline w-full"
         >
           {busy ? 'Syncing…' : 'Sync now'}
         </button>
@@ -251,7 +251,7 @@ export function SyncControls({
             setView('confirm-off');
             setError('');
           }}
-          className="w-full rounded-md border px-4 py-3"
+          className="lumen-outline w-full"
         >
           Turn off sync
         </button>
@@ -262,18 +262,17 @@ export function SyncControls({
   // view === 'off': vault exists, sync not enabled yet.
   return (
     <div className="space-y-3">
-      <p className="text-sm text-neutral-700 dark:text-neutral-300">
-        Carry your data to another device. Everything is encrypted with your recovery phrase before
-        it leaves this device — losing the phrase means losing the synced copy.
+      <p className="lumen-help">
+        Sync is off. Keep your recovery phrase somewhere safe before turning it on.
       </p>
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="lumen-note lumen-danger" role="alert">{error}</p>}
       <button
         type="button"
         disabled={busy}
         onClick={handleEnable}
-        className="w-full rounded-md bg-rose-600 px-4 py-3 text-white disabled:opacity-60"
+        className="lumen-button w-full"
       >
-        {busy ? 'Turning on…' : 'Turn on sync'}
+        {busy ? 'Turning on sync…' : 'Turn on sync'}
       </button>
     </div>
   );

@@ -1,173 +1,135 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { OnboardingForm } from './OnboardingForm';
+import { OnboardingForm, type Goal } from './OnboardingForm';
+import { addDays, todayISO } from '@/src/domain/dates';
 
 const completeOnboarding = vi.fn().mockResolvedValue(undefined);
-vi.mock('@/src/state/useHealthData', () => ({
-  useHealthData: () => ({ completeOnboarding }),
-}));
+vi.mock('@/src/state/useHealthData', () => ({ useHealthData: () => ({ completeOnboarding }) }));
 
 beforeEach(() => {
-  completeOnboarding.mockClear();
+  completeOnboarding.mockReset().mockResolvedValue(undefined);
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 });
+const click = (label: string | RegExp) => fireEvent.click(screen.getByRole('button', { name: label }));
+const fill = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
+const lastPeriod = addDays(todayISO(), -28);
 
-// Advance past the first-run intro screen to the setup form.
-function renderSetup(onComplete = vi.fn()) {
+function openDateStep(goal?: RegExp, onComplete = vi.fn<(goal: Goal) => void>()) {
   render(<OnboardingForm onComplete={onComplete} />);
-  fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+  click('Get started');
+  if (goal) fireEvent.click(screen.getByRole('radio', { name: goal }));
+  click('Continue');
+  return onComplete;
+}
+
+function finishFromDate(cycle = true) {
+  click('Continue');
+  if (cycle) {
+    click('Continue');
+    click('Continue');
+    click('Continue');
+  }
+  click('Continue');
+  click('Finish setup');
+}
+
+async function expectSaved(goal: Goal, values: object) {
+  await waitFor(() => expect(completeOnboarding).toHaveBeenCalledWith(goal, expect.objectContaining(values)));
 }
 
 describe('OnboardingForm', () => {
-  it('shows a privacy + not-medical-advice intro before setup', () => {
+  it('opens with the illustrated welcome and gives access to privacy and restore', () => {
     render(<OnboardingForm onComplete={vi.fn()} />);
-    expect(screen.getByText(/stays on this device/i)).toBeInTheDocument();
-    expect(screen.getByText(/not medical advice/i)).toBeInTheDocument();
-    // setup controls are not shown until the user continues
-    expect(screen.queryByRole('button', { name: /get started/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Track your reproductive health' })).toBeVisible();
+    expect(screen.getByText(/not medical advice/i)).toBeVisible();
+    expect(screen.getByRole('link', { name: /restore from another device/i })).toHaveAttribute('href', '/settings#restore');
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    click('Get started');
+    expect(screen.getByRole('heading', { name: 'Choose a tracking mode' })).toBeVisible();
+    expect(screen.getByText('Lumen')).toBeVisible();
   });
 
-  it('onboards the default cycle goal once a period date is set', async () => {
-    renderSetup();
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
-    expect(completeOnboarding).toHaveBeenCalledWith(
-      'cycle',
-      expect.objectContaining({ date: '2026-06-01' }),
-    );
-  });
-
-  it('onboards the conceiving goal as ttc when chosen', async () => {
-    renderSetup();
-    fireEvent.click(screen.getByRole('radio', { name: /trying to conceive/i }));
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
-    await waitFor(() =>
-      expect(completeOnboarding).toHaveBeenCalledWith(
-        'ttc',
-        expect.objectContaining({ date: '2026-06-01' }),
-      ),
-    );
-  });
-
-  it('passes the plain cycle goal (not ttc) for the default selection', async () => {
-    renderSetup();
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
-    await waitFor(() => expect(completeOnboarding).toHaveBeenCalled());
-    expect(completeOnboarding.mock.calls[0][0]).toBe('cycle');
-  });
-
-  it('onboards the pregnant goal when chosen', () => {
-    renderSetup();
-    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
-    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
-    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
-    expect(completeOnboarding).toHaveBeenCalledWith(
-      'pregnant',
-      expect.objectContaining({ dueDate: '2026-10-08' }),
-    );
-  });
-
-  it('onboards the perimenopause goal with a last period date when chosen', async () => {
-    renderSetup();
-    fireEvent.click(screen.getByRole('radio', { name: /navigating perimenopause/i }));
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
-    await waitFor(() =>
-      expect(completeOnboarding).toHaveBeenCalledWith(
-        'menopause',
-        expect.objectContaining({ date: '2026-06-01' }),
-      ),
-    );
-  });
-
-  it('disables submit on the pregnant goal until a due date is entered', () => {
-    renderSetup();
-    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
-    expect(screen.getByRole('button', { name: /get started/i })).toHaveProperty('disabled', true);
-  });
-
-  it('disables submit until a last period date is entered (no "today" pre-fill)', () => {
-    renderSetup();
-    expect(screen.getByRole('button', { name: /get started/i })).toHaveProperty('disabled', true);
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    expect(screen.getByRole('button', { name: /get started/i })).toHaveProperty('disabled', false);
-  });
-
-  it('does not onboard or complete when submitted without a last period date', () => {
-    const onComplete = vi.fn();
-    renderSetup(onComplete);
-    fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
+  it('saves the selected cycle setup only after the summary is confirmed', async () => {
+    const onComplete = openDateStep();
+    fill('First day of your last period', lastPeriod);
+    click('Continue');
+    click('30 days');
+    click('Continue');
+    click('4');
+    click('Continue');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Notes' }));
+    click('Continue');
+    fireEvent.click(screen.getByRole('switch', { name: /daily log reminder/i }));
+    click('Continue');
+    expect(screen.getByText('30 days')).toBeVisible();
+    expect(screen.getByText('4 days')).toBeVisible();
     expect(completeOnboarding).not.toHaveBeenCalled();
-    expect(onComplete).not.toHaveBeenCalled();
-  });
-
-  it('reports the chosen goal to onComplete so the caller can route accordingly', async () => {
-    const onComplete = vi.fn();
-    renderSetup(onComplete);
-    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
-    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
-    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
-    await waitFor(() => expect(onComplete).toHaveBeenCalledWith('pregnant'));
-  });
-
-  it('reports the cycle goal to onComplete by default', async () => {
-    const onComplete = vi.fn();
-    renderSetup(onComplete);
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    fireEvent.submit(screen.getByRole('button', { name: /get started/i }).closest('form')!);
+    click('Finish setup');
+    await expectSaved('cycle', { date: lastPeriod, cycleLength: 30, periodLength: 4,
+      tracking: ['mood', 'symptoms', 'notes'], reminders: { logReminder: true, periodReminder: false, fertileReminder: false } });
     await waitFor(() => expect(onComplete).toHaveBeenCalledWith('cycle'));
   });
 
-  it('frames the setup step as setup rather than a second welcome', () => {
-    renderSetup();
-    expect(screen.getByRole('heading', { name: /set things up/i })).toBeInTheDocument();
+  it('keeps the date blank until entered or explicitly skipped', async () => {
+    openDateStep();
+    expect(screen.getByLabelText('First day of your last period')).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('checkbox', { name: /not sure of the date/i }));
+    finishFromDate();
+    await expectSaved('cycle', { date: undefined });
   });
 
-  it('keeps the Lumen wordmark visible on the setup step for brand continuity', () => {
-    renderSetup();
-    expect(screen.getByText('Lumen')).toBeInTheDocument();
-  });
+  it.each([[/trying to conceive/i, 'ttc'], [/^perimenopause/i, 'menopause']] as const)(
+    'saves the %s goal with the existing cycle date', async (label, goal) => {
+      openDateStep(label);
+      fill('First day of your last period', lastPeriod);
+      finishFromDate();
+      await expectSaved(goal, { date: lastPeriod });
+    },
+  );
 
-  it('explains why submit is inactive until a last period date is set, then clears it', () => {
-    renderSetup();
-    expect(screen.getByText(/last period date to continue/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    expect(screen.queryByText(/last period date to continue/i)).not.toBeInTheDocument();
+  it('requires a valid due date for pregnancy and skips cycle questions', async () => {
+    const onComplete = openDateStep(/^pregnancy/i);
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+    const dueDate = addDays(todayISO(), 140);
+    fill('Due date', dueDate);
+    finishFromDate(false);
+    await expectSaved('pregnant', { dueDate, cycleLength: undefined });
+    await waitFor(() => expect(onComplete).toHaveBeenCalledWith('pregnant'));
   });
 
   it('derives the due date from the last period when the user does not know it', async () => {
-    renderSetup();
-    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
-    fireEvent.click(screen.getByRole('button', { name: /enter your last period instead/i }));
-    fireEvent.change(screen.getByLabelText(/last period start/i), { target: { value: '2026-06-01' } });
-    // Naegele's rule: LMP + 280 days.
-    expect(screen.getByText(/estimated due date/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /get started/i }));
-    await waitFor(() =>
-      expect(completeOnboarding).toHaveBeenCalledWith(
-        'pregnant',
-        expect.objectContaining({ date: '2026-06-01', dueDate: '2027-03-08' }),
-      ),
-    );
+    openDateStep(/^pregnancy/i);
+    click(/estimate from your last period/i);
+    fill('First day of your last period', lastPeriod);
+    expect(screen.getByText(/^estimated due date:/i)).toBeVisible();
+    finishFromDate(false);
+    await expectSaved('pregnant', { date: lastPeriod, dueDate: addDays(lastPeriod, 280) });
   });
 
-  it('moves goal selection with arrow keys (radiogroup semantics)', () => {
-    renderSetup();
-    const cycle = screen.getByRole('radio', { name: /track my cycle/i });
-    expect(cycle).toHaveAttribute('aria-checked', 'true');
-    fireEvent.keyDown(cycle, { key: 'ArrowDown' });
-    expect(screen.getByRole('radio', { name: /trying to conceive/i })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+  it('takes a birth date for postpartum setup without cycle questions', async () => {
+    openDateStep(/postpartum recovery/i);
+    fill('Birth date', lastPeriod);
+    finishFromDate(false);
+    await expectSaved('postpartum', { birthDate: lastPeriod, cycleLength: undefined });
   });
 
-  it('explains why submit is inactive until a due date is set on the pregnant goal', () => {
-    renderSetup();
-    fireEvent.click(screen.getByRole('radio', { name: /i'm pregnant/i }));
-    expect(screen.getByText(/due date to continue/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2026-10-08' } });
-    expect(screen.queryByText(/due date to continue/i)).not.toBeInTheDocument();
+  it('keeps the chosen date when stepping back', () => {
+    openDateStep();
+    fill('First day of your last period', lastPeriod);
+    click('Continue');
+    click('Back');
+    expect(screen.getByLabelText('First day of your last period')).toHaveValue(lastPeriod);
+  });
+
+  it('keeps the summary and allows retry if saving fails', async () => {
+    const onComplete = openDateStep();
+    completeOnboarding.mockRejectedValueOnce(new Error('Storage unavailable'));
+    fill('First day of your last period', lastPeriod);
+    finishFromDate();
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn’t save/i);
+    expect(onComplete).not.toHaveBeenCalled();
+    click('Finish setup');
+    await waitFor(() => expect(onComplete).toHaveBeenCalledWith('cycle'));
   });
 });

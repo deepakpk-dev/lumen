@@ -96,12 +96,35 @@ export async function putRecord(store: string, key: string, value: unknown): Pro
   await trackWrite(store, key, value, false);
 }
 
-export async function getRecord<T>(store: string, key: string): Promise<T | undefined> {
+// Older clients retain sync envelopes for unknown stores without materializing
+// them. Recover only a missing local record, and never requeue it for sync.
+async function recoverFromSync(keys: DerivedKeys, store: string, recordKey: string) {
+  const storeKey = await storeIndex(keys, store);
+  return db.transaction('rw', db.records, db.syncMeta, async () => {
+    const existing = await db.records.get(recordKey);
+    if (existing) return existing;
+    const retained = await db.syncMeta.get(recordKey);
+    if (session !== keys || !retained || retained.dirty || retained.deleted) return undefined;
+    const { iv, ciphertext, updatedAt, deleted } = retained;
+    const record = { recordKey, storeKey, iv, ciphertext, updatedAt, deleted };
+    await db.records.put(record);
+    return record;
+  });
+}
+
+export async function getRecord<T>(
+  store: string,
+  key: string,
+  options?: { recoverFromSync?: boolean },
+): Promise<T | undefined> {
   const keys = session;
   if (!keys) return (await db.table(store).get(key)) as T | undefined;
-  const row = await db.records.get(await opaqueRecordKey(keys, store, key));
-  if (!row) return undefined;
-  return (await decryptRecord(keys, row)).value as T;
+  const recordKey = await opaqueRecordKey(keys, store, key);
+  const row = (await db.records.get(recordKey)) ??
+    (options?.recoverFromSync ? await recoverFromSync(keys, store, recordKey) : undefined);
+  if (!row || session !== keys) return undefined;
+  const { value } = await decryptRecord(keys, row);
+  return session === keys ? value as T : undefined;
 }
 
 export async function getAllRecords<T>(store: string): Promise<T[]> {

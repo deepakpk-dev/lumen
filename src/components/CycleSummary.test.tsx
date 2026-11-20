@@ -36,6 +36,20 @@ describe('CycleSummary', () => {
         today="2026-03-10"
       />,
     );
-    expect(screen.getByText(/log your first period/i)).toBeInTheDocument();
+    expect(screen.getByText(/log when your last period started/i)).toBeInTheDocument();
+  });
+
+  it('shows that the estimate has passed when its whole range is in the past', () => {
+    render(
+      <CycleSummary
+        prediction={generatePrediction(cycles)}
+        stats={computeCycleStats(cycles)}
+        lastPeriodStart="2026-02-26"
+        today="2026-04-15"
+      />,
+    );
+    expect(screen.getByText('The estimated start window has passed.')).toBeInTheDocument();
+    expect(screen.queryByText('Next estimated period')).not.toBeInTheDocument();
+    expect(screen.queryByText('Your period may start any day now')).not.toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { continueSetup, finishSetupFromDate, openOnboarding } from './onboarding';
 
 // Each Playwright test gets a fresh browser context with empty storage, so the
 // app always starts in its first-run state (no IndexedDB data yet). This is what
@@ -7,20 +8,24 @@ import { test, expect } from '@playwright/test';
 test('first-run onboarding completes and lands on home', async ({ page }) => {
   // With no data, the home route redirects to onboarding.
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Welcome to Lumen' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Track your reproductive health' })).toBeVisible();
 
   // Intro -> setup.
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByRole('heading', { name: "Let's set things up" })).toBeVisible();
+  await page.getByRole('button', { name: 'Get started' }).click();
+  await expect(page.getByRole('heading', { name: 'Choose a tracking mode' })).toBeVisible();
+  await continueSetup(page);
 
-  // Default goal is "Track my cycle"; set a last-period date, then complete. This
+  // Default goal is "Cycle tracking"; set a last-period date, then complete. This
   // writes a cycle to IndexedDB and returns to home — exercising the local-first
   // storage path on each engine.
-  await page.getByLabel('last period start').fill('2026-06-20');
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await page.getByLabel('First day of your last period').fill('2026-06-20');
+  await finishSetupFromDate(page);
 
   await expect(page.getByRole('link', { name: 'Log today', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Calendar' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Calendar', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Calm', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Calm', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/\/log$/);
 });
 
 test('log page renders its sections and controls', async ({ page }) => {
@@ -57,7 +62,7 @@ test('library article opens from the list and renders its content', async ({ pag
   await expect(page.getByRole('heading', { name: 'Sources' })).toBeVisible();
 
   // Back link returns to the library list.
-  await page.getByRole('link', { name: 'Library' }).click();
+  await page.getByRole('link', { name: 'Back to Library' }).click();
   await expect(page.getByRole('heading', { name: 'Library' })).toBeVisible();
 });
 
@@ -68,10 +73,10 @@ test('home has no uncaught page errors after onboarding', async ({ page }) => {
     if (!err.message.includes('_rsc=')) errors.push(err.message);
   });
 
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByLabel('last period start').fill('2026-06-20');
-  await page.getByRole('button', { name: 'Get started' }).click();
+  await openOnboarding(page);
+  await continueSetup(page);
+  await page.getByLabel('First day of your last period').fill('2026-06-20');
+  await finishSetupFromDate(page);
   await expect(page.getByRole('link', { name: 'Log today', exact: true })).toBeVisible();
 
   expect(errors).toEqual([]);

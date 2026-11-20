@@ -42,9 +42,9 @@ export function DataControls({
     try {
       await importAll(parseImport(await file.text()));
       await onImported?.();
-      setStatus({ ok: true, msg: 'Data restored from your backup.' });
+      setStatus({ ok: true, msg: 'Backup restored.' });
     } catch (err) {
-      setStatus({ ok: false, msg: err instanceof Error ? err.message : 'Import failed.' });
+      setStatus({ ok: false, msg: err instanceof Error ? err.message : 'Couldn’t restore the backup. Choose a Lumen backup file and try again.' });
     }
   }
 
@@ -60,7 +60,7 @@ export function DataControls({
       } catch {
         setStatus({
           ok: false,
-          msg: 'Could not delete your synced copy from the server — check your connection and try again. Nothing was deleted.',
+          msg: 'Couldn’t confirm deletion of the encrypted server copy. Your data on this device was kept. Check your connection and try again.',
         });
         setConfirming(false);
         return;
@@ -78,33 +78,33 @@ export function DataControls({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <button
         type="button"
         onClick={() => setConfirmingExport(true)}
-        className="w-full rounded-md border px-4 py-3"
+        className="lumen-outline w-full"
       >
-        Export my data
+        Export a backup
       </button>
 
       {confirmingExport && (
-        <div className="space-y-2 rounded-md border border-amber-300 p-3 dark:border-amber-800">
-          <p className="text-sm text-amber-900 dark:text-amber-200">
-            This download is an unencrypted JSON file containing sensitive health data. Save
-            or share it only somewhere you trust.
+        <div className="lumen-panel lumen-warning space-y-3">
+          <p className="text-sm">
+            This unencrypted backup contains sensitive health data. Save it somewhere private.
+            Anyone with a copy can read it.
           </p>
-          <div className="flex gap-2">
+          <div className="lumen-actions">
             <button
               type="button"
               onClick={handleExport}
-              className="flex-1 rounded-md bg-amber-700 px-4 py-3 text-white"
+              className="lumen-button"
             >
-              Download unencrypted export
+              Download unencrypted backup
             </button>
             <button
               type="button"
               onClick={() => setConfirmingExport(false)}
-              className="flex-1 rounded-md border px-4 py-3"
+              className="lumen-outline"
             >
               Cancel
             </button>
@@ -122,16 +122,14 @@ export function DataControls({
       <button
         type="button"
         onClick={() => fileInput.current?.click()}
-        className="w-full rounded-md border px-4 py-3"
+        className="lumen-outline w-full"
       >
         Restore from a backup
       </button>
 
       {status && (
         <p
-          className={`text-sm ${
-            status.ok ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
-          }`}
+          className={`lumen-note ${status.ok ? 'lumen-success' : 'lumen-danger'}`}
           role="status"
         >
           {status.msg}
@@ -142,28 +140,29 @@ export function DataControls({
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className="w-full rounded-md border border-red-300 px-4 py-3 text-red-700 dark:border-red-900 dark:text-red-400"
+          className="lumen-outline lumen-outline-danger w-full"
         >
           Delete all data
         </button>
       ) : (
-        <div className="space-y-2 rounded-md border border-red-300 p-3 dark:border-red-900">
-          <p className="text-sm text-red-700 dark:text-red-400">
-            This permanently deletes everything on this device. This cannot be
-            undone.
+        <div className="lumen-panel lumen-danger space-y-3">
+          <h3 className="text-sm font-semibold">Delete all data?</h3>
+          <p className="text-sm">
+            This permanently deletes your Lumen records and settings on this device.
+            If sync is on, it also deletes the encrypted server copy. You can’t undo this.
           </p>
-          <div className="flex gap-2">
+          <div className="lumen-actions">
             <button
               type="button"
               onClick={handleDelete}
-              className="flex-1 rounded-md bg-red-600 px-4 py-3 text-white"
+              className="lumen-button lumen-button-danger"
             >
-              Yes, delete
+              Delete all data
             </button>
             <button
               type="button"
               onClick={() => setConfirming(false)}
-              className="flex-1 rounded-md border px-4 py-3"
+              className="lumen-outline"
             >
               Cancel
             </button>

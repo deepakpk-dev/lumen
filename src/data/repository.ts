@@ -8,11 +8,13 @@ import type {
   PostpartumProfile,
   EpdsEntry,
   ProgramProgress,
+  Personalization,
 } from '@/src/domain/types';
 import { db } from './db';
 import type { ImportedData } from './export';
 import type { BbtReading } from '@/src/domain/fertility/bbt';
 import type { DerivedKeys } from '@/src/crypto/keys';
+import { isValidISODate } from '@/src/domain/dates';
 import { exportPreferences, importPreferences } from '@/src/settings/preferences';
 import {
   putRecord,
@@ -92,6 +94,29 @@ export async function saveProgramProgress(p: ProgramProgress): Promise<void> {
   await putRecord('programProgress', p.programSlug, p);
 }
 
+export async function getPersonalization(): Promise<Personalization | undefined> {
+  const record = await getRecord<Personalization>('personalization', 'current', { recoverFromSync: true });
+  if (!record) return undefined;
+  const tracking = ['mood', 'symptoms', 'flow', 'notes', 'fertility'] as const;
+  const reviewed = record.reviewedReminders;
+  return {
+    id: 'current',
+    onboardingComplete: record.onboardingComplete === true,
+    preferredName: typeof record.preferredName === 'string' ? record.preferredName.trim().slice(0, 35) : undefined,
+    cycleLength: Number.isInteger(record.cycleLength) && record.cycleLength! >= 20 && record.cycleLength! <= 45 ? record.cycleLength : undefined,
+    periodLength: Number.isInteger(record.periodLength) && record.periodLength! >= 2 && record.periodLength! <= 8 ? record.periodLength : undefined,
+    tracking: Array.isArray(record.tracking) ? tracking.filter((group) => record.tracking!.includes(group)) : undefined,
+    savedArticles: Array.isArray(record.savedArticles) ? record.savedArticles.filter((slug) => typeof slug === 'string') : undefined,
+    reviewedReminders: reviewed && typeof reviewed.date === 'string' && isValidISODate(reviewed.date) && Array.isArray(reviewed.kinds)
+      ? { date: reviewed.date, kinds: reviewed.kinds.filter((kind) => typeof kind === 'string') }
+      : undefined,
+  };
+}
+
+export async function savePersonalization(record: Personalization): Promise<void> {
+  await putRecord('personalization', record.id, record);
+}
+
 export async function exportAll(): Promise<{
   cycles: Cycle[];
   dailyLogs: DailyLog[];
@@ -101,6 +126,7 @@ export async function exportAll(): Promise<{
   postpartumProfile: PostpartumProfile | null;
   epdsEntries: EpdsEntry[];
   programProgress: ProgramProgress[];
+  personalization?: Personalization;
   preferences: ReturnType<typeof exportPreferences>;
 }> {
   return {
@@ -112,6 +138,7 @@ export async function exportAll(): Promise<{
     postpartumProfile: (await getPostpartumProfile()) ?? null,
     epdsEntries: await getEpdsEntries(),
     programProgress: await getProgramProgress(),
+    personalization: await getPersonalization(),
     preferences: exportPreferences(),
   };
 }
@@ -130,6 +157,7 @@ export async function importAll(data: ImportedData): Promise<void> {
   if (data.postpartumProfile) await putRecord('postpartumProfile', data.postpartumProfile.id, data.postpartumProfile);
   for (const e of data.epdsEntries) await putRecord('epdsEntries', e.id, e);
   for (const p of data.programProgress) await putRecord('programProgress', p.programSlug, p);
+  if (data.personalization) await savePersonalization(data.personalization);
   // Restore life stage / units / reminders too, so a backup carries the full
   // app state (a pregnancy backup lands in pregnancy mode, not default cycle).
   importPreferences(data.preferences);
@@ -146,6 +174,7 @@ function storeCounts(d: Awaited<ReturnType<typeof exportAll>>): number[] {
     d.contractionSessions.length,
     d.epdsEntries.length,
     d.programProgress.length,
+    d.personalization ? 1 : 0,
     d.pregnancyProfile ? 1 : 0,
     d.postpartumProfile ? 1 : 0,
   ];
@@ -162,6 +191,7 @@ function clearTypedTables(): Promise<unknown> {
     db.postpartumProfile.clear(),
     db.epdsEntries.clear(),
     db.programProgress.clear(),
+    db.personalization.clear(),
   ]);
 }
 

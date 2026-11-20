@@ -24,14 +24,14 @@ export function PostpartumView() {
   }
 
   return (
-    <PageShell title="Postpartum" subtitle="Your recovery, week by week.">
+    <PageShell title="Postpartum" subtitle="See what to expect after birth and track your recovery.">
       <PostpartumCard
         week={postpartumWeekNumber}
         stage={recoveryStageToday}
         latestBand={latestEpds?.band ?? null}
       />
 
-      <section className="space-y-2">
+      <section className="lumen-card space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">{postpartumContentToday.focus}</h2>
         <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
           {postpartumContentToday.notes.map((t) => (
@@ -40,7 +40,7 @@ export function PostpartumView() {
         </ul>
       </section>
 
-      <section className="space-y-2">
+      <section className="lumen-card space-y-2">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">When your cycle returns</h2>
         {/* Educational copy only, tuned by the breastfeeding flag from Settings —
             never a prediction input. */}
@@ -59,7 +59,7 @@ export function PostpartumView() {
         <NavTile href="/settings">Manage postpartum</NavTile>
       </nav>
 
-      <section className="space-y-1">
+      <section className="lumen-card space-y-1">
         <h2 className="text-sm font-medium text-neutral-600 dark:text-neutral-300">Sources</h2>
         <ul className="list-disc space-y-1 pl-5 text-xs text-neutral-500 dark:text-neutral-400">
           {POSTPARTUM_SOURCES.map((s) => (
