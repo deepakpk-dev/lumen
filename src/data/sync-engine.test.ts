@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { db } from './db';
-import { deleteAll, addCycle, getCycles, getDailyLog, upsertDailyLog, clearPregnancyProfile, savePregnancyProfile, addKickSession } from './repository';
+import { deleteAll, addCycle, getCycles, getDailyLog, upsertDailyLog, clearPregnancyProfile, savePregnancyProfile, addKickSession, getPersonalization } from './repository';
 import { setStorageKeys } from './storage';
 import {
   startSyncTracking,
@@ -238,6 +238,25 @@ describe('sync engine', () => {
     expect((await getCycles()).map((c) => c.id)).toEqual(['c1']); // known records applied
     // The unknown record's envelope and clock are kept, not silently dropped.
     expect(await db.syncMeta.get(future.recordKey)).toMatchObject({ dirty: false });
+  });
+
+  it('recovers personalization retained by an older client before it supported that store', async () => {
+    const { encryptRecord } = await import('@/src/crypto/envelope');
+    const personalization = { id: 'current', onboardingComplete: true, preferredName: 'Sam' };
+    const envelope = await encryptRecord(
+      keys,
+      { store: 'personalization', key: 'current', value: personalization },
+      { updatedAt: '2026-11-20T12:00:00.000Z' },
+    );
+    // The old client retained the envelope and advanced its cursor, but never
+    // added it to the encrypted records the app reads.
+    await db.syncMeta.put({ ...envelope, dirty: false });
+    localStorage.setItem(`lumen.sync.lastSeq.${keys.accountId}`, '1');
+
+    expect(await getPersonalization()).toMatchObject(personalization);
+    expect(await db.records.get(envelope.recordKey)).toMatchObject({ ciphertext: envelope.ciphertext });
+    expect(await db.syncMeta.get(envelope.recordKey)).toMatchObject({ dirty: false });
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('a failed push keeps rows dirty so a retry delivers them', async () => {

@@ -95,7 +95,7 @@ export async function saveProgramProgress(p: ProgramProgress): Promise<void> {
 }
 
 export async function getPersonalization(): Promise<Personalization | undefined> {
-  const record = await getRecord<Personalization>('personalization', 'current');
+  const record = await getRecord<Personalization>('personalization', 'current', { recoverFromSync: true });
   if (!record) return undefined;
   const tracking = ['mood', 'symptoms', 'flow', 'notes', 'fertility'] as const;
   const reviewed = record.reviewedReminders;

@@ -38,6 +38,7 @@ export function CycleSummary({
   const phase = getCyclePhase(cycleDay, stats);
   const daysToNext = daysBetween(today, prediction.nextPeriodStart);
   const { earliest, latest } = prediction.nextPeriodStartRange;
+  const estimateExpired = latest < today;
   const dateFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
   const average = stats.averageCycleLength;
   const period = Math.min(stats.averagePeriodLength, Math.max(1, average - 3));
@@ -66,18 +67,22 @@ export function CycleSummary({
       <div className="lumen-cycle-next">
         <span className="lumen-icon-box"><LumenIcon name="calendar" /></span>
         <div className="min-w-0 flex-1">
-          <p className="lumen-muted text-xs">Next estimated period</p>
-          <p className="font-semibold">{dateFormat.formatRange(parseISODate(earliest), parseISODate(latest))}</p>
+          <p className="lumen-muted text-xs">{estimateExpired ? 'Period estimate' : 'Next estimated period'}</p>
+          <p className="font-semibold">
+            {estimateExpired
+              ? 'The estimated start window has passed.'
+              : dateFormat.formatRange(parseISODate(earliest), parseISODate(latest))}
+          </p>
         </div>
         <Link href="/calendar" className="lumen-text-link">View calendar <LumenIcon name="arrow" size={15} /></Link>
       </div>
       <details className="mt-3 text-xs lumen-muted">
         <summary className="cursor-pointer py-2">Confidence: {prediction.confidence}</summary>
-        <p className="mt-1">
+        {!estimateExpired && <p className="mt-1">
           {daysToNext > 0
             ? `Next period in ~${daysToNext} day${daysToNext === 1 ? '' : 's'}`
             : 'Your period may start any day now'}
-        </p>
+        </p>}
         <p className="mt-2">{prediction.explanation}</p>
         <p className="mt-2">These predictions are estimates and not medical advice. Consult a clinician with health concerns.</p>
       </details>
